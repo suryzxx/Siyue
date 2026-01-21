@@ -1,0 +1,236 @@
+import React, { useState } from 'react';
+import { Course, CourseType } from '../../types';
+
+interface CoursePathProps {
+  courses: Course[];
+  onAddCourse: (course: Course) => void;
+}
+
+const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
+  const [selectedCourseId, setSelectedCourseId] = useState<string>(courses[1]?.id || courses[0]?.id);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showModal, setShowModal] = useState(false);
+
+  // New Course Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'long-term' as CourseType,
+    description: '',
+    module: '',
+    tags: '',
+    isRecommended: false
+  });
+
+  const selectedCourse = courses.find(c => c.id === selectedCourseId) || courses[0];
+
+  const filteredCourses = courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const handleSaveCourse = () => {
+    if (!formData.name) {
+      alert('请输入课程名称');
+      return;
+    }
+
+    const newCourse: Course = {
+      id: `new-${Date.now()}`,
+      name: formData.name,
+      type: formData.type,
+      lessonCount: 0,
+      description: formData.description,
+      module: formData.module,
+      tags: formData.tags.split(' ').filter(t => t),
+      isRecommended: formData.isRecommended,
+      lessons: []
+    };
+
+    onAddCourse(newCourse);
+    setShowModal(false);
+    setSelectedCourseId(newCourse.id);
+    setFormData({
+        name: '',
+        type: 'long-term',
+        description: '',
+        module: '',
+        tags: '',
+        isRecommended: false
+    });
+  };
+
+  return (
+    <div className="flex h-full bg-bg-gray overflow-hidden">
+      {/* Left Sidebar: Course List */}
+      <div className="w-[280px] bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-800">课程路径</h2>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="bg-primary hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1"
+          >
+            <span>+</span> 新建课程
+          </button>
+        </div>
+        
+        <div className="p-4">
+          <div className="relative">
+             <input 
+               type="text" 
+               placeholder="搜索课程路径" 
+               value={searchQuery}
+               onChange={e => setSearchQuery(e.target.value)}
+               className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm pl-8 focus:outline-none focus:border-primary"
+             />
+             <span className="absolute left-2.5 top-2.5 text-gray-400 text-xs">🔍</span>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {filteredCourses.map(course => (
+            <div 
+              key={course.id}
+              onClick={() => setSelectedCourseId(course.id)}
+              className={`px-6 py-4 cursor-pointer border-b border-gray-50 flex items-center justify-between group transition-colors ${
+                selectedCourseId === course.id ? 'bg-[#EAF6F5] text-primary' : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span className="font-medium text-sm truncate">{course.name}</span>
+              <span className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">•••</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right Content: Lesson Grid */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="h-[60px] bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">{selectedCourse.name}</h2>
+          <button className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-1.5 rounded text-sm transition-colors flex items-center gap-1">
+             <span>+</span> 新建课节
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+           {selectedCourse.lessons && selectedCourse.lessons.length > 0 ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {selectedCourse.lessons.map((lesson) => (
+                  <div key={lesson.id} className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative">
+                    <div className="flex items-start gap-3">
+                       <div className="w-8 h-8 rounded-full bg-[#EAF6F5] text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                         {lesson.order}
+                       </div>
+                       <div className="flex-1">
+                         <h4 className="font-medium text-gray-800 text-sm mb-1 line-clamp-2" title={lesson.name}>{lesson.name}</h4>
+                         <p className="text-gray-400 text-xs">{lesson.taskCount} 任务</p>
+                       </div>
+                       <button className="text-gray-300 hover:text-gray-600">⋮</button>
+                    </div>
+                  </div>
+                ))}
+             </div>
+           ) : (
+             <div className="h-full flex flex-col items-center justify-center text-gray-400">
+               <div className="text-4xl mb-4">📭</div>
+               <p>暂无课节，请点击右上角新建</p>
+             </div>
+           )}
+        </div>
+      </div>
+
+      {/* Create Course Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+           <div className="bg-white rounded-lg shadow-xl w-[500px] flex flex-col max-h-[90vh]">
+             <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+               <h3 className="text-lg font-bold text-gray-800">新建课程</h3>
+               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+             </div>
+             
+             <div className="p-6 overflow-y-auto space-y-5">
+               
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程名称 :</label>
+                 <input 
+                   value={formData.name}
+                   onChange={e => setFormData({...formData, name: e.target.value})}
+                   placeholder="请输入课程名称"
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                 />
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程类型 :</label>
+                 <select 
+                   value={formData.type}
+                   onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                 >
+                   <option value="long-term">长期课程</option>
+                   <option value="short-term">短期课程</option>
+                 </select>
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>封面 :</label>
+                 <div className="w-[100px] h-[100px] border border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-50 text-gray-400">
+                   <span className="text-2xl mb-1">+</span>
+                   <span className="text-xs">上传图片</span>
+                 </div>
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>路径描述 :</label>
+                 <textarea 
+                   value={formData.description}
+                   onChange={e => setFormData({...formData, description: e.target.value})}
+                   placeholder="请输入路径描述"
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary h-24 resize-none"
+                 />
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>模块 :</label>
+                 <select 
+                   value={formData.module}
+                   onChange={e => setFormData({...formData, module: e.target.value})}
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white text-gray-600"
+                 >
+                   <option value="">请选择模块</option>
+                   <option value="English">English</option>
+                   <option value="Math">Math</option>
+                 </select>
+               </div>
+
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5">标签 :</label>
+                 <input 
+                   value={formData.tags}
+                   onChange={e => setFormData({...formData, tags: e.target.value})}
+                   placeholder="请输入标签 (空格分隔)"
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                 />
+               </div>
+
+               <div className="flex items-center">
+                 <label className="text-sm font-medium text-gray-600 mr-3">推荐 :</label>
+                 <button 
+                   onClick={() => setFormData({...formData, isRecommended: !formData.isRecommended})}
+                   className={`w-10 h-5 rounded-full relative transition-colors ${formData.isRecommended ? 'bg-primary' : 'bg-gray-300'}`}
+                 >
+                   <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${formData.isRecommended ? 'left-[22px]' : 'left-1'}`}></div>
+                 </button>
+                 <span className="text-xs text-gray-400 ml-2">经过审核后，这个课程将会被展示在首屏推荐位置。</span>
+               </div>
+
+             </div>
+
+             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
+               <button onClick={() => setShowModal(false)} className="px-5 py-2 rounded text-sm text-gray-600 border border-gray-300 hover:bg-gray-50">取消</button>
+               <button onClick={handleSaveCourse} className="px-6 py-2 rounded text-sm text-white bg-primary hover:bg-teal-600 shadow-sm">保存</button>
+             </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CoursePath;
