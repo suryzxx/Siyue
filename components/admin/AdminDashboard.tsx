@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { ClassInfo, Lesson, Course, Product } from '../../types';
 import { PRODUCTS } from '../../constants';
 import ClassManagement from './ClassManagement';
 import CoursePath from './CoursePath';
-import SelfBuiltCourse from './SelfBuiltCourse';
 import TeacherManagement from './TeacherManagement';
 import StudentManagement from './StudentManagement';
 import OrderManagement from './OrderManagement';
@@ -27,7 +27,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activePanel, setActivePanel] = useState<string>('class'); // Default to class management
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [createClassTrigger, setCreateClassTrigger] = useState<number>(0); // Trigger signal
 
   const handleAddClass = (newClass: ClassInfo, newLessons: Lesson[]) => {
     setClasses([newClass, ...classes]);
@@ -40,12 +39,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleAddCourse = (newCourse: Course) => {
     setCourses([newCourse, ...courses]);
-  };
-
-  const handleNavigateToCreateClass = () => {
-    setActivePanel('class');
-    // Simple increment to trigger useEffect in ClassManagement
-    setTimeout(() => setCreateClassTrigger(prev => prev + 1), 50); 
   };
 
   const NavItem = ({ id, label }: { id: string, label: string }) => (
@@ -72,7 +65,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex-1 flex flex-col">
           <NavItem id="course" label="课程路径" />
           <NavItem id="class" label="班级管理" />
-          <NavItem id="selfCourse" label="自建课程" />
           <NavItem id="teacher" label="教师管理" />
           <NavItem id="student" label="学生管理" />
           <NavItem id="order" label="订单管理" />
@@ -87,20 +79,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             lessons={lessons} 
             onAddClass={handleAddClass}
             onUpdateLessons={handleUpdateLessons}
-            createTrigger={createClassTrigger}
           />
         )}
         {activePanel === 'course' && (
           <CoursePath 
             courses={courses}
             onAddCourse={handleAddCourse}
-          />
-        )}
-        {activePanel === 'selfCourse' && (
-          <SelfBuiltCourse 
-            courses={courses}
-            setCourses={setCourses}
-            onNavigateToCreateClass={handleNavigateToCreateClass}
           />
         )}
         {activePanel === 'teacher' && (
@@ -112,7 +96,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {activePanel === 'order' && (
           <OrderManagement />
         )}
-        {activePanel !== 'class' && activePanel !== 'course' && activePanel !== 'teacher' && activePanel !== 'student' && activePanel !== 'order' && activePanel !== 'selfCourse' && (
+        {activePanel !== 'class' && activePanel !== 'course' && activePanel !== 'teacher' && activePanel !== 'student' && activePanel !== 'order' && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>

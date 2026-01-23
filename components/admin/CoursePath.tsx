@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Course, CourseType } from '../../types';
 
@@ -5,6 +6,21 @@ interface CoursePathProps {
   courses: Course[];
   onAddCourse: (course: Course) => void;
 }
+
+const GRADE_CLASS_TYPES: Record<string, string[]> = {
+  'K1': ['K1启蒙'],
+  'K2': ['K2启蒙', 'K2进阶'],
+  'K3': ['K3启蒙', 'K3进阶', 'K3飞跃'],
+  'G1': ['1A', '1A+', '1S', '1S+', '1R', '1R预备'],
+  'G2': ['2A', '2A+', '2S', '2S+', '2R', '2R预备'],
+  'G3': ['3A', '3A+', '3S', '3S+', '3R'],
+  'G4': ['4A', '4A+', '4S', '4S+', '4R'],
+  'G5': ['5A', '5A+', '5S', '5S+', '5R'],
+  'G6': ['6A', '6A+', '6S', '6S+', '6R'],
+  'G7': ['G7国际托管班', 'G7国际菁英班', 'G7国际英才'],
+  'G8': ['G8国际托管班', 'G8国际菁英班', 'G8国际英才'],
+  'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
+};
 
 const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
   const [selectedCourseId, setSelectedCourseId] = useState<string>(courses[1]?.id || courses[0]?.id);
@@ -15,8 +31,13 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
   const [formData, setFormData] = useState({
     name: '',
     type: 'long-term' as CourseType,
+    year: '2025',
+    semester: '暑期',
+    subject: '英语',
+    grade: '',
+    classType: '',
     description: '',
-    module: '',
+    module: '课程',
     tags: '',
     isRecommended: false
   });
@@ -36,6 +57,11 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
       name: formData.name,
       type: formData.type,
       lessonCount: 0,
+      year: formData.year,
+      semester: formData.semester,
+      subject: formData.subject,
+      grade: formData.grade,
+      classType: formData.classType,
       description: formData.description,
       module: formData.module,
       tags: formData.tags.split(' ').filter(t => t),
@@ -46,14 +72,31 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
     onAddCourse(newCourse);
     setShowModal(false);
     setSelectedCourseId(newCourse.id);
+    resetForm();
+  };
+
+  const resetForm = () => {
     setFormData({
         name: '',
         type: 'long-term',
+        year: '2025',
+        semester: '暑期',
+        subject: '英语',
+        grade: '',
+        classType: '',
         description: '',
-        module: '',
+        module: '课程',
         tags: '',
         isRecommended: false
     });
+  };
+
+  const handleGradeChange = (grade: string) => {
+      setFormData({
+          ...formData,
+          grade,
+          classType: '' // reset class type when grade changes
+      });
   };
 
   return (
@@ -63,7 +106,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-800">课程路径</h2>
           <button 
-            onClick={() => setShowModal(true)}
+            onClick={() => { resetForm(); setShowModal(true); }}
             className="bg-primary hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1"
           >
             <span>+</span> 新建课程
@@ -138,7 +181,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
       {/* Create Course Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-           <div className="bg-white rounded-lg shadow-xl w-[500px] flex flex-col max-h-[90vh]">
+           <div className="bg-white rounded-lg shadow-xl w-[600px] flex flex-col max-h-[90vh]">
              <div className="p-5 border-b border-gray-100 flex justify-between items-center">
                <h3 className="text-lg font-bold text-gray-800">新建课程</h3>
                <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
@@ -156,16 +199,82 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                  />
                </div>
 
+               <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程类型 :</label>
+                     <select 
+                       value={formData.type}
+                       onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                     >
+                       <option value="long-term">长期课程</option>
+                       <option value="short-term">短期课程</option>
+                     </select>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>年份 :</label>
+                     <select 
+                       value={formData.year}
+                       onChange={e => setFormData({...formData, year: e.target.value})}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                     >
+                       <option value="2024">2024</option>
+                       <option value="2025">2025</option>
+                       <option value="2026">2026</option>
+                     </select>
+                   </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>学期 :</label>
+                     <select 
+                       value={formData.semester}
+                       onChange={e => setFormData({...formData, semester: e.target.value})}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                     >
+                       <option value="春季">春季</option>
+                       <option value="暑期">暑期</option>
+                       <option value="秋季">秋季</option>
+                       <option value="寒假">寒假</option>
+                     </select>
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>学科 :</label>
+                     <select 
+                       value={formData.subject}
+                       onChange={e => setFormData({...formData, subject: e.target.value})}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                     >
+                       <option value="英语">英语</option>
+                       <option value="其他">其他</option>
+                     </select>
+                   </div>
+               </div>
+
                <div>
-                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程类型 :</label>
-                 <select 
-                   value={formData.type}
-                   onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
-                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                 >
-                   <option value="long-term">长期课程</option>
-                   <option value="short-term">短期课程</option>
-                 </select>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>班层 :</label>
+                 <div className="grid grid-cols-2 gap-4">
+                     <select 
+                       value={formData.grade}
+                       onChange={e => handleGradeChange(e.target.value)}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                     >
+                       <option value="">请选择年级</option>
+                       {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
+                     </select>
+                     <select 
+                       value={formData.classType}
+                       onChange={e => setFormData({...formData, classType: e.target.value})}
+                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                       disabled={!formData.grade}
+                     >
+                       <option value="">请选择班型</option>
+                       {formData.grade && GRADE_CLASS_TYPES[formData.grade]?.map(t => (
+                           <option key={t} value={t}>{t}</option>
+                       ))}
+                     </select>
+                 </div>
                </div>
 
                <div>
@@ -193,9 +302,8 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                    onChange={e => setFormData({...formData, module: e.target.value})}
                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white text-gray-600"
                  >
-                   <option value="">请选择模块</option>
-                   <option value="English">English</option>
-                   <option value="Math">Math</option>
+                   <option value="课程">课程</option>
+                   <option value="reading club">reading club</option>
                  </select>
                </div>
 
