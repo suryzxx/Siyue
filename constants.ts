@@ -1,51 +1,42 @@
+
 import { ClassInfo, Lesson, Student, Task, Course, Teacher, StudentProfile, Product, Order } from './types';
 
 export const COURSES: Course[] = [
   { 
     id: 'course1', 
-    name: '25暑-K3-进阶', 
-    type: 'long-term', 
+    name: '春剑少综合冲刺班', 
+    type: 'short-term', 
     lessonCount: 12, 
     tags: ['K3', 'K3进阶'],
-    description: '针对K3阶段进阶学生的暑期课程',
+    description: '针对K3阶段进阶学生的课程',
     module: 'English',
     isRecommended: false,
+    year: '2026', semester: '春季', subject: '英语', grade: '小学组', classType: '无', status: 'active',
     lessons: Array.from({length: 12}, (_, i) => ({
       id: `l1-${i}`, name: `25暑-Day${i+1}-课程任务`, taskCount: Math.floor(Math.random() * 10) + 2, order: i+1
     }))
   },
   { 
     id: 'course2', 
-    name: '25暑-K3-飞跃', 
-    type: 'short-term', 
+    name: '江宁试听PU2（1S/2A/2S）', 
+    type: 'experience', 
     lessonCount: 13, 
     tags: ['K3', 'K3飞跃'],
-    description: 'K3飞跃班，高强度集训',
+    description: '试听课',
     module: 'English',
     isRecommended: true,
+    year: '2026', semester: '寒假', subject: '英语', grade: '小学组', classType: '无', status: 'active',
     lessons: [
       { id: 'c2-1', name: '25暑-Day1-课程任务', taskCount: 17, order: 1 },
-      { id: 'c2-2', name: '25暑-Day2-课程任务', taskCount: 6, order: 2 },
-      { id: 'c2-3', name: '25暑-Day3-课程任务', taskCount: 4, order: 3 },
-      { id: 'c2-4', name: '25暑-Day4-课程任务', taskCount: 5, order: 4 },
-      { id: 'c2-5', name: '25暑-Day5-课程任务', taskCount: 5, order: 5 },
-      { id: 'c2-6', name: '25暑-Day6-课程任务', taskCount: 1, order: 6 },
-      { id: 'c2-7', name: '25暑-Day7-课程任务', taskCount: 1, order: 7 },
-      { id: 'c2-8', name: '25暑-Day8-课程任务', taskCount: 2, order: 8 },
-      { id: 'c2-9', name: '25暑-Day9-课程任务', taskCount: 2, order: 9 },
-      { id: 'c2-10', name: '25暑-Day10-课程任务', taskCount: 3, order: 10 },
-      { id: 'c2-11', name: '26寒-快乐伴学', taskCount: 4, order: 11 },
-      { id: 'c2-12', name: '拓展小天地', taskCount: 6, order: 12 },
-      { id: 'c2-13', name: '222', taskCount: 6, order: 13 },
     ]
   },
-  { id: 'course3', name: '25暑-G1-A+', type: 'long-term', lessonCount: 15, tags: ['G1', 'A+'], lessons: [] },
-  { id: 'course4', name: '25暑-K3-启蒙', type: 'long-term', lessonCount: 10, tags: [], lessons: [] },
-  { id: 'course5', name: '25暑-G2-A+', type: 'long-term', lessonCount: 10, tags: ['G2', 'A+'], lessons: [] },
-  { id: 'course6', name: '25暑-K2-启蒙', type: 'long-term', lessonCount: 10, tags: [], lessons: [] },
-  { id: 'course7', name: '25暑-G3-A+', type: 'long-term', lessonCount: 10, tags: ['G3', 'A+'], lessons: [] },
-  { id: 'course8', name: '25寒-G4-S+', type: 'short-term', lessonCount: 10, tags: ['G4', 'S+'], lessons: [] },
-  { id: 'course9', name: '25寒-G5-A+', type: 'short-term', lessonCount: 10, tags: ['G5', 'A+'], lessons: [] },
+  { id: 'course3', name: '江宁试听PU0（K3/1R/1A）', type: 'experience', lessonCount: 15, tags: ['G1', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '启蒙', classType: '无', status: 'active', lessons: [] },
+  { id: 'course4', name: '2026年春季中班启蒙', type: 'long-term', lessonCount: 10, tags: [], year: '2026', semester: '春季', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: [] },
+  { id: 'course5', name: '2026年寒假中班启蒙', type: 'long-term', lessonCount: 10, tags: ['G2', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: [] },
+  { id: 'course6', name: '寒FCE-4次写作口语班', type: 'short-term', lessonCount: 4, tags: [], year: '2026', semester: '寒假', subject: '英语', grade: '5年级', classType: '无', status: 'active', lessons: [] },
+  { id: 'course7', name: '2026寒G2-R预备冲刺班', type: 'short-term', lessonCount: 10, tags: ['G3', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '2年级', classType: '火箭R-预备', status: 'active', lessons: [] },
+  { id: 'course8', name: '2026寒G1-R预备冲刺班', type: 'short-term', lessonCount: 10, tags: ['G4', 'S+'], year: '2026', semester: '寒假', subject: '英语', grade: '1年级', classType: '火箭R-预备', status: 'active', lessons: [] },
+  { id: 'course9', name: '25寒-G5-A+', type: 'short-term', lessonCount: 10, tags: ['G5', 'A+'], year: '2025', semester: '寒假', subject: '英语', grade: '5年级', classType: '领航A+', status: 'active', lessons: [] },
 ];
 
 export const TEACHERS: Teacher[] = [
@@ -72,6 +63,10 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
   { id: '4990', name: '张璟秋', account: '13149918395', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
   { id: '4989', name: 'Sara薛蓉', account: '13801597148', gender: '男', className: '测试-暑K3-进阶', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
   { id: '4988', name: '刘嘉颖', account: '13951796802', gender: '男', className: '测试-暑G2-A', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
+  { id: '11678463', name: '殷煦纶', account: '138****0455', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
+  { id: '11705283', name: '张梓墨', account: '180****7733', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
+  { id: '11950153', name: '王子萱', account: '137****4495', gender: '女', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
+  { id: '11965183', name: '蒋翊翘', account: '158****8498', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
 ];
 
 export const CAMPUSES = [
@@ -101,7 +96,21 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2026-01-21',
     status: 'pending',
     createdTime: '2026/1/21 12:31:05',
-    scheduleDescription: '2026.01.21-2026.02.10 每周二'
+    scheduleDescription: '2026.01.21-2026.02.10 每周二',
+    contentMode: 'self',
+    semester: '暑假',
+    subject: '英语',
+    grade: 'K3',
+    studentGrade: 'K3',
+    classroom: '辰龙101',
+    needQualification: false,
+    studentTag: '进阶',
+    allowStudentSchedule: true,
+    chargeMode: 'whole',
+    price: 2999,
+    refundPolicy: 'unused',
+    materialPrice: 0,
+    materialRefundPolicy: 'no_return'
   },
   {
     id: '546',
@@ -118,7 +127,8 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2025-07-10',
     status: 'active',
     createdTime: '2025-05-15 14:20:00',
-    scheduleDescription: '2025.07.10-2025.08.30 每周四'
+    scheduleDescription: '2025.07.10-2025.08.30 每周四',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '奥南202', needQualification: true, studentTag: '进阶', allowStudentSchedule: false, chargeMode: 'whole', price: 2999, refundPolicy: 'unused', materialPrice: 100, materialRefundPolicy: 'no_return'
   },
   {
     id: 'c_p1',
@@ -135,24 +145,39 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2025-07-16',
     status: 'active',
     createdTime: '2025-07-01 10:00:00',
-    scheduleDescription: '2025.07.16-2025.07.30 周一, 周二, 周三, 周四, 周五, 周六, 周日'
+    scheduleDescription: '2025.07.16-2025.07.30 周一, 周二, 周三, 周四, 周五, 周六, 周日',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '龙江105', needQualification: true, studentTag: '进阶', allowStudentSchedule: false, chargeMode: 'whole', price: 2999, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return'
   },
   {
     id: 'c_p2',
-    name: '25寒-G5-A+--二期',
+    name: '25寒-G5-A+--二期', // This matches the detail view request context
     timeSlot: '18:00',
-    description: '25寒-G5-A+',
+    description: '寒G5-A+ | Felicia二期18:00',
     color: '#1890FF',
-    campus: '辰龙校区',
-    teacherId: 't3', // Crystal
-    assistant: '217',
-    capacity: 10,
-    studentCount: 9,
-    courseId: 'course9',
+    campus: '大行宫校区',
+    teacherId: '213', // Felicia杨星
+    assistant: '1',
+    capacity: 14,
+    studentCount: 4,
+    courseId: 'course9', // 2026寒五年级G5领航A+
     startDate: '2025-01-16',
     status: 'active',
     createdTime: '2025-01-01 10:00:00',
-    scheduleDescription: '2025.01.16-2025.01.30 周一, 周二, 周三, 周四, 周五, 周六, 周日'
+    scheduleDescription: '2025.01.16-2025.01.30 周一, 周二, 周三, 周四, 周五, 周六, 周日',
+    contentMode: 'self',
+    semester: '寒假',
+    subject: '英语',
+    grade: '5年级',
+    studentGrade: '5年级',
+    classroom: '大行宫305',
+    needQualification: true,
+    studentTag: '领航A+',
+    allowStudentSchedule: false,
+    chargeMode: 'whole',
+    price: 2555,
+    refundPolicy: 'unused',
+    materialPrice: 0,
+    materialRefundPolicy: 'no_return'
   },
   {
     id: 'c_p3',
@@ -169,7 +194,8 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2025-08-01',
     status: 'active',
     createdTime: '2025-06-15 10:00:00',
-    scheduleDescription: '2025.08.01-2025.08.15 周一至周五'
+    scheduleDescription: '2025.08.01-2025.08.15 周一至周五',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'G1', studentGrade: 'G1', classroom: '大行宫201', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 3299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return'
   },
   {
     id: 'c_p4',
@@ -186,7 +212,8 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2025-07-20',
     status: 'active',
     createdTime: '2025-06-20 10:00:00',
-    scheduleDescription: '2025.07.20-2025.08.05 周一至周五'
+    scheduleDescription: '2025.07.20-2025.08.05 周一至周五',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'G2', studentGrade: 'G2', classroom: '仙林303', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 3299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return'
   },
   {
     id: 'c_p5',
@@ -203,7 +230,8 @@ export const CLASSES: ClassInfo[] = [
     startDate: '2025-07-25',
     status: 'full',
     createdTime: '2025-07-10 10:00:00',
-    scheduleDescription: '2025.07.25-2025.08.08 周一至周五'
+    scheduleDescription: '2025.07.25-2025.08.08 周一至周五',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '五台山101', needQualification: true, studentTag: '飞跃', allowStudentSchedule: false, chargeMode: 'whole', price: 1899, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return'
   },
 ];
 

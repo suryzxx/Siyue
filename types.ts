@@ -1,3 +1,4 @@
+
 export type ViewType = 'class' | 'schedule';
 export type ClassTabType = 'tasks' | 'schedule';
 export type Role = 'teacher' | 'admin' | 'parents' | 'student';
@@ -36,6 +37,25 @@ export interface ClassInfo {
   status?: 'pending' | 'active' | 'full' | 'closed' | 'disabled';
   createdTime?: string;
   scheduleDescription?: string; // e.g. "2025.07.16-2025.07.30 周一, 周二..."
+  
+  // Extended fields for Detail View & Create Flow
+  contentMode?: 'self' | 'standard'; // 自建课程
+  semester?: string; // 学期 e.g. 寒假
+  subject?: string; // 学科 e.g. 英语
+  grade?: string; // 年级 e.g. 5年级
+  studentGrade?: string; // 学生年级
+  classroom?: string; // 教室
+  needQualification?: boolean; // 是否需要入学资格
+  studentTag?: string; // 学生标签
+  allowStudentSchedule?: boolean; // 是否开启学生端预约
+  allowConflict?: boolean; // 是否允许冲突
+  
+  // Pricing
+  chargeMode?: 'whole' | 'single'; // 收费模式
+  price?: number; // 课程费
+  refundPolicy?: 'unused' | 'full' | 'partial'; // 退费策略
+  materialPrice?: number; // 教辅费
+  materialRefundPolicy?: 'no_return' | 'return'; // 教辅退费策略
 }
 
 export interface Task {
@@ -70,7 +90,7 @@ export interface AttendanceRecord {
   status: AttendanceStatus;
 }
 
-export type CourseType = 'long-term' | 'short-term';
+export type CourseType = 'long-term' | 'short-term' | 'experience';
 
 export interface CourseLesson {
   id: string;
@@ -89,6 +109,13 @@ export interface Course {
   module?: string;
   isRecommended?: boolean;
   lessons?: CourseLesson[];
+  // Extended fields for Self-built Course
+  year?: string;
+  semester?: string;
+  subject?: string;
+  grade?: string;
+  classType?: string;
+  status?: 'active' | 'disabled';
 }
 
 export interface Teacher {
