@@ -60,7 +60,7 @@ const DISPLAY_COLUMNS = [
   { id: 'teacher', label: '主教老师' },
   { id: 'assistant', label: '助教' },
   { id: 'city', label: '城市' },
-  { id: 'district', label: '行政区' },
+  { id: 'district', label: '区域' },
   { id: 'campus', label: '校区' },
   { id: 'classroom', label: '教室' },
   { id: 'price', label: '课程费用' },
@@ -1166,7 +1166,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                     {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <select className="px-2 py-1.5 text-sm w-[90px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterDistrict} onChange={e => { setFilterDistrict(e.target.value); setFilterCampus(''); setFilterClassroom(''); }} disabled={!filterCity}>
-                    <option value="">行政区</option>
+                    <option value="">区域</option>
                     {filterCity && Object.keys(LOCATION_DATA[filterCity]).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
                 <select className="px-2 py-1.5 text-sm w-[110px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCampus} onChange={e => { setFilterCampus(e.target.value); setFilterClassroom(''); }} disabled={!filterDistrict}>
