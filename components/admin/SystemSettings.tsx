@@ -1,0 +1,720 @@
+
+import React, { useState } from 'react';
+
+const SystemSettings: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('org_info');
+  
+  // --- Institution Info State ---
+  const [orgForm, setOrgForm] = useState({
+    name: '思悦',
+    region: { province: '北京市', city: '市辖区', district: '东城区' },
+    detailAddress: '',
+    category: '出国语培',
+    stages: [] as string[]
+  });
+
+  // --- Attendance State ---
+  const [attendanceConfig, setAttendanceConfig] = useState({
+    deductionTypes: ['出勤', '迟到', '早退', '旷课'], // Selected types
+    autoClass: false,
+    auto1to1: false,
+    lockTime: 'daily',
+    allowModify: true,
+    modifyRole: '区管'
+  });
+
+  // --- Reschedule State ---
+  const [rescheduleConfig, setRescheduleConfig] = useState({
+    autoStudent: true,
+    virtualSeats: 2,
+    limitCount: 4,
+    sameTerm: true,
+    sameSubject: true,
+    sameGrade: true,
+    sameType: true
+  });
+
+  // --- Transfer State ---
+  const [transferConfig, setTransferConfig] = useState({
+    autoStudent: true,
+    sameTerm: true,
+    sameSubject: true,
+    sameGrade: true,
+    sameType: true,
+    allowPriceDiff: false, // 是否允许价格高向价格低转
+    transferMaterial: false // 是否允许教辅费转入余额
+  });
+
+  // --- Student Upgrade Table Mock ---
+  const upgradeRules = [
+    { current: '无年级', next: '无年级' },
+    { current: '学前', next: '小班' },
+    { current: '小班', next: '中班' },
+    { current: '中班', next: '大班' },
+    { current: '大班', next: '一年级' },
+    { current: '一年级', next: '二年级' },
+    { current: '二年级', next: '三年级' },
+    { current: '三年级', next: '四年级' },
+    { current: '四年级', next: '五年级' },
+    { current: '五年级', next: '六年级' },
+    { current: '六年级', next: '七年级' },
+    { current: '七年级', next: '八年级' },
+    { current: '八年级', next: '九年级' },
+    { current: '九年级', next: '高一' },
+    { current: '高一', next: '高二' },
+    { current: '高二', next: '高三' },
+    { current: '高三', next: '高三' },
+  ];
+
+  // --- Holidays State ---
+  const [year, setYear] = useState(2026);
+  const [holidays, setHolidays] = useState([
+    { date: '2026.01.05', name: '寒假停课', id: 1 },
+    { date: '2026.01.06', name: '寒假停课', id: 2 },
+    { date: '2026.01.07', name: '寒假停课', id: 3 },
+    { date: '2026.01.12', name: '寒假停课', id: 4 },
+    { date: '2026.01.13', name: '寒假停课', id: 5 },
+    { date: '2026.01.14', name: '寒假停课', id: 6 },
+    { date: '2026.01.19', name: '寒假停课', id: 7 },
+    { date: '2026.01.20', name: '寒假停课', id: 8 },
+    { date: '2026.01.21', name: '寒假停课', id: 9 },
+    { date: '2026.01.26', name: '寒假停课', id: 10 },
+    { date: '2026.01.27', name: '寒假停课', id: 11 },
+  ]);
+
+  // Modal State for Adding Holiday
+  const [showHolidayModal, setShowHolidayModal] = useState(false);
+  const [holidayForm, setHolidayForm] = useState({
+      startDate: '',
+      endDate: '',
+      name: ''
+  });
+
+  const handleAddHoliday = () => {
+      if(!holidayForm.startDate || !holidayForm.name) {
+          alert('请填写完整信息');
+          return;
+      }
+      
+      const newHolidays = [...holidays];
+      let current = new Date(holidayForm.startDate);
+      const end = new Date(holidayForm.endDate || holidayForm.startDate);
+      let idCounter = Math.max(...holidays.map(h => h.id), 0);
+
+      while(current <= end) {
+          const dateStr = `${current.getFullYear()}.${String(current.getMonth()+1).padStart(2,'0')}.${String(current.getDate()).padStart(2,'0')}`;
+          
+          // Check if date already exists to avoid duplicates
+          if (!newHolidays.find(h => h.date === dateStr)) {
+              idCounter++;
+              newHolidays.push({
+                  id: idCounter,
+                  date: dateStr,
+                  name: holidayForm.name
+              });
+          }
+          current.setDate(current.getDate() + 1);
+      }
+      
+      // Sort by date
+      newHolidays.sort((a, b) => a.date.localeCompare(b.date));
+
+      setHolidays(newHolidays);
+      setShowHolidayModal(false);
+      setHolidayForm({ startDate: '', endDate: '', name: '' });
+  };
+
+  const strictTabs = [
+    { id: 'org_info', label: '机构信息' },
+    { id: 'attendance', label: '考勤配置' },
+    { id: 'student_info', label: '学生信息' },
+    { id: 'holidays', label: '停课日' },
+    { id: 'reschedule', label: '调课配置' },
+    { id: 'transfer', label: '转班配置' },
+  ];
+
+  const stagesOptions = ['幼儿', '小学', '初中', '高中', '大学', '成人'];
+
+  const handleStageChange = (stage: string) => {
+    setOrgForm(prev => {
+      const newStages = prev.stages.includes(stage)
+        ? prev.stages.filter(s => s !== stage)
+        : [...prev.stages, stage];
+      return { ...prev, stages: newStages };
+    });
+  };
+
+  // --- Sub-renderers ---
+
+  const renderAttendance = () => (
+    <div className="max-w-4xl space-y-8 text-sm text-gray-600">
+        {/* Type 1 */}
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">考勤类型扣费的有</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                勾选后会根据考勤类型进行扣费
+            </div>
+            <div className="flex gap-6 pt-1">
+                {['出勤', '迟到', '早退', '请假', '旷课'].map(type => (
+                    <label key={type} className="flex items-center gap-2 cursor-pointer select-none">
+                        <input 
+                            type="checkbox" 
+                            checked={attendanceConfig.deductionTypes.includes(type)}
+                            onChange={() => {
+                                const newTypes = attendanceConfig.deductionTypes.includes(type)
+                                    ? attendanceConfig.deductionTypes.filter(t => t !== type)
+                                    : [...attendanceConfig.deductionTypes, type];
+                                setAttendanceConfig({...attendanceConfig, deductionTypes: newTypes});
+                            }}
+                            className="rounded text-primary w-4 h-4 focus:ring-primary"
+                        />
+                        <span className={attendanceConfig.deductionTypes.includes(type) ? 'text-primary' : ''}>{type}</span>
+                    </label>
+                ))}
+            </div>
+        </div>
+
+        {/* Type 2 */}
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">是否允许班课自动考勤</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                允许后，每次讲次结束后自动将“未考勤”的学生设置为“出勤”
+            </div>
+            <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={attendanceConfig.autoClass} onChange={() => setAttendanceConfig({...attendanceConfig, autoClass: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!attendanceConfig.autoClass} onChange={() => setAttendanceConfig({...attendanceConfig, autoClass: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+            </div>
+        </div>
+
+        {/* Type 3 */}
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">是否允许1对1、1对N自动考勤</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                允许后，每次讲次结束后自动将“未考勤”的学生设置为“出勤”
+            </div>
+            <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={attendanceConfig.auto1to1} onChange={() => setAttendanceConfig({...attendanceConfig, auto1to1: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!attendanceConfig.auto1to1} onChange={() => setAttendanceConfig({...attendanceConfig, auto1to1: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+            </div>
+        </div>
+
+        {/* Type 4 */}
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">锁定考勤不可更改</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                根据每天的23:59:59截止不可修改
+            </div>
+            <div className="w-64">
+                <select className="w-full bg-[#F6F7FB] border border-transparent hover:border-gray-200 rounded px-3 py-2 outline-none text-gray-700">
+                    <option value="daily">每天</option>
+                    <option value="weekly">每周</option>
+                </select>
+            </div>
+        </div>
+
+        {/* Type 5 */}
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">是否允许修改考勤</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                允许后，只能修改未结算的学生
+            </div>
+            <div className="flex gap-6 mb-3">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={attendanceConfig.allowModify} onChange={() => setAttendanceConfig({...attendanceConfig, allowModify: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!attendanceConfig.allowModify} onChange={() => setAttendanceConfig({...attendanceConfig, allowModify: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+            </div>
+            {attendanceConfig.allowModify && (
+                <div className="flex items-center gap-2">
+                    <span className="text-gray-600">请选择职位</span>
+                    <select className="w-48 bg-white border border-gray-200 rounded px-3 py-1.5 outline-none text-gray-700 text-sm">
+                        <option value="区管">区管</option>
+                        <option value="校长">校长</option>
+                    </select>
+                </div>
+            )}
+        </div>
+    </div>
+  );
+
+  const renderStudentInfo = () => (
+    <div className="max-w-5xl">
+        <div className="mb-6 font-bold text-gray-800 text-base">学生升级</div>
+        <button className="bg-primary hover:bg-teal-600 text-white px-6 py-2 rounded text-sm mb-6 transition-colors shadow-sm">
+            学生批量升级
+        </button>
+
+        <div className="mb-6 text-sm text-gray-500 space-y-1">
+            <p className="font-bold text-gray-700 mb-2">说明</p>
+            <p>1. 每年7-10月支持升级操作，每年仅能操作一次。</p>
+            <p>2. 升级成功后无法撤销操作。</p>
+            <p>3. 升级规则如图：</p>
+        </div>
+
+        <div className="border border-gray-200 rounded overflow-hidden max-w-2xl">
+            <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                    <tr>
+                        <th className="p-3 border-b border-r border-gray-200 w-1/2">目前学生年级</th>
+                        <th className="p-3 border-b border-gray-200 w-1/2">学生升级后对应年级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {upgradeRules.map((rule, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                            <td className="p-3 border-b border-r border-gray-100 text-gray-700">{rule.current}</td>
+                            <td className="p-3 border-b border-gray-100 text-primary font-medium">{rule.next}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+  );
+
+  const renderHolidays = () => {
+      // Helper to render a mini calendar month
+      const renderMonth = (month: number) => {
+          // Hardcoded layout for visualization as per image request
+          const days = 31;
+          const monthHolidays = holidays.filter(h => h.date.startsWith(`2026.${String(month).padStart(2, '0')}`));
+          const holidayDays = monthHolidays.map(h => parseInt(h.date.split('.')[2]));
+
+          return (
+              <div className="mb-8">
+                  <div className="text-lg font-bold text-gray-700 mb-4">{month}月</div>
+                  <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                      <div className="text-gray-400 text-xs mb-2">日</div>
+                      <div className="text-gray-400 text-xs mb-2">一</div>
+                      <div className="text-gray-400 text-xs mb-2">二</div>
+                      <div className="text-gray-400 text-xs mb-2">三</div>
+                      <div className="text-gray-400 text-xs mb-2">四</div>
+                      <div className="text-gray-400 text-xs mb-2">五</div>
+                      <div className="text-gray-400 text-xs mb-2">六</div>
+                      
+                      {/* Blank start padding (mock) */}
+                      {month === 1 && <div className="col-span-4"></div>}
+                      {month === 2 && <div className="col-span-0"></div>}
+                      
+                      {Array.from({length: days}).map((_, i) => {
+                          const day = i + 1;
+                          const isHoliday = holidayDays.includes(day);
+                          return (
+                              <div key={day} className="h-8 flex items-center justify-center">
+                                  {isHoliday ? (
+                                      <span className="w-6 h-6 bg-[#FF5733] text-white rounded-full flex items-center justify-center text-xs">{day}</span>
+                                  ) : (
+                                      <span className="text-gray-600">{day}</span>
+                                  )}
+                              </div>
+                          );
+                      })}
+                  </div>
+              </div>
+          );
+      };
+
+      return (
+        <div className="flex h-full gap-8">
+            <div className="flex-1 flex flex-col">
+                <div className="flex items-center justify-center gap-4 mb-6">
+                    <button onClick={() => setYear(year - 1)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500">{'<'}</button>
+                    <span className="text-2xl font-bold text-gray-800">{year}年</span>
+                    <button onClick={() => setYear(year + 1)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500">{'>'}</button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-3 gap-x-12 px-4">
+                    {renderMonth(1)}
+                    {renderMonth(2)}
+                    {renderMonth(3)}
+                    {renderMonth(4)}
+                    {renderMonth(5)}
+                    {renderMonth(6)}
+                    {renderMonth(7)}
+                    {renderMonth(8)}
+                    {renderMonth(9)}
+                </div>
+            </div>
+
+            <div className="w-[400px] border-l border-gray-100 pl-8 flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                    <button 
+                        onClick={() => setShowHolidayModal(true)}
+                        className="bg-primary hover:bg-teal-600 text-white px-4 py-2 rounded text-sm transition-colors shadow-sm"
+                    >
+                        添加停课日
+                    </button>
+                    <div className="text-right">
+                        <span className="text-sm text-gray-600">{year}年停课日: {holidays.length}天</span>
+                    </div>
+                </div>
+
+                <div className="bg-white border border-gray-100 rounded flex-1 overflow-hidden flex flex-col">
+                    <div className="flex bg-gray-50 border-b border-gray-100 p-3 text-sm text-gray-600 font-bold">
+                        <div className="w-32">停课日期</div>
+                        <div className="flex-1">停课日名称</div>
+                        <div className="w-16 text-right">操作</div>
+                    </div>
+                    <div className="overflow-y-auto flex-1 p-0">
+                        {holidays.map(h => (
+                            <div key={h.id} className="flex p-3 border-b border-gray-50 text-sm hover:bg-gray-50">
+                                <div className="w-32 text-gray-600">{h.date}</div>
+                                <div className="flex-1 text-gray-800">{h.name}</div>
+                                <div className="w-16 text-right">
+                                    <button 
+                                        className="text-primary hover:underline text-xs"
+                                        onClick={() => setHolidays(holidays.filter(item => item.id !== h.id))}
+                                    >
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ADD HOLIDAY MODAL */}
+            {showHolidayModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-lg shadow-xl w-[550px] flex flex-col animate-fade-in">
+                        <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-gray-800">添加停课日</h3>
+                            <button onClick={() => setShowHolidayModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                        </div>
+                        
+                        <div className="p-10 space-y-8">
+                            <div className="flex items-start">
+                                <label className="w-24 text-sm text-gray-600 text-right mr-4 mt-2 font-medium"><span className="text-red-500 mr-1">*</span>停课日时间</label>
+                                <div className="flex-1 flex items-center gap-3">
+                                    <div className="relative flex-1">
+                                         <span className="absolute left-3 top-2.5 text-gray-400 text-sm">📅</span>
+                                         <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 pl-9 text-sm focus:outline-none focus:border-primary text-gray-600" 
+                                            value={holidayForm.startDate}
+                                            onChange={e => setHolidayForm({...holidayForm, startDate: e.target.value})}
+                                            placeholder="开始日期"
+                                         />
+                                    </div>
+                                    <span className="text-gray-500 text-sm font-medium">至</span>
+                                    <div className="relative flex-1">
+                                         <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600" 
+                                            value={holidayForm.endDate}
+                                            onChange={e => setHolidayForm({...holidayForm, endDate: e.target.value})}
+                                            placeholder="结束日期"
+                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center">
+                                <label className="w-24 text-sm text-gray-600 text-right mr-4 font-medium"><span className="text-red-500 mr-1">*</span>停课日名称</label>
+                                <input 
+                                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary placeholder-gray-400"
+                                    placeholder="请输入停课日名称，例：五一节假日停课1天"
+                                    value={holidayForm.name}
+                                    onChange={e => setHolidayForm({...holidayForm, name: e.target.value})}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="px-8 py-5 border-t border-gray-100 flex justify-center gap-4">
+                            <button onClick={() => setShowHolidayModal(false)} className="px-10 py-2.5 border border-gray-200 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm font-medium transition-colors">取消</button>
+                            <button onClick={handleAddHoliday} className="px-10 py-2.5 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm font-medium transition-colors">确定</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+      );
+  };
+
+  const renderReschedule = () => (
+    <div className="max-w-4xl space-y-10 text-sm text-gray-600">
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">学生端自动调课设置</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                允许后，学生/家长可自行在学生端网校、APP、小程序内进行调课操作，且无需审核，符合条件可直接调课成功
+            </div>
+            <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={rescheduleConfig.autoStudent} onChange={() => setRescheduleConfig({...rescheduleConfig, autoStudent: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!rescheduleConfig.autoStudent} onChange={() => setRescheduleConfig({...rescheduleConfig, autoStudent: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+            </div>
+        </div>
+
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">调课虚位数设置 （面授班）</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                设置后，在班级班额已满的情况下，仍可在有虚位的情况下将学生调入班级上课
+            </div>
+            <div className="flex items-center gap-2 text-gray-700">
+                虚位个数 <span className="font-bold text-lg text-primary">{rescheduleConfig.virtualSeats}</span> 位
+                <span className="text-primary cursor-pointer hover:underline ml-2">修改</span>
+            </div>
+        </div>
+
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">课程可调课总次数设置 （面授班）</div>
+            <div className="flex items-center gap-2 text-gray-700">
+                限制次数 <span className="font-bold text-lg text-primary">{rescheduleConfig.limitCount}</span> 次
+                <span className="text-primary cursor-pointer hover:underline ml-2">修改</span>
+            </div>
+        </div>
+
+        <div className="space-y-6 pt-4 border-t border-gray-100">
+            {[
+                { label: '学生自行调课时，是否限制同学期可调?', key: 'sameTerm' },
+                { label: '学生自行调课时，是否限制同学科可调?', key: 'sameSubject' },
+                { label: '学生自行调课时，是否限制同年级可调?', key: 'sameGrade' },
+                { label: '学生自行调课时，是否限制同班型可调?', key: 'sameType' },
+            ].map(item => (
+                <div key={item.key} className="space-y-2">
+                    <div className="text-gray-700">{item.label}</div>
+                    <div className="flex gap-6">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                checked={(rescheduleConfig as any)[item.key]} 
+                                onChange={() => setRescheduleConfig({...rescheduleConfig, [item.key]: true})} 
+                                className="text-primary focus:ring-primary"
+                            /> 是
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                checked={!(rescheduleConfig as any)[item.key]} 
+                                onChange={() => setRescheduleConfig({...rescheduleConfig, [item.key]: false})} 
+                                className="text-primary focus:ring-primary"
+                            /> 否
+                        </label>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+  );
+
+  const renderTransfer = () => (
+    <div className="max-w-4xl space-y-10 text-sm text-gray-600">
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">学生端自动转班设置</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                允许后，学生/家长可自行在学生端网校、APP、小程序内进行转班操作，且无需审核，符合条件可直接转班成功
+            </div>
+            <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={transferConfig.autoStudent} onChange={() => setTransferConfig({...transferConfig, autoStudent: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!transferConfig.autoStudent} onChange={() => setTransferConfig({...transferConfig, autoStudent: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+            </div>
+        </div>
+
+        <div className="space-y-6 pt-2">
+            {[
+                { label: '学生自行转班时，是否限制同学期可转?', key: 'sameTerm' },
+                { label: '学生自行转班时，是否限制同学科可转?', key: 'sameSubject' },
+                { label: '学生自行转班时，是否限制同年级可转?', key: 'sameGrade' },
+                { label: '学生自行转班时，是否限制同班型可转?', key: 'sameType' },
+            ].map(item => (
+                <div key={item.key} className="space-y-2">
+                    <div className="text-gray-700">{item.label}</div>
+                    <div className="flex gap-6">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                checked={(transferConfig as any)[item.key]} 
+                                onChange={() => setTransferConfig({...transferConfig, [item.key]: true})} 
+                                className="text-primary focus:ring-primary"
+                            /> 是
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="radio" 
+                                checked={!(transferConfig as any)[item.key]} 
+                                onChange={() => setTransferConfig({...transferConfig, [item.key]: false})} 
+                                className="text-primary focus:ring-primary"
+                            /> 否
+                        </label>
+                    </div>
+                </div>
+            ))}
+
+            <div className="space-y-2 pt-2">
+                <div className="text-gray-700">学生自行转班时，是否允许价格高向价格低的班级转班?</div>
+                <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="radio" 
+                            checked={transferConfig.allowPriceDiff} 
+                            onChange={() => setTransferConfig({...transferConfig, allowPriceDiff: true})} 
+                            className="text-primary focus:ring-primary"
+                        /> 是
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="radio" 
+                            checked={!transferConfig.allowPriceDiff} 
+                            onChange={() => setTransferConfig({...transferConfig, allowPriceDiff: false})} 
+                            className="text-primary focus:ring-primary"
+                        /> 否
+                    </label>
+                </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+                <div className="text-gray-700">学生自行转班时，如果班级设置了教辅费，是否允许将教辅费转入剩余学费进行转班?</div>
+                <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="radio" 
+                            checked={transferConfig.transferMaterial} 
+                            onChange={() => setTransferConfig({...transferConfig, transferMaterial: true})} 
+                            className="text-primary focus:ring-primary"
+                        /> 允许
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                            type="radio" 
+                            checked={!transferConfig.transferMaterial} 
+                            onChange={() => setTransferConfig({...transferConfig, transferMaterial: false})} 
+                            className="text-primary focus:ring-primary"
+                        /> 不允许
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+  );
+
+  return (
+    <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 bg-[#F5F7F9]">
+        <h2 className="text-sm text-gray-500">系统设置</h2>
+      </div>
+
+      <div className="flex-1 flex flex-col bg-white overflow-hidden m-4 rounded-xl shadow-sm border border-gray-100">
+          {/* Tabs Header */}
+          <div className="flex px-8 border-b border-gray-100 overflow-x-auto no-scrollbar pt-2">
+            {strictTabs.map(tab => (
+              <div
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 mr-10 cursor-pointer text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {tab.label}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-10">
+            {activeTab === 'org_info' && (
+              <div className="max-w-4xl">
+                <div className="mb-10">
+                   <button className="bg-primary text-white px-8 py-2 rounded shadow-sm hover:bg-teal-600 text-sm font-medium transition-colors">
+                     修改
+                   </button>
+                </div>
+
+                <div className="space-y-8">
+                  {/* Name */}
+                  <div className="flex items-center">
+                    <label className="w-24 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>机构名称:</label>
+                    <input 
+                      className="w-[400px] bg-[#F6F7FB] border border-transparent hover:border-gray-200 focus:bg-white focus:border-primary rounded px-3 py-2.5 text-sm outline-none transition-all text-gray-700"
+                      value={orgForm.name}
+                      onChange={e => setOrgForm({...orgForm, name: e.target.value})}
+                    />
+                  </div>
+
+                  {/* Address Region */}
+                  <div className="flex items-center">
+                    <label className="w-24 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>机构地址:</label>
+                    <div className="flex gap-2 w-[400px]">
+                       <select className="flex-1 bg-[#F6F7FB] border border-transparent hover:border-gray-200 rounded px-3 py-2.5 text-sm outline-none text-gray-700">
+                          <option>北京市</option>
+                          <option>江苏省</option>
+                       </select>
+                       <select className="flex-1 bg-[#F6F7FB] border border-transparent hover:border-gray-200 rounded px-3 py-2.5 text-sm outline-none text-gray-700">
+                          <option>市辖区</option>
+                          <option>南京市</option>
+                       </select>
+                       <select className="flex-1 bg-[#F6F7FB] border border-transparent hover:border-gray-200 rounded px-3 py-2.5 text-sm outline-none text-gray-700">
+                          <option>东城区</option>
+                          <option>鼓楼区</option>
+                       </select>
+                    </div>
+                  </div>
+
+                  {/* Address Detail */}
+                  <div className="flex items-center">
+                    <label className="w-24 text-sm text-gray-500 text-right mr-4">详细地址:</label>
+                    <input 
+                      className="w-[400px] bg-[#F6F7FB] border border-transparent hover:border-gray-200 focus:bg-white focus:border-primary rounded px-3 py-2.5 text-sm outline-none transition-all text-gray-700 placeholder-gray-400"
+                      placeholder="请填写详细地址"
+                      value={orgForm.detailAddress}
+                      onChange={e => setOrgForm({...orgForm, detailAddress: e.target.value})}
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div className="flex items-center">
+                    <label className="w-24 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>主营类目:</label>
+                    <select 
+                      className="w-[400px] bg-[#F6F7FB] border border-transparent hover:border-gray-200 rounded px-3 py-2.5 text-sm outline-none text-gray-700"
+                      value={orgForm.category}
+                      onChange={e => setOrgForm({...orgForm, category: e.target.value})}
+                    >
+                       <option>出国语培</option>
+                       <option>K12教育</option>
+                       <option>素质教育</option>
+                    </select>
+                  </div>
+
+                  {/* Stages */}
+                  <div className="flex items-start pt-1">
+                    <label className="w-24 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>覆盖学段:</label>
+                    <div className="flex gap-8 flex-wrap flex-1 pt-1">
+                       {stagesOptions.map(stage => (
+                         <label key={stage} className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={orgForm.stages.includes(stage)}
+                              onChange={() => handleStageChange(stage)}
+                              className="rounded text-primary focus:ring-primary w-4 h-4 bg-[#F6F7FB] border-gray-300"
+                            />
+                            {stage}
+                         </label>
+                       ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'attendance' && renderAttendance()}
+            {activeTab === 'student_info' && renderStudentInfo()}
+            {activeTab === 'holidays' && renderHolidays()}
+            {activeTab === 'reschedule' && renderReschedule()}
+            {activeTab === 'transfer' && renderTransfer()}
+
+            {/* Placeholders for other tabs */}
+            {!['org_info', 'attendance', 'student_info', 'holidays', 'reschedule', 'transfer'].includes(activeTab) && (
+              <div className="flex flex-col items-center justify-center h-96 text-gray-300">
+                 <div className="text-6xl mb-6 opacity-50">🛠️</div>
+                 <div className="text-lg font-medium">{strictTabs.find(t => t.id === activeTab)?.label} 功能模块开发中...</div>
+              </div>
+            )}
+          </div>
+      </div>
+    </div>
+  );
+};
+
+export default SystemSettings;

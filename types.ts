@@ -128,6 +128,11 @@ export interface Teacher {
   gender?: '男' | '女';
   // Admin fields
   account?: string;
+  phone?: string;
+  campus?: string;
+  position?: string;
+  avatar?: string;
+  poster?: string;
   status?: 'active' | 'disabled';
   createdTime?: string;
   updatedTime?: string;

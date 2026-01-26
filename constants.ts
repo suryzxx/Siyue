@@ -40,19 +40,19 @@ export const COURSES: Course[] = [
 ];
 
 export const TEACHERS: Teacher[] = [
-  { id: '219', name: 'Melody', account: 'melody_01', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '218', name: 'Sonya孙苏云', account: 'Sonya孙苏云', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '217', name: 'Ruby张露', account: 'Ruby张露', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '216', name: 'Angel严义洁', account: 'Angel严义洁', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
-  { id: '215', name: 'Cora王晶', account: 'Cora王晶', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
-  { id: '214', name: 'Ace黄礼妍', account: 'Ace黄礼妍', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:05', updatedTime: '2025-06-24 17:27:24' },
-  { id: '213', name: 'Felicia杨星', account: 'Felicia杨星', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
-  { id: '212', name: 'Helen', account: 'helen_01', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
-  { id: '211', name: 'Luna贾璐瑶', account: 'Luna贾璐瑶', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
-  { id: '210', name: 'Iris游景', account: 'Iris游景', gender: '女', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
-  { id: 't1', name: 'Linda', account: 'linda_01', gender: '女', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
-  { id: 't2', name: 'Justin', account: 'justin_01', gender: '男', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
-  { id: 't3', name: 'Crystal张骁', account: 'crystal_01', gender: '女', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: '219', name: 'Melody', account: 'melody_01', phone: '13812345678', campus: '龙江校区', position: '全职教师', gender: '女', avatar: '头像A.jpg', poster: '海报A.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '218', name: 'Sonya孙苏云', account: 'Sonya孙苏云', phone: '13987654321', campus: '龙江校区', position: '全职教师', gender: '女', avatar: '头像B.jpg', poster: '海报B.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '217', name: 'Ruby张露', account: 'Ruby张露', phone: '13700001111', campus: '奥南校区', position: '教学主管', gender: '女', avatar: '头像C.jpg', poster: '海报C.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '216', name: 'Angel严义洁', account: 'Angel严义洁', phone: '13611112222', campus: '大行宫校区', position: '全职教师', gender: '女', avatar: '头像D.jpg', poster: '海报D.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
+  { id: '215', name: 'Cora王晶', account: 'Cora王晶', phone: '13533334444', campus: '辰龙校区', position: '助教', gender: '女', avatar: '头像E.jpg', poster: '海报E.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
+  { id: '214', name: 'Ace黄礼妍', account: 'Ace黄礼妍', phone: '13355556666', campus: '仙林校区', position: '全职教师', gender: '女', avatar: '头像F.jpg', poster: '海报F.png', status: 'active', createdTime: '2025-06-23 11:58:05', updatedTime: '2025-06-24 17:27:24' },
+  { id: '213', name: 'Felicia杨星', account: 'Felicia杨星', phone: '13177778888', campus: '五台山校区', position: '全职教师', gender: '女', avatar: '头像G.jpg', poster: '海报G.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
+  { id: '212', name: 'Helen', account: 'helen_01', phone: '18099990000', campus: '奥体网球中心校区', position: '校区主管', gender: '女', avatar: '头像H.jpg', poster: '海报H.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
+  { id: '211', name: 'Luna贾璐瑶', account: 'Luna贾璐瑶', phone: '15912341234', campus: '爱邦中心校区', position: '全职教师', gender: '女', avatar: '头像I.jpg', poster: '海报I.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
+  { id: '210', name: 'Iris游景', account: 'Iris游景', phone: '15856785678', campus: '深圳湾校区', position: '全职教师', gender: '女', avatar: '头像J.jpg', poster: '海报J.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
+  { id: 't1', name: 'Linda', account: 'linda_01', phone: '15600001111', campus: '大行宫校区', position: '全职教师', gender: '女', avatar: '头像K.jpg', poster: '海报K.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: 't2', name: 'Justin', account: 'justin_01', phone: '15522223333', campus: '仙林校区', position: '全职教师', gender: '男', avatar: '头像L.jpg', poster: '海报L.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: 't3', name: 'Crystal张骁', account: 'crystal_01', phone: '15344445555', campus: '龙江校区', position: '教务', gender: '女', avatar: '头像M.jpg', poster: '海报M.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
 ];
 
 export const ADMIN_STUDENTS: StudentProfile[] = [

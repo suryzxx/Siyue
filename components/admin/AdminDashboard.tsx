@@ -4,7 +4,9 @@ import { ClassInfo, Lesson, Course, Product } from '../../types';
 import { PRODUCTS } from '../../constants';
 import ClassManagement from './ClassManagement';
 import CoursePath from './CoursePath';
-import TeacherManagement from './TeacherManagement';
+import TeacherManagement from './TeacherManagement'; // Using this as Employee Management
+import AddressManagement from './AddressManagement';
+import SystemSettings from './SystemSettings';
 import StudentManagement from './StudentManagement';
 import OrderManagement from './OrderManagement';
 
@@ -27,6 +29,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activePanel, setActivePanel] = useState<string>('class'); // Default to class management
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
 
   const handleAddClass = (newClass: ClassInfo, newLessons: Lesson[]) => {
     // Check if class exists (update mode)
@@ -51,14 +54,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setCourses([newCourse, ...courses]);
   };
 
-  const NavItem = ({ id, label }: { id: string, label: string }) => (
+  const NavItem = ({ id, label, indent = false }: { id: string, label: string, indent?: boolean }) => (
     <div 
       onClick={() => setActivePanel(id)}
       className={`px-6 py-3 cursor-pointer transition-colors flex items-center text-sm font-medium ${
         activePanel === id 
           ? 'bg-primary-light text-primary border-r-4 border-primary' 
           : 'text-gray-600 hover:bg-gray-50'
-      }`}
+      } ${indent ? 'pl-10' : ''}`}
     >
       {label}
     </div>
@@ -72,10 +75,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           思悦教育 <span className="text-xs text-gray-400 font-normal block mt-1">后台管理</span>
         </div>
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
           <NavItem id="course" label="课程路径" />
           <NavItem id="class" label="班级管理" />
-          <NavItem id="teacher" label="教师管理" />
+          
+          {/* Basic Settings Group */}
+          <div 
+            onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+            className="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between text-sm font-medium text-gray-600 hover:bg-gray-50 select-none"
+          >
+             <span>基础设置</span>
+             <span className="text-[10px] text-gray-400">{isSettingsExpanded ? '▼' : '▶'}</span>
+          </div>
+          
+          {isSettingsExpanded && (
+            <>
+              <NavItem id="employee" label="员工管理" indent />
+              <NavItem id="address" label="地址管理" indent />
+              <NavItem id="system" label="系统设置" indent />
+            </>
+          )}
+
+          <div className="my-2 border-t border-gray-100 mx-4"></div>
+          
           <NavItem id="student" label="学生管理" />
           <NavItem id="order" label="订单管理" />
         </div>
@@ -97,8 +119,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onAddCourse={handleAddCourse}
           />
         )}
-        {activePanel === 'teacher' && (
+        {activePanel === 'employee' && (
           <TeacherManagement />
+        )}
+        {activePanel === 'address' && (
+          <AddressManagement />
+        )}
+        {activePanel === 'system' && (
+          <SystemSettings />
         )}
         {activePanel === 'student' && (
           <StudentManagement />
@@ -106,7 +134,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {activePanel === 'order' && (
           <OrderManagement />
         )}
-        {activePanel !== 'class' && activePanel !== 'course' && activePanel !== 'teacher' && activePanel !== 'student' && activePanel !== 'order' && (
+        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'order' ].includes(activePanel) && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>
