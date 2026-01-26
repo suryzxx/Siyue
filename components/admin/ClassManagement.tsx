@@ -70,6 +70,313 @@ const DISPLAY_COLUMNS = [
   { id: 'createdTime', label: '创建时间' },
 ];
 
+// --- Classroom Schedule Modal Component ---
+const ClassroomScheduleModal: React.FC<{ 
+  campus: string, 
+  onClose: () => void 
+}> = ({ campus, onClose }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Generate Week Days based on currentDate
+  const getWeekDays = (date: Date) => {
+    const day = date.getDay(); 
+    // Adjust so week starts on Monday (1) - Standard in China business
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+    const monday = new Date(date.setDate(diff));
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      week.push(d);
+    }
+    return week;
+  };
+
+  const weekDays = getWeekDays(new Date(currentDate));
+  
+  // Formatters
+  const formatDate = (date: Date) => `${date.getMonth() + 1}月${date.getDate()}日`;
+  const formatWeekDay = (date: Date) => ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+  const formatHeaderDate = (date: Date) => `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+
+  // Mock Classrooms for the selected campus
+  // In real app, fetch from API. Here we generate some based on campus name.
+  const shortCampusName = campus.replace('校区', '');
+  const mockClassrooms = [`${shortCampusName}101`, `${shortCampusName}102`, `${shortCampusName}201`, `${shortCampusName}202`, `${shortCampusName}301`];
+
+  // Helper to change week
+  const changeWeek = (offset: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + (offset * 7));
+    setCurrentDate(newDate);
+  };
+
+  // Mock Schedule Generator
+  const getScheduleFor = (classroom: string, date: Date) => {
+    // Deterministic random for demo consistency
+    const seed = classroom.length + date.getDate();
+    if (seed % 3 === 0) {
+       return [
+         { time: '08:30-11:00', name: '寒G2-A | Ophelia', type: '面授' },
+         { time: '14:50-17:20', name: '寒G1-A | Linda', type: '面授' },
+       ];
+    } 
+    if (seed % 5 === 0) {
+       return [
+         { time: '18:00-20:30', name: '寒G5-S | Justin', type: '面授' }
+       ];
+    }
+    return [];
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl w-[1100px] h-[800px] flex flex-col shadow-2xl animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
+           <h3 className="text-lg font-bold text-gray-800">教室课表 - {campus}</h3>
+           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50">
+           <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                 <button onClick={() => changeWeek(-1)} className="p-1 hover:bg-gray-200 rounded text-gray-500">◀</button>
+                 <span className="text-lg font-bold text-gray-800">
+                    {formatHeaderDate(weekDays[0])} - {formatHeaderDate(weekDays[6]).split('年')[1]}
+                 </span>
+                 <button onClick={() => changeWeek(1)} className="p-1 hover:bg-gray-200 rounded text-gray-500">▶</button>
+              </div>
+              <button 
+                onClick={() => setCurrentDate(new Date())}
+                className="px-3 py-1 bg-blue-50 text-blue-600 rounded text-sm font-medium hover:bg-blue-100"
+              >
+                今
+              </button>
+           </div>
+           
+           <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-red-100 border border-red-200"></div>
+                 <span className="text-gray-600">冲突</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-blue-50 border border-blue-200"></div>
+                 <span className="text-gray-600">已占用</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-white border border-gray-300"></div>
+                 <span className="text-gray-600">空闲</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Grid */}
+        <div className="flex-1 overflow-auto p-6">
+           <div className="border border-gray-200 rounded-lg overflow-hidden min-w-[900px]">
+              {/* Grid Header */}
+              <div className="grid grid-cols-8 bg-gray-50 border-b border-gray-200">
+                 <div className="p-4 font-bold text-gray-600 border-r border-gray-200 flex items-center justify-center">教室</div>
+                 {weekDays.map((date, i) => (
+                    <div key={i} className="p-4 text-center border-r border-gray-200 last:border-r-0">
+                       <div className="text-xs text-gray-500 mb-1">{formatDate(date)}</div>
+                       <div className="font-bold text-gray-700">{formatWeekDay(date)}</div>
+                    </div>
+                 ))}
+              </div>
+
+              {/* Grid Rows */}
+              {mockClassrooms.map((room, rIdx) => (
+                 <div key={room} className={`grid grid-cols-8 ${rIdx !== mockClassrooms.length -1 ? 'border-b border-gray-200' : ''}`}>
+                    {/* Room Name Column */}
+                    <div className="p-4 bg-gray-50/30 border-r border-gray-200 flex flex-col justify-center gap-1">
+                       <div className="font-bold text-gray-700 text-sm text-center">{room}</div>
+                       <div className="text-xs text-gray-400 text-center">用途：面授</div>
+                    </div>
+                    
+                    {/* Schedule Columns */}
+                    {weekDays.map((date, cIdx) => {
+                       const items = getScheduleFor(room, date);
+                       return (
+                          <div key={cIdx} className="p-2 border-r border-gray-200 last:border-r-0 min-h-[120px] relative hover:bg-gray-50 transition-colors">
+                             {items.length > 0 ? (
+                                <div className="space-y-2">
+                                   {items.map((item, idx) => (
+                                      <div key={idx} className="bg-blue-50 border border-blue-100 rounded p-2 text-xs hover:shadow-md transition-shadow cursor-default group">
+                                         <div className="font-bold text-gray-800 mb-1">{item.time}</div>
+                                         <div className="text-blue-600 mb-0.5"><span className="text-orange-500 mr-1">[{item.type}]</span>{item.name.split('|')[0]}</div>
+                                         <div className="text-gray-500 opacity-80 scale-90 origin-left">{item.name.split('|')[1]}</div>
+                                      </div>
+                                   ))}
+                                </div>
+                             ) : (
+                                <div className="h-full flex items-center justify-center text-gray-300 text-sm select-none">
+                                   无
+                                </div>
+                             )}
+                          </div>
+                       );
+                    })}
+                 </div>
+              ))}
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Teacher Schedule Modal Component ---
+const TeacherScheduleModal: React.FC<{ 
+  teacherId: string, 
+  onClose: () => void 
+}> = ({ teacherId, onClose }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  const teacher = TEACHERS.find(t => t.id === teacherId);
+  const teacherName = teacher?.name || '未知老师';
+
+  // Generate Week Days based on currentDate
+  const getWeekDays = (date: Date) => {
+    const day = date.getDay(); 
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+    const monday = new Date(date.setDate(diff));
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      week.push(d);
+    }
+    return week;
+  };
+
+  const weekDays = getWeekDays(new Date(currentDate));
+  
+  const formatDate = (date: Date) => `${date.getMonth() + 1}月${date.getDate()}日`;
+  const formatWeekDay = (date: Date) => ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+  const formatHeaderDate = (date: Date) => `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+
+  const changeWeek = (offset: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + (offset * 7));
+    setCurrentDate(newDate);
+  };
+
+  // Mock Schedule Generator for Teacher
+  const getScheduleFor = (date: Date) => {
+    // Deterministic random
+    const seed = teacherId.length + date.getDate();
+    if (seed % 4 === 0) {
+       return [
+         { time: '09:00-11:00', name: '暑G1-S | 龙江校区', type: '面授' },
+       ];
+    }
+    if (seed % 3 === 0) {
+       return [
+         { time: '14:00-16:00', name: '暑G2-A | 奥南校区', type: '面授' },
+         { time: '18:00-20:00', name: '暑G3-A+ | 仙林校区', type: '面授' },
+       ];
+    }
+    return [];
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl w-[1100px] h-[800px] flex flex-col shadow-2xl animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white rounded-t-xl">
+           <h3 className="text-lg font-bold text-gray-800">老师课表 - {teacherName}</h3>
+           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50">
+           <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                 <button onClick={() => changeWeek(-1)} className="p-1 hover:bg-gray-200 rounded text-gray-500">◀</button>
+                 <span className="text-lg font-bold text-gray-800">
+                    {formatHeaderDate(weekDays[0])} - {formatHeaderDate(weekDays[6]).split('年')[1]}
+                 </span>
+                 <button onClick={() => changeWeek(1)} className="p-1 hover:bg-gray-200 rounded text-gray-500">▶</button>
+              </div>
+              <button 
+                onClick={() => setCurrentDate(new Date())}
+                className="px-3 py-1 bg-blue-50 text-blue-600 rounded text-sm font-medium hover:bg-blue-100"
+              >
+                今
+              </button>
+           </div>
+           
+           <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-red-100 border border-red-200"></div>
+                 <span className="text-gray-600">冲突</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-blue-50 border border-blue-200"></div>
+                 <span className="text-gray-600">已占用</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-white border border-gray-300"></div>
+                 <span className="text-gray-600">空闲</span>
+              </div>
+           </div>
+        </div>
+
+        {/* Grid */}
+        <div className="flex-1 overflow-auto p-6">
+           <div className="border border-gray-200 rounded-lg overflow-hidden min-w-[900px]">
+              {/* Grid Header */}
+              <div className="grid grid-cols-8 bg-gray-50 border-b border-gray-200">
+                 <div className="p-4 font-bold text-gray-600 border-r border-gray-200 flex items-center justify-center">老师</div>
+                 {weekDays.map((date, i) => (
+                    <div key={i} className="p-4 text-center border-r border-gray-200 last:border-r-0">
+                       <div className="text-xs text-gray-500 mb-1">{formatDate(date)}</div>
+                       <div className="font-bold text-gray-700">{formatWeekDay(date)}</div>
+                    </div>
+                 ))}
+              </div>
+
+              {/* Grid Rows - Single Row for Selected Teacher */}
+              <div className="grid grid-cols-8">
+                 {/* Teacher Name Column */}
+                 <div className="p-4 bg-gray-50/30 border-r border-gray-200 flex flex-col justify-center gap-1 min-h-[150px]">
+                    <div className="font-bold text-gray-700 text-sm text-center">{teacherName}</div>
+                    <div className="text-xs text-gray-400 text-center">ID: {teacherId}</div>
+                 </div>
+                 
+                 {/* Schedule Columns */}
+                 {weekDays.map((date, cIdx) => {
+                    const items = getScheduleFor(date);
+                    return (
+                       <div key={cIdx} className="p-2 border-r border-gray-200 last:border-r-0 relative hover:bg-gray-50 transition-colors">
+                          {items.length > 0 ? (
+                             <div className="space-y-2">
+                                {items.map((item, idx) => (
+                                   <div key={idx} className="bg-blue-50 border border-blue-100 rounded p-2 text-xs hover:shadow-md transition-shadow cursor-default group">
+                                      <div className="font-bold text-gray-800 mb-1">{item.time}</div>
+                                      <div className="text-blue-600 mb-0.5"><span className="text-orange-500 mr-1">[{item.type}]</span>{item.name.split('|')[0]}</div>
+                                      <div className="text-gray-500 opacity-80 scale-90 origin-left">{item.name.split('|')[1]}</div>
+                                   </div>
+                                ))}
+                             </div>
+                          ) : (
+                             <div className="h-full flex items-center justify-center text-gray-300 text-sm select-none">
+                                无
+                             </div>
+                          )}
+                       </div>
+                    );
+                 })}
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ClassManagement: React.FC<ClassManagementProps> = ({ 
   classes, 
   lessons, 
@@ -88,6 +395,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [showQueueModal, setShowQueueModal] = useState<string | null>(null); // holds class ID
   const [editingId, setEditingId] = useState<string | null>(null); // New: Editing ID
   
+  // Schedule Modal State
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showTeacherScheduleModal, setShowTeacherScheduleModal] = useState(false);
+
   // Student Management Modal State
   const [showStudentManageModal, setShowStudentManageModal] = useState(false);
   const [studentManageClass, setStudentManageClass] = useState<ClassInfo | null>(null);
@@ -113,27 +424,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [filterCampus, setFilterCampus] = useState('');
   const [filterClassroom, setFilterClassroom] = useState('');
 
-  // Teacher Filter (Custom)
-  const [filterTeacher, setFilterTeacher] = useState(''); // Stores ID
-  const [teacherSearchValue, setTeacherSearchValue] = useState(''); // Stores input text
-  const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
-  const teacherDropdownRef = useRef<HTMLDivElement>(null);
+  // Teacher Filter
+  const [filterTeacher, setFilterTeacher] = useState(''); 
 
   const [filterStatus, setFilterStatus] = useState('');
   const [filterCourseType, setFilterCourseType] = useState('');
   
   const [showActiveOnly, setShowActiveOnly] = useState(true);
-
-  // Click outside listener for teacher dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(event.target as Node)) {
-        setShowTeacherDropdown(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Listen for trigger from parent to open modal
   useEffect(() => {
@@ -480,14 +777,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const matchSubject = !filterSubject || cls.subject === filterSubject || course?.subject === filterSubject;
     const matchSemester = !filterSemester || cls.semester === filterSemester;
     
-    // 3. Teacher Filter (Complex)
-    let matchTeacher = true;
-    if (filterTeacher) {
-        matchTeacher = cls.teacherId === filterTeacher;
-    } else if (teacherSearchValue) {
-        const teacherName = TEACHERS.find(t => t.id === cls.teacherId)?.name || '';
-        matchTeacher = teacherName.toLowerCase().includes(teacherSearchValue.toLowerCase());
-    }
+    // 3. Teacher Filter
+    const matchTeacher = !filterTeacher || cls.teacherId === filterTeacher;
 
     // 4. Other filters
     const matchGrade = !filterGrade || cls.grade === filterGrade || course?.grade === filterGrade;
@@ -822,86 +1113,94 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         <h2 className="text-xl font-bold text-gray-800">班级管理</h2>
       </div>
 
-      {/* FILTER BAR */}
+      {/* FILTER BAR - REDESIGNED */}
       <div className="px-6 py-4 border-b border-gray-100 bg-white">
-        <div className="flex flex-col gap-3">
-            {/* ... Filters Implementation ... */}
-            <div className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar">
-                <div className="relative min-w-[120px] max-w-[160px]">
-                   <input className="border border-gray-300 rounded px-3 py-1.5 text-sm w-full pl-8 focus:outline-none focus:border-primary placeholder-gray-400" placeholder="班级名称" value={filterName} onChange={e => setFilterName(e.target.value)} />
-                   <span className="absolute left-2.5 top-2 text-gray-400 text-xs">🔍</span>
-                </div>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[80px] focus:outline-none focus:border-primary text-gray-700" value={filterMode} onChange={e => setFilterMode(e.target.value)}>
-                    <option value="">授课方式</option>
-                    <option value="面授">面授</option>
-                    <option value="网课">网课</option>
-                </select>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[70px] focus:outline-none focus:border-primary text-gray-700" value={filterYear} onChange={e => setFilterYear(e.target.value)}>
-                    <option value="">年份</option>
-                    {YEARS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[70px] focus:outline-none focus:border-primary text-gray-700" value={filterSemester} onChange={e => setFilterSemester(e.target.value)}>
-                    <option value="">学期</option>
-                    {SEMESTERS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[70px] focus:outline-none focus:border-primary text-gray-700" value={filterSubject} onChange={e => setFilterSubject(e.target.value)}>
-                    <option value="">学科</option>
-                    {SUBJECTS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-                <div className="flex border border-gray-300 rounded overflow-hidden">
-                    <select className="px-2 py-1.5 text-sm min-w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterGrade} onChange={e => { setFilterGrade(e.target.value); setFilterClassType(''); }}>
-                        <option value="">年级</option>
-                        {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                    <select className="px-2 py-1.5 text-sm min-w-[80px] focus:outline-none bg-white text-gray-700" value={filterClassType} onChange={e => setFilterClassType(e.target.value)} disabled={!filterGrade}>
-                        <option value="">班型</option>
-                        {filterGrade && GRADE_CLASS_TYPES[filterGrade]?.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                </div>
-                <div className="relative min-w-[120px]" ref={teacherDropdownRef}>
-                    <input className="border border-gray-300 rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:border-primary placeholder-gray-500" placeholder="选择或搜索老师" value={teacherSearchValue} onChange={(e) => { setTeacherSearchValue(e.target.value); setFilterTeacher(''); setShowTeacherDropdown(true); }} onFocus={() => setShowTeacherDropdown(true)} />
-                    {showTeacherDropdown && (
-                        <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto z-50">
-                            {TEACHERS.filter(t => t.name.toLowerCase().includes(teacherSearchValue.toLowerCase())).map(t => (
-                                <div key={t.id} onClick={() => { setFilterTeacher(t.id); setTeacherSearchValue(t.name); setShowTeacherDropdown(false); }} className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">{t.name}</div>
-                            ))}
-                            {TEACHERS.filter(t => t.name.toLowerCase().includes(teacherSearchValue.toLowerCase())).length === 0 && (<div className="px-3 py-2 text-sm text-gray-400">无匹配老师</div>)}
-                        </div>
-                    )}
-                </div>
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full pb-1">
+            {/* Search */}
+            <div className="relative min-w-[140px] flex-shrink-0">
+               <input className="border border-gray-300 rounded px-3 py-1.5 text-sm w-full pl-8 focus:outline-none focus:border-primary placeholder-gray-400 h-[34px]" placeholder="班级名称" value={filterName} onChange={e => setFilterName(e.target.value)} />
+               <span className="absolute left-2.5 top-2 text-gray-400 text-xs">🔍</span>
             </div>
-            <div className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar">
-                <div className="flex border border-gray-300 rounded overflow-hidden">
-                    <select className="px-2 py-1.5 text-sm min-w-[70px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCity} onChange={e => { setFilterCity(e.target.value); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); }}>
-                        <option value="">城市</option>
-                        {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select className="px-2 py-1.5 text-sm min-w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterDistrict} onChange={e => { setFilterDistrict(e.target.value); setFilterCampus(''); setFilterClassroom(''); }} disabled={!filterCity}>
-                        <option value="">行政区</option>
-                        {filterCity && Object.keys(LOCATION_DATA[filterCity]).map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                    <select className="px-2 py-1.5 text-sm min-w-[100px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCampus} onChange={e => { setFilterCampus(e.target.value); setFilterClassroom(''); }} disabled={!filterDistrict}>
-                        <option value="">校区</option>
-                        {filterCity && filterDistrict && LOCATION_DATA[filterCity][filterDistrict]?.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select className="px-2 py-1.5 text-sm min-w-[80px] focus:outline-none bg-white text-gray-700" value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)}>
-                        <option value="">教室</option>
-                        {CLASSROOMS.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                </div>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[90px] focus:outline-none focus:border-primary text-gray-700" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                    <option value="">班级状态</option>
-                    <option value="pending">未开课</option>
-                    <option value="active">开课中</option>
-                    <option value="closed">已结课</option>
+            
+            {/* Standard Filters */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterMode} onChange={e => setFilterMode(e.target.value)}>
+                <option value="">授课方式</option>
+                <option value="面授">面授</option>
+                <option value="网课">网课</option>
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[90px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterYear} onChange={e => setFilterYear(e.target.value)}>
+                <option value="">年份</option>
+                {YEARS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[90px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterSemester} onChange={e => setFilterSemester(e.target.value)}>
+                <option value="">学期</option>
+                {SEMESTERS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[90px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterSubject} onChange={e => setFilterSubject(e.target.value)}>
+                <option value="">学科</option>
+                {SUBJECTS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            
+            {/* Grade & Class Type Group */}
+            <div className="flex border border-gray-300 rounded overflow-hidden h-[34px] flex-shrink-0">
+                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterGrade} onChange={e => { setFilterGrade(e.target.value); setFilterClassType(''); }}>
+                    <option value="">年级</option>
+                    {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
-                <select className="border border-gray-300 rounded px-2 py-1.5 text-sm min-w-[90px] focus:outline-none focus:border-primary text-gray-700" value={filterCourseType} onChange={e => setFilterCourseType(e.target.value)}>
-                    <option value="">课程类型</option>
-                    <option value="long-term">长期课程</option>
-                    <option value="short-term">短期课程</option>
+                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white text-gray-700" value={filterClassType} onChange={e => setFilterClassType(e.target.value)} disabled={!filterGrade}>
+                    <option value="">班型</option>
+                    {filterGrade && GRADE_CLASS_TYPES[filterGrade]?.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <button className="text-gray-400 hover:text-primary text-sm whitespace-nowrap px-3 ml-auto" onClick={() => { setFilterName(''); setFilterMode(''); setFilterYear(''); setFilterSubject(''); setFilterGrade(''); setFilterClassType(''); setFilterSemester(''); setFilterTeacher(''); setTeacherSearchValue(''); setFilterCity(''); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); setFilterStatus(''); setFilterCourseType(''); }}>重置</button>
             </div>
+
+            {/* Teacher Select */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)}>
+                <option value="">选择老师</option>
+                {TEACHERS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+
+            {/* Address Group */}
+            <div className="flex border border-gray-300 rounded overflow-hidden h-[34px] flex-shrink-0">
+                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCity} onChange={e => { setFilterCity(e.target.value); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); }}>
+                    <option value="">城市</option>
+                    {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="px-2 py-1.5 text-sm w-[90px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterDistrict} onChange={e => { setFilterDistrict(e.target.value); setFilterCampus(''); setFilterClassroom(''); }} disabled={!filterCity}>
+                    <option value="">行政区</option>
+                    {filterCity && Object.keys(LOCATION_DATA[filterCity]).map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select className="px-2 py-1.5 text-sm w-[110px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCampus} onChange={e => { setFilterCampus(e.target.value); setFilterClassroom(''); }} disabled={!filterDistrict}>
+                    <option value="">校区</option>
+                    {filterCity && filterDistrict && LOCATION_DATA[filterCity][filterDistrict]?.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="px-2 py-1.5 text-sm w-[90px] focus:outline-none bg-white text-gray-700" value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)} disabled={!filterCampus}>
+                    <option value="">教室</option>
+                    {CLASSROOMS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+            </div>
+
+            {/* Status */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                <option value="">班级状态</option>
+                <option value="pending">未开课</option>
+                <option value="active">开课中</option>
+                <option value="closed">已结课</option>
+            </select>
+
+            {/* Course Type */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterCourseType} onChange={e => setFilterCourseType(e.target.value)}>
+                <option value="">课程类型</option>
+                <option value="long-term">长期课程</option>
+                <option value="short-term">短期课程</option>
+            </select>
+
+            {/* Reset Button */}
+            <button 
+                className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium" 
+                onClick={() => { setFilterName(''); setFilterMode(''); setFilterYear(''); setFilterSubject(''); setFilterGrade(''); setFilterClassType(''); setFilterSemester(''); setFilterTeacher(''); setStudentSearch(''); setFilterCity(''); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); setFilterStatus(''); setFilterCourseType(''); }}
+            >
+                重置
+            </button>
         </div>
       </div>
 
@@ -909,7 +1208,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
          <div className="flex items-center gap-3">
             <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">创建班级</button>
-            <button className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">批量建班</button>
             <button className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors ml-2">导出班级列表</button>
             <button className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors">导出班级学生</button>
             <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 ml-4">
@@ -1009,7 +1307,18 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                         <option value="">请选择教室</option>
                                         {CLASSROOMS.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
-                                    <span className="text-primary text-sm cursor-pointer whitespace-nowrap">查看教室课表</span>
+                                    <button 
+                                      onClick={() => {
+                                        if (formData.campus) {
+                                          setShowScheduleModal(true);
+                                        } else {
+                                          alert('请先选择校区');
+                                        }
+                                      }}
+                                      className={`text-sm cursor-pointer whitespace-nowrap px-2 py-1 rounded transition-colors ${formData.campus ? 'text-primary hover:bg-primary-light' : 'text-gray-400 cursor-not-allowed'}`}
+                                    >
+                                      查看教室课表
+                                    </button>
                                 </div>
                             </div>
                             <div className="flex items-center">
@@ -1026,7 +1335,18 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                         <option value="">请选择主教老师</option>
                                         {TEACHERS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                     </select>
-                                    <span className="text-primary text-sm cursor-pointer whitespace-nowrap">查看老师课表</span>
+                                    <button 
+                                      onClick={() => {
+                                        if (formData.teacherId) {
+                                          setShowTeacherScheduleModal(true);
+                                        } else {
+                                          alert('请先选择主教老师');
+                                        }
+                                      }}
+                                      className={`text-sm cursor-pointer whitespace-nowrap px-2 py-1 rounded transition-colors ${formData.teacherId ? 'text-primary hover:bg-primary-light' : 'text-gray-400 cursor-not-allowed'}`}
+                                    >
+                                      查看老师课表
+                                    </button>
                                 </div>
                             </div>
                             <div className="flex items-center">
@@ -1188,8 +1508,26 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         </div>
       )}
 
+      {/* SCHEDULE MODAL */}
+      {showScheduleModal && (
+        <ClassroomScheduleModal 
+          campus={formData.campus} 
+          onClose={() => setShowScheduleModal(false)} 
+        />
+      )}
+
+      {/* TEACHER SCHEDULE MODAL */}
+      {showTeacherScheduleModal && (
+        <TeacherScheduleModal 
+          teacherId={formData.teacherId} 
+          onClose={() => setShowTeacherScheduleModal(false)} 
+        />
+      )}
+
+      {/* ... Rest of Modals (Queue, Student Manage) ... */}
       {showQueueModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+           {/* ... Queue Modal Content ... */}
            <div className="bg-white rounded-xl shadow-2xl w-[900px] max-h-[80vh] flex flex-col">
              <div className="p-5 border-b border-gray-100 flex justify-between items-center">
                <h3 className="text-lg font-bold text-gray-800">推送队列</h3>
