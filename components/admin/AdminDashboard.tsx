@@ -29,8 +29,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
 
   const handleAddClass = (newClass: ClassInfo, newLessons: Lesson[]) => {
-    setClasses([newClass, ...classes]);
-    setLessons([...lessons, ...newLessons]);
+    // Check if class exists (update mode)
+    const exists = classes.some(c => c.id === newClass.id);
+    if (exists) {
+        setClasses(classes.map(c => c.id === newClass.id ? newClass : c));
+        // For lessons: remove old lessons for this class and add new ones
+        const otherLessons = lessons.filter(l => l.classId !== newClass.id);
+        setLessons([...otherLessons, ...newLessons]);
+    } else {
+        // Create mode
+        setClasses([newClass, ...classes]);
+        setLessons([...lessons, ...newLessons]);
+    }
   };
 
   const handleUpdateLessons = (updatedLessons: Lesson[]) => {

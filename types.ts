@@ -28,6 +28,8 @@ export interface ClassInfo {
   color: string;
   // Admin fields
   campus?: string;
+  city?: string; // New: City
+  district?: string; // New: District
   teacherId?: string;
   assistant?: string;
   capacity?: number;
@@ -35,11 +37,13 @@ export interface ClassInfo {
   courseId?: string;
   startDate?: string;
   status?: 'pending' | 'active' | 'full' | 'closed' | 'disabled';
+  saleStatus?: 'on_sale' | 'off_sale'; // New: Sale Status
   createdTime?: string;
-  scheduleDescription?: string; // e.g. "2025.07.16-2025.07.30 周一, 周二..."
+  scheduleDescription?: string; // e.g. "2025.07.16-2025.07.30"
   
   // Extended fields for Detail View & Create Flow
   contentMode?: 'self' | 'standard'; // 自建课程
+  year?: string; // 年份
   semester?: string; // 学期 e.g. 寒假
   subject?: string; // 学科 e.g. 英语
   grade?: string; // 年级 e.g. 5年级
@@ -51,7 +55,7 @@ export interface ClassInfo {
   allowConflict?: boolean; // 是否允许冲突
   
   // Pricing
-  chargeMode?: 'whole' | 'single'; // 收费模式
+  chargeMode?: 'whole' | 'installment'; // 收费模式
   price?: number; // 课程费
   refundPolicy?: 'unused' | 'full' | 'partial'; // 退费策略
   materialPrice?: number; // 教辅费

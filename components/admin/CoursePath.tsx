@@ -31,15 +31,12 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
   const [formData, setFormData] = useState({
     name: '',
     type: 'long-term' as CourseType,
-    year: '2025',
     semester: '暑期',
     subject: '英语',
     grade: '',
     classType: '',
     description: '',
-    module: '课程',
     tags: '',
-    isRecommended: false
   });
 
   const selectedCourse = courses.find(c => c.id === selectedCourseId) || courses[0];
@@ -57,15 +54,12 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
       name: formData.name,
       type: formData.type,
       lessonCount: 0,
-      year: formData.year,
       semester: formData.semester,
       subject: formData.subject,
       grade: formData.grade,
       classType: formData.classType,
       description: formData.description,
-      module: formData.module,
       tags: formData.tags.split(' ').filter(t => t),
-      isRecommended: formData.isRecommended,
       lessons: []
     };
 
@@ -79,15 +73,12 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
     setFormData({
         name: '',
         type: 'long-term',
-        year: '2025',
         semester: '暑期',
         subject: '英语',
         grade: '',
         classType: '',
         description: '',
-        module: '课程',
         tags: '',
-        isRecommended: false
     });
   };
 
@@ -199,30 +190,16 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                  />
                </div>
 
-               <div className="grid grid-cols-2 gap-4">
-                   <div>
-                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程类型 :</label>
-                     <select 
-                       value={formData.type}
-                       onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
-                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                     >
-                       <option value="long-term">长期课程</option>
-                       <option value="short-term">短期课程</option>
-                     </select>
-                   </div>
-                   <div>
-                     <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>年份 :</label>
-                     <select 
-                       value={formData.year}
-                       onChange={e => setFormData({...formData, year: e.target.value})}
-                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                     >
-                       <option value="2024">2024</option>
-                       <option value="2025">2025</option>
-                       <option value="2026">2026</option>
-                     </select>
-                   </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>课程类型 :</label>
+                 <select 
+                   value={formData.type}
+                   onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
+                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                 >
+                   <option value="long-term">长期课程</option>
+                   <option value="short-term">短期课程</option>
+                 </select>
                </div>
 
                <div className="grid grid-cols-2 gap-4">
@@ -296,18 +273,6 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                </div>
 
                <div>
-                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>模块 :</label>
-                 <select 
-                   value={formData.module}
-                   onChange={e => setFormData({...formData, module: e.target.value})}
-                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white text-gray-600"
-                 >
-                   <option value="课程">课程</option>
-                   <option value="reading club">reading club</option>
-                 </select>
-               </div>
-
-               <div>
                  <label className="block text-sm font-medium text-gray-600 mb-1.5">标签 :</label>
                  <input 
                    value={formData.tags}
@@ -315,17 +280,6 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                    placeholder="请输入标签 (空格分隔)"
                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                  />
-               </div>
-
-               <div className="flex items-center">
-                 <label className="text-sm font-medium text-gray-600 mr-3">推荐 :</label>
-                 <button 
-                   onClick={() => setFormData({...formData, isRecommended: !formData.isRecommended})}
-                   className={`w-10 h-5 rounded-full relative transition-colors ${formData.isRecommended ? 'bg-primary' : 'bg-gray-300'}`}
-                 >
-                   <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${formData.isRecommended ? 'left-[22px]' : 'left-1'}`}></div>
-                 </button>
-                 <span className="text-xs text-gray-400 ml-2">经过审核后，这个课程将会被展示在首屏推荐位置。</span>
                </div>
 
              </div>
