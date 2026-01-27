@@ -559,15 +559,23 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       { header: '课程名称*', key: 'courseName', width: 25 },
       { header: '班级名称*', key: 'className', width: 25 },
       { header: '年份*', key: 'year', width: 10 },
-      { header: '学期*', key: 'semester', width: 10 },
+      //删掉：{ header: '学期*', key: 'semester', width: 10 },
       { header: '校区*', key: 'campus', width: 15 },
       { header: '教室', key: 'classroom', width: 15 },
+      //增加：学生人数上限*
+      //增加：调课虚位
       { header: '主教老师*', key: 'teacher', width: 15 },
       { header: '助教', key: 'assistant', width: 15 },
-      { header: '班级容量*', key: 'capacity', width: 10 },
+      //增加：允许老师、教室时间冲突（是、否）
+      //增加：需要入学资格（是、否）
+      //删掉：{ header: '班级容量*', key: 'capacity', width: 10 },
       { header: '首课日期*', key: 'startDate', width: 15 }, // YYYY-MM-DD
-      { header: '上课时间*', key: 'timeSlot', width: 15 }, // HH:mm-HH:mm
+      { header: '上课开始时间*', key: 'timeSlot', width: 15 }, // HH:mm-HH:mm
+      //增加：上课结束时间
+      //增加：上课日
+      //增加：收费模式（整期、分期）
       { header: '课程费用*', key: 'price', width: 10 },
+      //增加：教辅费
     ];
 
     // Style Header
@@ -1668,7 +1676,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center">
-                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>频率</label>
+                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>上课日</label>
                                         <div className="flex-1 flex gap-4 flex-wrap">
                                             {WEEKDAYS.map(day => (
                                                 <label key={day} className="flex items-center gap-2 cursor-pointer">
@@ -1756,22 +1764,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4">退费策略</label>
-                                <select value={formData.refundPolicy} onChange={e => setFormData({...formData, refundPolicy: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
-                                    <option value="unused">根据未上讲次退费</option>
-                                    <option value="full">前1讲退班全额退费</option>
-                                    <option value="partial">后1讲退班不退费</option>
-                                </select>
-                            </div>
-
-                            <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4">教辅退费</label>
-                                <div className="flex-1 flex gap-6 text-sm text-gray-600 items-center h-[38px]">
-                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'no_return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'no_return'})} className="text-primary" /> 报名后不退</label>
-                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'return'})} className="text-primary" /> 开课后不退</label>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}
