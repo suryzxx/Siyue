@@ -28,6 +28,9 @@ const GRADE_CLASS_TYPES: Record<string, string[]> = {
   'G4': ['4A', '4A+', '4S', '4S+', '4R'],
   'G5': ['5A', '5A+', '5S', '5S+', '5R'],
   'G6': ['6A', '6A+', '6S', '6S+', '6R'],
+  'G7': ['G7国际托管班', 'G7国际菁英班', 'G7国际英才'],
+  'G8': ['G8国际托管班', 'G8国际菁英班', 'G8国际英才'],
+  'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
 };
 
 const LOCATION_DATA: Record<string, Record<string, string[]>> = {
@@ -430,7 +433,34 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [filterStatus, setFilterStatus] = useState('');
   const [filterCourseType, setFilterCourseType] = useState('');
   
+  // NEW FILTERS
+  const [filterRemaining, setFilterRemaining] = useState('');
+  const [filterSaleStatus, setFilterSaleStatus] = useState('');
+  
   const [showActiveOnly, setShowActiveOnly] = useState(true);
+
+  // Dynamic Options
+  const allClassTypes = Array.from(new Set(Object.values(GRADE_CLASS_TYPES).flat()));
+  const availableClassTypes = filterGrade ? GRADE_CLASS_TYPES[filterGrade] : allClassTypes;
+
+  const allDistricts = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.keys(city))));
+  const availableDistricts = filterCity ? Object.keys(LOCATION_DATA[filterCity]) : allDistricts;
+
+  const allCampusesFromData = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.values(city).flat())));
+  let availableCampuses = allCampusesFromData;
+  if (filterDistrict && filterCity) {
+      availableCampuses = LOCATION_DATA[filterCity][filterDistrict] || [];
+  } else if (filterCity) {
+      availableCampuses = Object.values(LOCATION_DATA[filterCity]).flat();
+  } else if (filterDistrict) {
+       // Find district anywhere
+       for (const city in LOCATION_DATA) {
+           if (LOCATION_DATA[city][filterDistrict]) {
+               availableCampuses = LOCATION_DATA[city][filterDistrict];
+               break;
+           }
+       }
+  }
 
   // Listen for trigger from parent to open modal
   useEffect(() => {
@@ -449,6 +479,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     campus: '',
     classroom: '',
     capacity: 20,
+    virtualSeats: 0,
     teacherId: '',
     assistantId: '', 
     semester: '暑假',
@@ -487,6 +518,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       campus: '',
       classroom: '',
       capacity: 20,
+      virtualSeats: 0,
       teacherId: '',
       assistantId: '',
       semester: '暑假',
@@ -579,6 +611,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         campus: cls.campus || '',
         classroom: cls.classroom || '',
         capacity: cls.capacity || 20,
+        virtualSeats: cls.virtualSeats || 0,
         teacherId: cls.teacherId || '',
         assistantId: cls.assistant || '',
         semester: cls.semester || '暑假',
@@ -707,6 +740,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       teacherId: formData.teacherId,
       assistant: formData.assistantId, 
       capacity: formData.capacity,
+      virtualSeats: formData.virtualSeats,
       studentCount: editingId ? (classes.find(c=>c.id===editingId)?.studentCount || 0) : 0,
       courseId: formData.courseId,
       startDate: formData.startDate,
@@ -797,6 +831,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
     const matchCourseType = !filterCourseType || course?.type === filterCourseType;
 
+    // 5. New Filters
+    const matchRemaining = !filterRemaining || (filterRemaining === 'has_seats' ? ((cls.capacity || 0) - (cls.studentCount || 0) > 0) : ((cls.capacity || 0) - (cls.studentCount || 0) <= 0));
+    const matchSaleStatus = !filterSaleStatus || cls.saleStatus === filterSaleStatus;
+
     let matchCheckbox = true;
     if (showActiveOnly) {
         matchCheckbox = ['pending', 'active', 'full'].includes(cls.status || 'pending');
@@ -804,7 +842,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
     return matchName && matchMode && matchYear && matchSubject && matchGrade && matchClassType && 
            matchSemester && matchTeacher && matchCity && matchDistrict && matchCampus && 
-           matchClassroom && matchStatus && matchCourseType && matchCheckbox;
+           matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus;
   });
 
   const getStatusBadge = (status: string) => {
@@ -1114,8 +1152,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       </div>
 
       {/* FILTER BAR - REDESIGNED */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-white">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full pb-1">
+      <div className="px-6 py-4 border-b border-gray-100 bg-white space-y-3">
+        {/* Row 1 */}
+        <div className="flex items-center gap-2 flex-wrap">
             {/* Search */}
             <div className="relative min-w-[140px] flex-shrink-0">
                <input className="border border-gray-300 rounded px-3 py-1.5 text-sm w-full pl-8 focus:outline-none focus:border-primary placeholder-gray-400 h-[34px]" placeholder="班级名称" value={filterName} onChange={e => setFilterName(e.target.value)} />
@@ -1141,43 +1180,21 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 {SUBJECTS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
             
-            {/* Grade & Class Type Group */}
-            <div className="flex border border-gray-300 rounded overflow-hidden h-[34px] flex-shrink-0">
-                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterGrade} onChange={e => { setFilterGrade(e.target.value); setFilterClassType(''); }}>
-                    <option value="">年级</option>
-                    {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white text-gray-700" value={filterClassType} onChange={e => setFilterClassType(e.target.value)} disabled={!filterGrade}>
-                    <option value="">班型</option>
-                    {filterGrade && GRADE_CLASS_TYPES[filterGrade]?.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-            </div>
+            {/* Grade & Class Type - Separated */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[80px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterGrade} onChange={e => { setFilterGrade(e.target.value); setFilterClassType(''); }}>
+                <option value="">年级</option>
+                {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterClassType} onChange={e => setFilterClassType(e.target.value)}>
+                <option value="">班型</option>
+                {availableClassTypes.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
 
             {/* Teacher Select */}
             <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)}>
                 <option value="">选择老师</option>
                 {TEACHERS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-
-            {/* Address Group */}
-            <div className="flex border border-gray-300 rounded overflow-hidden h-[34px] flex-shrink-0">
-                <select className="px-2 py-1.5 text-sm w-[80px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCity} onChange={e => { setFilterCity(e.target.value); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); }}>
-                    <option value="">城市</option>
-                    {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select className="px-2 py-1.5 text-sm w-[90px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterDistrict} onChange={e => { setFilterDistrict(e.target.value); setFilterCampus(''); setFilterClassroom(''); }} disabled={!filterCity}>
-                    <option value="">区域</option>
-                    {filterCity && Object.keys(LOCATION_DATA[filterCity]).map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                <select className="px-2 py-1.5 text-sm w-[110px] focus:outline-none bg-white border-r border-gray-100 text-gray-700" value={filterCampus} onChange={e => { setFilterCampus(e.target.value); setFilterClassroom(''); }} disabled={!filterDistrict}>
-                    <option value="">校区</option>
-                    {filterCity && filterDistrict && LOCATION_DATA[filterCity][filterDistrict]?.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <select className="px-2 py-1.5 text-sm w-[90px] focus:outline-none bg-white text-gray-700" value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)} disabled={!filterCampus}>
-                    <option value="">教室</option>
-                    {CLASSROOMS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-            </div>
 
             {/* Status */}
             <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
@@ -1194,10 +1211,45 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 <option value="short-term">短期课程</option>
             </select>
 
+            {/* Remaining Seats */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterRemaining} onChange={e => setFilterRemaining(e.target.value)}>
+                <option value="">余位情况</option>
+                <option value="has_seats">有余位</option>
+                <option value="full">已满</option>
+            </select>
+        </div>
+
+        {/* Row 2 */}
+        <div className="flex items-center gap-2 flex-wrap">
+            {/* Address Group - Separated */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[80px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterCity} onChange={e => { setFilterCity(e.target.value); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); }}>
+                <option value="">城市</option>
+                {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[90px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterDistrict} onChange={e => { setFilterDistrict(e.target.value); setFilterCampus(''); setFilterClassroom(''); }}>
+                <option value="">区域</option>
+                {availableDistricts.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[110px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterCampus} onChange={e => { setFilterCampus(e.target.value); setFilterClassroom(''); }}>
+                <option value="">校区</option>
+                {availableCampuses.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[90px] focus:outline-none focus:border-primary bg-white text-gray-700 h-[34px]" value={filterClassroom} onChange={e => setFilterClassroom(e.target.value)}>
+                <option value="">教室</option>
+                {CLASSROOMS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            {/* Sale Status */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterSaleStatus} onChange={e => setFilterSaleStatus(e.target.value)}>
+                <option value="">售卖状态</option>
+                <option value="on_sale">已上架</option>
+                <option value="off_sale">未上架</option>
+            </select>
+
             {/* Reset Button */}
             <button 
                 className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium" 
-                onClick={() => { setFilterName(''); setFilterMode(''); setFilterYear(''); setFilterSubject(''); setFilterGrade(''); setFilterClassType(''); setFilterSemester(''); setFilterTeacher(''); setStudentSearch(''); setFilterCity(''); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); setFilterStatus(''); setFilterCourseType(''); }}
+                onClick={() => { setFilterName(''); setFilterMode(''); setFilterYear(''); setFilterSubject(''); setFilterGrade(''); setFilterClassType(''); setFilterSemester(''); setFilterTeacher(''); setStudentSearch(''); setFilterCity(''); setFilterDistrict(''); setFilterCampus(''); setFilterClassroom(''); setFilterStatus(''); setFilterCourseType(''); setFilterRemaining(''); setFilterSaleStatus(''); }}
             >
                 重置
             </button>
@@ -1329,6 +1381,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                 </div>
                             </div>
                             <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">调课虚位</label>
+                                <div className="flex-1 relative">
+                                    <input type="number" value={formData.virtualSeats} onChange={e => setFormData({...formData, virtualSeats: parseInt(e.target.value) || 0})} className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" />
+                                    <span className="absolute right-3 top-2 text-sm text-gray-400">个</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
                                 <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>主教老师</label>
                                 <div className="flex-1 flex gap-2 items-center">
                                     <select value={formData.teacherId} onChange={e => setFormData({...formData, teacherId: e.target.value})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
@@ -1428,9 +1487,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <tr>
                                         <th className="p-3 font-medium w-16">序号</th>
                                         <th className="p-3 font-medium">课节名称</th>
-                                        <th className="p-3 font-medium w-40">上课日期</th>
-                                        <th className="p-3 font-medium w-64">上课时间</th>
-                                        <th className="p-3 font-medium w-56">推送时间</th>
+                                        <th className="p-3 font-medium w-40">面授上课日期</th>
+                                        <th className="p-3 font-medium w-64">面授上课时间</th>
+                                        <th className="p-3 font-medium w-56">任务推送时间</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -1490,201 +1549,177 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">退费策略</label>
+                                <select value={formData.refundPolicy} onChange={e => setFormData({...formData, refundPolicy: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                                    <option value="unused">根据未上讲次退费</option>
+                                    <option value="full">前1讲退班全额退费</option>
+                                    <option value="partial">后1讲退班不退费</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">教辅退费</label>
+                                <div className="flex-1 flex gap-6 text-sm text-gray-600 items-center h-[38px]">
+                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'no_return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'no_return'})} className="text-primary" /> 报名后不退</label>
+                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'return'})} className="text-primary" /> 开课后不退</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
+            {/* Footer */}
             <div className="bg-white border-t border-gray-100 p-6 flex justify-center gap-4 sticky bottom-0">
-                <button onClick={() => { setShowCreateModal(false); resetForm(); }} className="px-12 py-2.5 border border-gray-200 text-gray-600 bg-white rounded hover:bg-gray-50 text-sm">取消</button>
-                {createStep > 1 && (<button onClick={handlePrevStep} className="px-12 py-2.5 border border-gray-200 text-gray-600 bg-white rounded hover:bg-gray-50 text-sm">上一步</button>)}
-                {createStep < 3 ? (
-                    <button onClick={handleNextStep} className="px-12 py-2.5 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm">下一步</button>
-                ) : (
-                    <button onClick={handleCreateClass} className="px-12 py-2.5 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm">{editingId ? '保存修改' : '创建'}</button>
-                )}
+                <button onClick={() => setShowCreateModal(false)} className="px-12 py-2.5 border border-gray-200 text-gray-600 bg-white rounded hover:bg-gray-50 text-sm">取消</button>
+                <div className="flex gap-4">
+                    <button onClick={handlePrevStep} disabled={createStep === 1} className={`px-12 py-2.5 border border-gray-200 text-gray-600 bg-white rounded hover:bg-gray-50 text-sm ${createStep === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>上一步</button>
+                    {createStep < 3 ? (
+                        <button onClick={handleNextStep} className="px-12 py-2.5 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm">下一步</button>
+                    ) : (
+                        <button onClick={handleCreateClass} className="px-12 py-2.5 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm">确定</button>
+                    )}
+                </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* STUDENT MANAGEMENT MODAL */}
+      {showStudentManageModal && studentManageClass && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-xl w-[900px] h-[700px] flex flex-col overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                      <div>
+                          <h3 className="text-lg font-bold text-gray-800">班级学员管理</h3>
+                          <p className="text-xs text-gray-500 mt-1">{studentManageClass.name} | 已报 {enrolledList.length}/{studentManageClass.capacity}</p>
+                      </div>
+                      <button onClick={() => setShowStudentManageModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                  </div>
+                  
+                  <div className="flex-1 flex overflow-hidden">
+                      {/* Left: Available Students */}
+                      <div className="flex-1 flex flex-col border-r border-gray-100 p-4">
+                          <div className="mb-3">
+                              <h4 className="font-bold text-gray-700 text-sm mb-2">可选学员</h4>
+                              <input 
+                                className="w-full border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
+                                placeholder="搜索学员姓名/账号"
+                                value={studentSearch}
+                                onChange={e => setStudentSearch(e.target.value)}
+                              />
+                          </div>
+                          <div className="flex-1 overflow-y-auto border border-gray-100 rounded-lg">
+                              {filteredAvailableStudents.map(s => (
+                                  <div 
+                                    key={s.id} 
+                                    onClick={() => toggleLeftSelection(s.id)}
+                                    className={`p-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 border-b border-gray-50 ${selectedLeft.includes(s.id) ? 'bg-blue-50' : ''}`}
+                                  >
+                                      <div>
+                                          <div className="text-sm text-gray-800">{s.name}</div>
+                                          <div className="text-xs text-gray-400">{s.account}</div>
+                                      </div>
+                                      {selectedLeft.includes(s.id) && <span className="text-primary text-xs">✓</span>}
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+
+                      {/* Middle: Actions */}
+                      <div className="w-16 flex flex-col items-center justify-center gap-4 bg-gray-50/50">
+                          <button onClick={handleAddStudents} disabled={selectedLeft.length === 0} className={`p-2 rounded shadow-sm ${selectedLeft.length > 0 ? 'bg-primary text-white hover:bg-teal-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                              &gt;
+                          </button>
+                          <button onClick={handleRemoveStudents} disabled={selectedRight.length === 0} className={`p-2 rounded shadow-sm ${selectedRight.length > 0 ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                              &lt;
+                          </button>
+                      </div>
+
+                      {/* Right: Enrolled Students */}
+                      <div className="flex-1 flex flex-col p-4">
+                          <div className="mb-3">
+                              <h4 className="font-bold text-gray-700 text-sm mb-2">已选学员 ({enrolledList.length})</h4>
+                              <div className="h-[34px]"></div> {/* Spacer to align with search input */}
+                          </div>
+                          <div className="flex-1 overflow-y-auto border border-gray-100 rounded-lg">
+                              {enrolledList.map(s => (
+                                  <div 
+                                    key={s.id} 
+                                    onClick={() => toggleRightSelection(s.id)}
+                                    className={`p-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 border-b border-gray-50 ${selectedRight.includes(s.id) ? 'bg-red-50' : ''}`}
+                                  >
+                                      <div>
+                                          <div className="text-sm text-gray-800">{s.name}</div>
+                                          <div className="text-xs text-gray-400">{s.account}</div>
+                                      </div>
+                                      {selectedRight.includes(s.id) && <span className="text-red-500 text-xs">✓</span>}
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  </div>
+
+                  <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                      <button onClick={() => setShowStudentManageModal(false)} className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm">取消</button>
+                      <button onClick={handleSaveStudentManage} className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm">保存</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       {/* SCHEDULE MODAL */}
       {showScheduleModal && (
-        <ClassroomScheduleModal 
-          campus={formData.campus} 
-          onClose={() => setShowScheduleModal(false)} 
-        />
+        <ClassroomScheduleModal campus={formData.campus} onClose={() => setShowScheduleModal(false)} />
       )}
 
       {/* TEACHER SCHEDULE MODAL */}
       {showTeacherScheduleModal && (
-        <TeacherScheduleModal 
-          teacherId={formData.teacherId} 
-          onClose={() => setShowTeacherScheduleModal(false)} 
-        />
+        <TeacherScheduleModal teacherId={formData.teacherId} onClose={() => setShowTeacherScheduleModal(false)} />
       )}
 
-      {/* ... Rest of Modals (Queue, Student Manage) ... */}
+      {/* QUEUE MODAL (Mock) */}
       {showQueueModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-           {/* ... Queue Modal Content ... */}
-           <div className="bg-white rounded-xl shadow-2xl w-[900px] max-h-[80vh] flex flex-col">
-             <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-               <h3 className="text-lg font-bold text-gray-800">推送队列</h3>
-               <button onClick={() => setShowQueueModal(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-             </div>
-             <div className="flex-1 overflow-auto p-0">
-               <table className="w-full text-sm text-left">
-                 <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
-                   <tr>
-                     <th className="p-4 whitespace-nowrap">班级</th>
-                     <th className="p-4 whitespace-nowrap">课程</th>
-                     <th className="p-4 whitespace-nowrap">课节</th>
-                     <th className="p-4 whitespace-nowrap">推送时间</th>
-                     <th className="p-4 whitespace-nowrap">推送状态</th>
-                     <th className="p-4 whitespace-nowrap text-right">操作</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-gray-100">
-                    {classLessons.map(l => (
-                      <tr key={l.id}>
-                        <td className="p-4 text-gray-700">{selectedClassForQueue?.name}</td>
-                        <td className="p-4 text-gray-700">{selectedCourseForQueue?.name}</td>
-                        <td className="p-4 text-gray-800 font-medium">{l.name}</td>
-                        <td className="p-4 text-gray-600">{l.pushTime}</td>
-                        <td className="p-4">
-                          {l.pushStatus === 'success' && <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs">推送成功</span>}
-                          {l.pushStatus === 'pending' && <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded text-xs">待推送</span>}
-                          {l.pushStatus === 'failed' && <span className="text-red-500 bg-red-50 px-2 py-0.5 rounded text-xs">推送失败</span>}
-                        </td>
-                        <td className="p-4 text-right">
-                          {l.pushStatus === 'pending' && (
-                            <button onClick={() => handlePush(l.id)} className="text-primary hover:underline text-xs bg-white border border-primary px-2 py-0.5 rounded">立即推送</button>
-                          )}
-                          {l.pushStatus === 'failed' && (
-                            <button onClick={() => handlePush(l.id)} className="text-primary hover:underline text-xs bg-white border border-primary px-2 py-0.5 rounded">重新推送</button>
-                          )}
-                          {l.pushStatus === 'success' && <span className="text-gray-400 text-xs">-</span>}
-                        </td>
-                      </tr>
-                    ))}
-                    {classLessons.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-gray-400">暂无队列信息</td></tr>}
-                 </tbody>
-               </table>
-             </div>
-           </div>
-        </div>
-      )}
-
-      {/* STUDENT MANAGEMENT MODAL */}
-      {showStudentManageModal && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[600px] flex flex-col">
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-gray-800">班级学员</h3>
-                    <button onClick={() => setShowStudentManageModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            <div className="bg-white rounded-xl shadow-xl w-[600px] h-[500px] flex flex-col overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 className="text-lg font-bold text-gray-800">课程推送 - {selectedClassForQueue?.name}</h3>
+                    <button onClick={() => setShowQueueModal(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
                 </div>
-                
-                <div className="p-6 flex-1 flex flex-col overflow-hidden">
-                    <div className="flex gap-2 mb-4">
-                        <span className="text-sm font-medium text-gray-700 self-center">搜索:</span>
-                        <input 
-                            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-64 focus:outline-none focus:border-primary"
-                            placeholder="请输入学员姓名或手机号"
-                            value={studentSearch}
-                            onChange={e => setStudentSearch(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="flex-1 flex gap-4 overflow-hidden">
-                        {/* Left Panel: All Students */}
-                        <div className="flex-1 border border-gray-200 rounded-lg flex flex-col">
-                            <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-600">全部学员</span>
-                                <span className="text-xs text-gray-400">{filteredAvailableStudents.length} 项</span>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                                {filteredAvailableStudents.map(s => (
-                                    <div key={s.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" onClick={() => toggleLeftSelection(s.id)}>
-                                        <input 
-                                            type="checkbox" 
-                                            checked={selectedLeft.includes(s.id)}
-                                            onChange={() => {}} 
-                                            className="rounded text-primary focus:ring-primary pointer-events-none"
-                                        />
-                                        <div className="flex-1">
-                                            <div className="text-sm text-gray-800">{s.name} ({s.account})</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {/* Pagination Mock */}
-                            <div className="p-2 border-t border-gray-100 flex justify-end gap-2 text-xs text-gray-500">
-                                <button className="px-2 border rounded hover:bg-gray-50">&lt;</button>
-                                <span className="self-center">1 / 10</span>
-                                <button className="px-2 border rounded hover:bg-gray-50">&gt;</button>
-                            </div>
-                        </div>
-
-                        {/* Middle Buttons */}
-                        <div className="flex flex-col justify-center gap-3">
-                            <button 
-                                onClick={handleAddStudents}
-                                disabled={selectedLeft.length === 0}
-                                className={`px-3 py-1.5 rounded text-sm font-medium border flex flex-col items-center gap-1 ${
-                                    selectedLeft.length > 0 
-                                    ? 'bg-primary text-white border-primary hover:bg-teal-600' 
-                                    : 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed'
-                                }`}
-                            >
-                                <span className="text-xs">添加 &gt;</span>
-                            </button>
-                            <button 
-                                onClick={handleRemoveStudents}
-                                disabled={selectedRight.length === 0}
-                                className={`px-3 py-1.5 rounded text-sm font-medium border flex flex-col items-center gap-1 ${
-                                    selectedRight.length > 0 
-                                    ? 'bg-white text-red-500 border-red-500 hover:bg-red-50' 
-                                    : 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed'
-                                }`}
-                            >
-                                <span className="text-xs">&lt; 删除</span>
-                            </button>
-                        </div>
-
-                        {/* Right Panel: Enrolled Students */}
-                        <div className="flex-1 border border-gray-200 rounded-lg flex flex-col">
-                            <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-600">在班学员</span>
-                                <span className="text-xs text-gray-400">{enrolledList.length} 项</span>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                                {enrolledList.map(s => (
-                                    <div key={s.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer" onClick={() => toggleRightSelection(s.id)}>
-                                        <input 
-                                            type="checkbox" 
-                                            checked={selectedRight.includes(s.id)}
-                                            onChange={() => {}} 
-                                            className="rounded text-primary focus:ring-primary pointer-events-none"
-                                        />
-                                        <div className="flex-1">
-                                            <div className="text-sm text-gray-800">{s.name} ({s.account})</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="p-2 border-t border-gray-100 flex justify-end gap-2 text-xs text-gray-500">
-                                <button className="px-2 border rounded hover:bg-gray-50">&lt;</button>
-                                <span className="self-center">1 / 1</span>
-                                <button className="px-2 border rounded hover:bg-gray-50">&gt;</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-4 border-t border-gray-100 flex justify-end gap-3">
-                    <button onClick={() => setShowStudentManageModal(false)} className="px-6 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50">取消</button>
-                    <button onClick={handleSaveStudentManage} className="px-6 py-2 bg-primary text-white rounded text-sm hover:bg-teal-600">确定</button>
+                <div className="flex-1 overflow-y-auto p-4">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-50 text-gray-600">
+                            <tr>
+                                <th className="p-3">课节</th>
+                                <th className="p-3">上课时间</th>
+                                <th className="p-3">推送状态</th>
+                                <th className="p-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {classLessons.map((l) => (
+                                <tr key={l.id}>
+                                    <td className="p-3 text-gray-800">{l.name}</td>
+                                    <td className="p-3 text-gray-600">{l.date} {l.startTime}</td>
+                                    <td className="p-3">
+                                        {l.pushStatus === 'success' ? <span className="text-green-500">已推送</span> : <span className="text-gray-400">未推送</span>}
+                                    </td>
+                                    <td className="p-3 text-right">
+                                        <button 
+                                            onClick={() => handlePush(l.id)} 
+                                            disabled={l.pushStatus === 'success'}
+                                            className={`px-3 py-1 rounded text-xs border ${l.pushStatus === 'success' ? 'border-gray-200 text-gray-400 cursor-not-allowed' : 'border-primary text-primary hover:bg-primary-light'}`}
+                                        >
+                                            {l.pushStatus === 'success' ? '已推送' : '推送'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {classLessons.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-gray-400">暂无课节</td></tr>}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

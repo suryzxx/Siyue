@@ -3,9 +3,15 @@ import React, { useState } from 'react';
 import { Teacher } from '../../types';
 import { TEACHERS, CAMPUSES } from '../../constants';
 
+const CITY_CAMPUS_MAP: Record<string, string[]> = {
+  '南京': ['龙江校区', '辰龙校区', '五台山校区', '奥南校区', '奥体网球中心校区', '大行宫校区', '仙林校区', '爱邦中心校区'],
+  '深圳': ['深圳湾校区', '宝安中心校区']
+};
+
 const TeacherManagement: React.FC = () => {
   const [filterName, setFilterName] = useState('');
   const [filterPhone, setFilterPhone] = useState('');
+  const [filterCity, setFilterCity] = useState(''); // New City Filter
   const [filterCampus, setFilterCampus] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -17,6 +23,7 @@ const TeacherManagement: React.FC = () => {
     name: '',
     gender: '女',
     phone: '',
+    city: '', // New Form Field
     campus: '',
     position: '全职教师',
     avatar: '',
@@ -35,10 +42,11 @@ const TeacherManagement: React.FC = () => {
   const filteredTeachers = localTeachers.filter(teacher => {
       const matchName = !filterName || teacher.name.includes(filterName);
       const matchPhone = !filterPhone || (teacher.phone && teacher.phone.includes(filterPhone));
+      const matchCity = !filterCity || teacher.city === filterCity;
       const matchCampus = !filterCampus || teacher.campus === filterCampus;
       const matchPosition = !filterPosition || teacher.position === filterPosition;
       const matchStatus = !filterStatus || teacher.status === filterStatus;
-      return matchName && matchPhone && matchCampus && matchPosition && matchStatus;
+      return matchName && matchPhone && matchCity && matchCampus && matchPosition && matchStatus;
   });
 
   // Limit for display (mock pagination just takes the first X for this demo if not fully implemented)
@@ -51,6 +59,7 @@ const TeacherManagement: React.FC = () => {
         name: teacher.name,
         gender: teacher.gender || '女',
         phone: teacher.phone || '',
+        city: teacher.city || '',
         campus: teacher.campus || '',
         position: teacher.position || '全职教师',
         avatar: teacher.avatar || '',
@@ -62,6 +71,7 @@ const TeacherManagement: React.FC = () => {
         name: '',
         gender: '女',
         phone: '',
+        city: '',
         campus: '',
         position: '全职教师',
         avatar: '',
@@ -77,8 +87,8 @@ const TeacherManagement: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (!formData.name || !formData.phone || !formData.campus) {
-      alert('请填写完整信息 (姓名、电话、校区为必填)');
+    if (!formData.name || !formData.phone || !formData.city || !formData.campus) {
+      alert('请填写完整信息 (姓名、电话、城市、校区为必填)');
       return;
     }
 
@@ -105,6 +115,9 @@ const TeacherManagement: React.FC = () => {
     }
     handleCloseModal();
   };
+
+  const availableCampusesFilter = filterCity ? (CITY_CAMPUS_MAP[filterCity] || []) : CAMPUSES;
+  const availableCampusesForm = formData.city ? (CITY_CAMPUS_MAP[formData.city] || []) : CAMPUSES;
 
   return (
     <div className="flex-1 bg-white flex flex-col h-full overflow-hidden relative">
@@ -134,6 +147,17 @@ const TeacherManagement: React.FC = () => {
            />
         </div>
         <div className="flex items-center gap-2">
+           <span className="text-sm text-gray-700">所属城市:</span>
+           <select 
+             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-28 text-gray-600 focus:outline-none focus:border-primary"
+             value={filterCity}
+             onChange={e => { setFilterCity(e.target.value); setFilterCampus(''); }}
+           >
+             <option value="">全部城市</option>
+             {Object.keys(CITY_CAMPUS_MAP).map(city => <option key={city} value={city}>{city}</option>)}
+           </select>
+        </div>
+        <div className="flex items-center gap-2">
            <span className="text-sm text-gray-700">所属校区:</span>
            <select 
              className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36 text-gray-600 focus:outline-none focus:border-primary"
@@ -141,7 +165,7 @@ const TeacherManagement: React.FC = () => {
              onChange={e => setFilterCampus(e.target.value)}
            >
              <option value="">全部校区</option>
-             {CAMPUSES.map(c => <option key={c} value={c}>{c}</option>)}
+             {availableCampusesFilter.map(c => <option key={c} value={c}>{c}</option>)}
            </select>
         </div>
         <div className="flex items-center gap-2">
@@ -177,7 +201,7 @@ const TeacherManagement: React.FC = () => {
           <button className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">搜索</button>
           <button 
             className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-5 py-1.5 rounded text-sm transition-colors"
-            onClick={() => { setFilterName(''); setFilterPhone(''); setFilterCampus(''); setFilterPosition(''); setFilterStatus(''); }}
+            onClick={() => { setFilterName(''); setFilterPhone(''); setFilterCity(''); setFilterCampus(''); setFilterPosition(''); setFilterStatus(''); }}
           >
             重置
           </button>
@@ -199,6 +223,7 @@ const TeacherManagement: React.FC = () => {
                 <th className="p-4 whitespace-nowrap">员工ID</th>
                 <th className="p-4 whitespace-nowrap">姓名</th>
                 <th className="p-4 whitespace-nowrap">联系电话</th>
+                <th className="p-4 whitespace-nowrap">所属城市</th>
                 <th className="p-4 whitespace-nowrap">所属校区</th>
                 <th className="p-4 whitespace-nowrap">用户职位</th>
                 <th className="p-4 whitespace-nowrap">头像</th>
@@ -214,6 +239,7 @@ const TeacherManagement: React.FC = () => {
                   <td className="p-4 text-gray-600">{teacher.id}</td>
                   <td className="p-4 text-gray-800 font-medium">{teacher.name}</td>
                   <td className="p-4 text-gray-600">{teacher.phone || '-'}</td>
+                  <td className="p-4 text-gray-600">{teacher.city || '-'}</td>
                   <td className="p-4 text-gray-600">{teacher.campus || '-'}</td>
                   <td className="p-4 text-gray-600">{teacher.position || '-'}</td>
                   <td className="p-4 text-gray-600 text-xs">{teacher.avatar || '-'}</td>
@@ -313,14 +339,27 @@ const TeacherManagement: React.FC = () => {
               </div>
 
               <div className="flex items-center">
+                <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>所属城市</label>
+                <select 
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                  value={formData.city}
+                  onChange={e => setFormData({...formData, city: e.target.value, campus: ''})}
+                >
+                  <option value="">请选择城市</option>
+                  {Object.keys(CITY_CAMPUS_MAP).map(city => <option key={city} value={city}>{city}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center">
                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>所属校区</label>
                 <select 
                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
                   value={formData.campus}
                   onChange={e => setFormData({...formData, campus: e.target.value})}
+                  disabled={!formData.city}
                 >
                   <option value="">请选择校区</option>
-                  {CAMPUSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {availableCampusesForm.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 

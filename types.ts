@@ -53,6 +53,7 @@ export interface ClassInfo {
   studentTag?: string; // 学生标签
   allowStudentSchedule?: boolean; // 是否开启学生端预约
   allowConflict?: boolean; // 是否允许冲突
+  virtualSeats?: number; // 调课虚位
   
   // Pricing
   chargeMode?: 'whole' | 'installment'; // 收费模式
@@ -101,6 +102,7 @@ export interface CourseLesson {
   name: string;
   taskCount: number;
   order: number;
+  isOnlineBound?: boolean;
 }
 
 export interface Course {
@@ -129,6 +131,7 @@ export interface Teacher {
   // Admin fields
   account?: string;
   phone?: string;
+  city?: string;
   campus?: string;
   position?: string;
   avatar?: string;

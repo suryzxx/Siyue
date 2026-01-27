@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Course, CourseType } from '../../types';
+import { Course, CourseType, CourseLesson } from '../../types';
 
 interface CoursePathProps {
   courses: Course[];
   onAddCourse: (course: Course) => void;
+  onUpdateCourse: (updatedCourse: Course) => void;
 }
 
 const GRADE_CLASS_TYPES: Record<string, string[]> = {
@@ -22,10 +23,15 @@ const GRADE_CLASS_TYPES: Record<string, string[]> = {
   'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
 };
 
-const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
+const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateCourse }) => {
   const [selectedCourseId, setSelectedCourseId] = useState<string>(courses[1]?.id || courses[0]?.id);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
+
+  // Lesson Modal State
+  const [showLessonModal, setShowLessonModal] = useState(false);
+  const [newLessonName, setNewLessonName] = useState('');
+  const [isOnlineBound, setIsOnlineBound] = useState(true);
 
   // New Course Form State
   const [formData, setFormData] = useState({
@@ -69,6 +75,34 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
     resetForm();
   };
 
+  const handleAddLesson = () => {
+    if (!newLessonName) {
+        alert('请输入课节名称');
+        return;
+    }
+
+    const currentLessons = selectedCourse.lessons || [];
+    const nextOrder = currentLessons.length + 1;
+    
+    const newLesson: CourseLesson = {
+        id: `cl-${Date.now()}`,
+        name: newLessonName,
+        taskCount: 0,
+        order: nextOrder,
+        isOnlineBound: isOnlineBound
+    };
+
+    const updatedCourse: Course = {
+        ...selectedCourse,
+        lessons: [...currentLessons, newLesson],
+        lessonCount: (selectedCourse.lessonCount || 0) + 1
+    };
+
+    onUpdateCourse(updatedCourse);
+    setShowLessonModal(false);
+    setNewLessonName('');
+  };
+
   const resetForm = () => {
     setFormData({
         name: '',
@@ -95,7 +129,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
       {/* Left Sidebar: Course List */}
       <div className="w-[280px] bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-800">课程路径</h2>
+          <h2 className="text-lg font-bold text-gray-800">课程产品</h2>
           <button 
             onClick={() => { resetForm(); setShowModal(true); }}
             className="bg-primary hover:bg-teal-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1"
@@ -108,7 +142,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
           <div className="relative">
              <input 
                type="text" 
-               placeholder="搜索课程路径" 
+               placeholder="搜索课程产品" 
                value={searchQuery}
                onChange={e => setSearchQuery(e.target.value)}
                className="w-full bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm pl-8 focus:outline-none focus:border-primary"
@@ -137,7 +171,10 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <div className="h-[60px] bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0">
           <h2 className="text-xl font-bold text-gray-800">{selectedCourse.name}</h2>
-          <button className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-1.5 rounded text-sm transition-colors flex items-center gap-1">
+          <button 
+            onClick={() => { setNewLessonName(''); setIsOnlineBound(true); setShowLessonModal(true); }}
+            className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-1.5 rounded text-sm transition-colors flex items-center gap-1"
+          >
              <span>+</span> 新建课节
           </button>
         </div>
@@ -153,7 +190,14 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
                        </div>
                        <div className="flex-1">
                          <h4 className="font-medium text-gray-800 text-sm mb-1 line-clamp-2" title={lesson.name}>{lesson.name}</h4>
-                         <p className="text-gray-400 text-xs">{lesson.taskCount} 任务</p>
+                         <div className="flex items-center gap-2">
+                            <p className="text-gray-400 text-xs">{lesson.taskCount} 任务</p>
+                            {lesson.isOnlineBound !== undefined && (
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${lesson.isOnlineBound ? 'border-blue-200 text-blue-500 bg-blue-50' : 'border-gray-200 text-gray-400 bg-gray-50'}`}>
+                                    {lesson.isOnlineBound ? '绑定线上' : '未绑定'}
+                                </span>
+                            )}
+                         </div>
                        </div>
                        <button className="text-gray-300 hover:text-gray-600">⋮</button>
                     </div>
@@ -168,6 +212,61 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse }) => {
            )}
         </div>
       </div>
+
+      {/* New Lesson Modal (Based on Screenshot) */}
+      {showLessonModal && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-[500px] flex flex-col overflow-hidden animate-fade-in">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-800">新建课节</h3>
+                    <button onClick={() => setShowLessonModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                </div>
+                
+                <div className="p-8">
+                    <div className="flex items-center">
+                        <label className="w-24 text-sm text-gray-600 text-right mr-4 font-medium whitespace-nowrap">
+                            <span className="text-red-500 mr-1">*</span>课节名称：
+                        </label>
+                        <input 
+                            className="flex-1 border border-gray-300 rounded px-3 py-2.5 text-sm focus:outline-none focus:border-primary placeholder-gray-400"
+                            placeholder="请输入课节名称"
+                            value={newLessonName}
+                            onChange={e => setNewLessonName(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    
+                    <div className="flex items-center mt-5">
+                        <label className="w-64 text-sm text-gray-600 text-right mr-4 font-medium whitespace-nowrap">
+                            线上课节是否与面授课节绑定：
+                        </label>
+                        <div 
+                            onClick={() => setIsOnlineBound(!isOnlineBound)}
+                            className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors ${isOnlineBound ? 'bg-primary' : 'bg-gray-200'}`}
+                        >
+                            <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all shadow-sm ${isOnlineBound ? 'left-[20px]' : 'left-[2px]'}`}></div>
+                        </div>
+                        <span className="text-xs text-gray-400 ml-2">{isOnlineBound ? '是' : '否'}</span>
+                    </div>
+                </div>
+
+                <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                    <button 
+                        onClick={() => setShowLessonModal(false)}
+                        className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm font-medium"
+                    >
+                        取 消
+                    </button>
+                    <button 
+                        onClick={handleAddLesson}
+                        className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm font-medium"
+                    >
+                        确 定
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
       {/* Create Course Modal */}
       {showModal && (

@@ -54,6 +54,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setCourses([newCourse, ...courses]);
   };
 
+  const handleUpdateCourse = (updatedCourse: Course) => {
+    setCourses(courses.map(c => c.id === updatedCourse.id ? updatedCourse : c));
+  };
+
   const NavItem = ({ id, label, indent = false }: { id: string, label: string, indent?: boolean }) => (
     <div 
       onClick={() => setActivePanel(id)}
@@ -76,7 +80,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
         
         <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-          <NavItem id="course" label="课程路径" />
+          <NavItem id="course" label="课程产品" />
           <NavItem id="class" label="班级管理" />
           
           {/* Basic Settings Group */}
@@ -117,6 +121,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <CoursePath 
             courses={courses}
             onAddCourse={handleAddCourse}
+            onUpdateCourse={handleUpdateCourse}
           />
         )}
         {activePanel === 'employee' && (
