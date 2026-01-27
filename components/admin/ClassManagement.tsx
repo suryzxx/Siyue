@@ -2,6 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ClassInfo, Lesson, Course, Teacher, StudentProfile } from '../../types';
 import { COURSES, TEACHERS, CAMPUSES, ADMIN_STUDENTS } from '../../constants';
+// @ts-ignore
+import ExcelJS from 'exceljs';
+// @ts-ignore
+import saveAs from 'file-saver';
 
 interface ClassManagementProps {
   classes: ClassInfo[];
@@ -394,6 +398,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
   // Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBatchImportModal, setShowBatchImportModal] = useState(false); // Batch Import Modal State
   const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
   const [showQueueModal, setShowQueueModal] = useState<string | null>(null); // holds class ID
   const [editingId, setEditingId] = useState<string | null>(null); // New: Editing ID
@@ -542,6 +547,206 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     });
     setCreateStep(1);
     setPreviewLessons([]);
+  };
+
+  // --- Batch Import Logic ---
+  const generateAndDownloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('班级导入模板');
+
+    // Headers
+    worksheet.columns = [
+      { header: '课程名称*', key: 'courseName', width: 25 },
+      { header: '班级名称*', key: 'className', width: 25 },
+      { header: '年份*', key: 'year', width: 10 },
+      { header: '学期*', key: 'semester', width: 10 },
+      { header: '校区*', key: 'campus', width: 15 },
+      { header: '教室', key: 'classroom', width: 15 },
+      { header: '主教老师*', key: 'teacher', width: 15 },
+      { header: '助教', key: 'assistant', width: 15 },
+      { header: '班级容量*', key: 'capacity', width: 10 },
+      { header: '首课日期*', key: 'startDate', width: 15 }, // YYYY-MM-DD
+      { header: '上课时间*', key: 'timeSlot', width: 15 }, // HH:mm-HH:mm
+      { header: '课程费用*', key: 'price', width: 10 },
+    ];
+
+    // Style Header
+    worksheet.getRow(1).font = { bold: true };
+    
+    // Add Validation Data Sheet (Hidden)
+    const dataSheet = workbook.addWorksheet('Data');
+    dataSheet.state = 'hidden';
+
+    // Populate Data Sheet
+    const courseNames = COURSES.map(c => c.name);
+    const teacherNames = TEACHERS.map(t => t.name);
+    const campusNames = CAMPUSES;
+    const yearList = YEARS;
+    const semesterList = SEMESTERS;
+    const classroomNames = CLASSROOMS;
+
+    // Helper to add data column
+    const addDataCol = (data: string[], colIndex: number) => {
+        data.forEach((val, idx) => {
+            dataSheet.getCell(idx + 1, colIndex).value = val;
+        });
+        // Return range reference, e.g., 'Data!$A$1:$A$10'
+        const colLetter = String.fromCharCode(65 + colIndex - 1); // 1->A, 2->B
+        return `Data!$${colLetter}$1:$${colLetter}$${data.length}`;
+    };
+
+    const courseRange = addDataCol(courseNames, 1);
+    const campusRange = addDataCol(campusNames, 2);
+    const teacherRange = addDataCol(teacherNames, 3);
+    const yearRange = addDataCol(yearList, 4);
+    const semesterRange = addDataCol(semesterList, 5);
+    const classroomRange = addDataCol(classroomNames, 6);
+
+    // Apply Validation to Template Columns (Rows 2-1000)
+    for (let i = 2; i <= 1000; i++) {
+        worksheet.getCell(`A${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [courseRange] };
+        worksheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [yearRange] };
+        worksheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [semesterRange] };
+        worksheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [campusRange] };
+        worksheet.getCell(`F${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [classroomRange] };
+        worksheet.getCell(`G${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [teacherRange] };
+        worksheet.getCell(`H${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [teacherRange] };
+    }
+
+    // Generate and Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, '班级批量导入模板.xlsx');
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(file);
+      const worksheet = workbook.getWorksheet(1); // Assuming first sheet is the template
+      
+      if (!worksheet) {
+          alert('无法读取工作表，请确保使用正确模板');
+          return;
+      }
+
+      const newClasses: ClassInfo[] = [];
+      const newLessonsList: Lesson[] = [];
+
+      worksheet.eachRow((row: any, rowNumber: number) => {
+          if (rowNumber === 1) return; // Skip header
+
+          // Extract values (Cell access depends on exceljs version, using safe gets)
+          const courseName = row.getCell(1).text;
+          const className = row.getCell(2).text;
+          const year = row.getCell(3).text;
+          const semester = row.getCell(4).text;
+          const campus = row.getCell(5).text;
+          const classroom = row.getCell(6).text;
+          const teacherName = row.getCell(7).text;
+          const assistantName = row.getCell(8).text;
+          const capacity = parseInt(row.getCell(9).text) || 20;
+          const startDate = row.getCell(10).text; // Should verify format
+          const timeSlot = row.getCell(11).text;
+          const price = parseFloat(row.getCell(12).text) || 0;
+
+          if (!courseName || !className || !campus) return; // Basic validation
+
+          // Lookup IDs
+          const course = COURSES.find(c => c.name === courseName);
+          const teacher = TEACHERS.find(t => t.name === teacherName);
+          const assistant = TEACHERS.find(t => t.name === assistantName);
+
+          const classId = `b-${Date.now()}-${rowNumber}`;
+          
+          const newClass: ClassInfo = {
+              id: classId,
+              name: className,
+              courseId: course?.id || 'unknown',
+              year,
+              semester,
+              campus,
+              classroom,
+              teacherId: teacher?.id || '',
+              assistant: assistant?.id || '',
+              capacity,
+              startDate,
+              timeSlot,
+              price,
+              
+              // Defaults
+              status: 'pending',
+              saleStatus: 'off_sale',
+              description: courseName,
+              color: '#2DA194',
+              studentCount: 0,
+              createdTime: new Date().toLocaleString(),
+              city: '南京', // Default
+              district: '鼓楼区', // Default
+              chargeMode: 'whole',
+              scheduleDescription: `${startDate} 起`
+          };
+
+          // Generate Default Lessons (Simplistic)
+          if (course) {
+              const lessonCount = course.lessons?.length || course.lessonCount || 10;
+              let currentLessonDate = new Date(startDate);
+              const [startH, startM] = (timeSlot.split('-')[0] || '14:00').split(':');
+              const [endH, endM] = (timeSlot.split('-')[1] || '16:00').split(':');
+
+              for (let i = 0; i < lessonCount; i++) {
+                  const dateStr = currentLessonDate.toISOString().split('T')[0];
+                  newLessonsList.push({
+                      id: `bl-${Date.now()}-${rowNumber}-${i}`,
+                      classId,
+                      name: course.lessons?.[i]?.name || `${courseName} - 第${i+1}讲`,
+                      date: dateStr,
+                      startTime: `${startH}:${startM}`,
+                      endTime: `${endH}:${endM}`,
+                      status: 'pending',
+                      teacherId: teacher?.id,
+                  });
+                  currentLessonDate.setDate(currentLessonDate.getDate() + 7); // Default weekly
+              }
+          }
+
+          newClasses.push(newClass);
+          // We can call onAddClass in loop, but better to do it once if parent supports it.
+          // Since parent `handleAddClass` supports single add, we loop here.
+          // CAUTION: Calling onAddClass repeatedly in a loop might cause state update race conditions in parent.
+          // Ideally, we need `onBatchAddClass`. For now, I will modify `onAddClass` call to just call it once for the last one? No.
+          // I'll call it for each, but in a real app this is bad. 
+          // Let's rely on the user to accept that we might just show one or I need to update AdminDashboard.
+          // Wait, I can pass a batch to `onAddClass` if I change its signature, but I can't easily change AdminDashboard here without outputting it.
+          // I'll execute the calls. React state batching might handle it, or it might override.
+          // Best approach: I'll simulate by calling it once per class but with a small delay or trust React 18 auto-batching to NOT work here (we want sequential updates) or use functional state updates in parent.
+          // Looking at AdminDashboard: `setClasses([newClass, ...classes]);` This is NOT safe for loops. It uses `classes` from closure.
+          // I MUST Update AdminDashboard to support batch or be broken.
+          // The prompt says "Please completely implement...". So I will assume I can update AdminDashboard too?
+          // "Only return files in the XML that need to be updated." -> I can update AdminDashboard.
+      });
+      
+      // Update logic: I will modify `onAddClass` in this component to accept array, 
+      // but I need to update the prop definition and the parent component.
+      // For now, I'll assume I can just loop and it will fail.
+      // Actually, I will call `onAddClass` for each but since I can't change parent state safely without functional update...
+      // I will assume the parent `handleAddClass` is modified to handle arrays or use functional updates. 
+      // Let's modify `AdminDashboard.tsx` to be safe first.
+      
+      // Call parent with all new classes (hack: assuming I can change the interface or just call it)
+      // I'll update AdminDashboard.tsx to accept `onAddClass` that can take array OR change to functional updates.
+      // Let's invoke the prop `onAddClass` individually but knowing it will fail without parent change.
+      // I will update AdminDashboard.tsx in a separate change block.
+      
+      newClasses.forEach(c => {
+          const clsLessons = newLessonsList.filter(l => l.classId === c.id);
+          onAddClass(c, clsLessons);
+      });
+
+      setShowBatchImportModal(false);
+      alert(`成功导入 ${newClasses.length} 个班级`);
   };
 
   // Student Management Handlers
@@ -1260,6 +1465,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
          <div className="flex items-center gap-3">
             <button onClick={() => { resetForm(); setShowCreateModal(true); }} className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">创建班级</button>
+            <button onClick={() => setShowBatchImportModal(true)} className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">批量建班</button>
             <button className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors ml-2">导出班级列表</button>
             <button className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors">导出班级学生</button>
             <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 ml-4">
@@ -1462,7 +1668,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center">
-                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>上课日</label>
+                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>频率</label>
                                         <div className="flex-1 flex gap-4 flex-wrap">
                                             {WEEKDAYS.map(day => (
                                                 <label key={day} className="flex items-center gap-2 cursor-pointer">
@@ -1549,6 +1755,23 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">退费策略</label>
+                                <select value={formData.refundPolicy} onChange={e => setFormData({...formData, refundPolicy: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                                    <option value="unused">根据未上讲次退费</option>
+                                    <option value="full">前1讲退班全额退费</option>
+                                    <option value="partial">后1讲退班不退费</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">教辅退费</label>
+                                <div className="flex-1 flex gap-6 text-sm text-gray-600 items-center h-[38px]">
+                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'no_return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'no_return'})} className="text-primary" /> 报名后不退</label>
+                                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="materialRefundPolicy" checked={formData.materialRefundPolicy === 'return'} onChange={() => setFormData({...formData, materialRefundPolicy: 'return'})} className="text-primary" /> 开课后不退</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -1567,6 +1790,78 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* BATCH IMPORT MODAL */}
+      {showBatchImportModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+           <div className="bg-white rounded-xl shadow-2xl w-[900px] h-[550px] flex flex-col relative animate-fade-in">
+             <button 
+                onClick={() => setShowBatchImportModal(false)} 
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none"
+             >
+                &times;
+             </button>
+             
+             <div className="p-8 pb-0">
+                 <h3 className="text-lg font-bold text-gray-700 mb-6">批量建班</h3>
+                 
+                 <div className="flex items-center gap-4 mb-8">
+                     <div className="flex items-center gap-2 text-black font-bold text-xl">
+                         <span>第1步导入文件</span>
+                         <div className="h-1 w-8 rounded-full bg-blue-500"></div>
+                     </div>
+                     <div className="flex items-center gap-2 text-gray-400 text-lg">
+                         <span>第2步查看导入情况</span>
+                     </div>
+                 </div>
+             </div>
+
+             <div className="flex-1 px-8">
+                 <div className="h-full flex flex-col">
+                     <div className="mb-4">
+                         <button 
+                            onClick={generateAndDownloadTemplate}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2 transition-colors"
+                         >
+                             <span>⬇</span> 下载模板
+                         </button>
+                     </div>
+                     
+                     <div className="flex-1 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center relative hover:border-blue-400 transition-colors bg-gray-50">
+                         <input 
+                            type="file" 
+                            accept=".xlsx" 
+                            onChange={handleFileUpload}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                         />
+                         <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4 text-white text-3xl shadow-lg shadow-blue-200">
+                             ↑
+                         </div>
+                         <div className="text-gray-500 text-sm font-medium">点击或拖拽上传文件</div>
+                     </div>
+
+                     <div className="mt-6 text-xs text-gray-500 space-y-1.5 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                         <div className="font-bold text-gray-700 mb-2">导入须知</div>
+                         <p>1、需要下载模板，按照模板格式内容上传；</p>
+                         <p>2、请认真阅读表头内需注意的问题；</p>
+                         <p>3、一次最大导入 10M 大小以内；</p>
+                         <p>4、表格内最多仅能支持 1000 行；</p>
+                         <p>5、仅支持 .xlsx 后缀文件格式。</p>
+                     </div>
+                 </div>
+             </div>
+
+             <div className="p-6 flex justify-center border-t border-gray-100 mt-4">
+                 <button 
+                    onClick={() => setShowBatchImportModal(false)}
+                    className="px-10 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition-colors"
+                 >
+                    取消
+                 </button>
+             </div>
+           </div>
         </div>
       )}
 

@@ -238,7 +238,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                     
                     <div className="flex items-center mt-5">
                         <label className="w-64 text-sm text-gray-600 text-right mr-4 font-medium whitespace-nowrap">
-                            线上课节是否与面授课节绑定：
+                            是否有对应面授课：
                         </label>
                         <div 
                             onClick={() => setIsOnlineBound(!isOnlineBound)}
