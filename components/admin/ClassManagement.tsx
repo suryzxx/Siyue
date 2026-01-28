@@ -554,28 +554,26 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('班级导入模板');
 
-    // Headers
+    // Headers based on user request
     worksheet.columns = [
       { header: '课程名称*', key: 'courseName', width: 25 },
       { header: '班级名称*', key: 'className', width: 25 },
       { header: '年份*', key: 'year', width: 10 },
-      //删掉：{ header: '学期*', key: 'semester', width: 10 },
       { header: '校区*', key: 'campus', width: 15 },
       { header: '教室', key: 'classroom', width: 15 },
-      //增加：学生人数上限*
-      //增加：调课虚位
+      { header: '学生人数上限*', key: 'capacity', width: 15 },
+      { header: '调课虚位', key: 'virtualSeats', width: 10 },
       { header: '主教老师*', key: 'teacher', width: 15 },
       { header: '助教', key: 'assistant', width: 15 },
-      //增加：允许老师、教室时间冲突（是、否）
-      //增加：需要入学资格（是、否）
-      //删掉：{ header: '班级容量*', key: 'capacity', width: 10 },
+      { header: '允许老师、教室时间冲突（是、否）*', key: 'allowConflict', width: 30 },
+      { header: '需要入学资格（是、否）*', key: 'needQualification', width: 25 },
       { header: '首课日期*', key: 'startDate', width: 15 }, // YYYY-MM-DD
-      { header: '上课开始时间*', key: 'timeSlot', width: 15 }, // HH:mm-HH:mm
-      //增加：上课结束时间
-      //增加：上课日
-      //增加：收费模式（整期、分期）
+      { header: '上课开始时间*', key: 'startTime', width: 15 }, // HH:mm
+      { header: '上课结束时间*', key: 'endTime', width: 15 }, // HH:mm
+      { header: '上课日*', key: 'days', width: 15 }, // e.g. 周六,周日
+      { header: '收费模式（整期、分期）*', key: 'chargeMode', width: 25 },
       { header: '课程费用*', key: 'price', width: 10 },
-      //增加：教辅费
+      { header: '教辅费', key: 'materialPrice', width: 10 },
     ];
 
     // Style Header
@@ -590,8 +588,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const teacherNames = TEACHERS.map(t => t.name);
     const campusNames = CAMPUSES;
     const yearList = YEARS;
-    const semesterList = SEMESTERS;
     const classroomNames = CLASSROOMS;
+    const booleanOptions = ['是', '否'];
+    const chargeModeOptions = ['整期', '分期'];
 
     // Helper to add data column
     const addDataCol = (data: string[], colIndex: number) => {
@@ -607,18 +606,30 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const campusRange = addDataCol(campusNames, 2);
     const teacherRange = addDataCol(teacherNames, 3);
     const yearRange = addDataCol(yearList, 4);
-    const semesterRange = addDataCol(semesterList, 5);
-    const classroomRange = addDataCol(classroomNames, 6);
+    const classroomRange = addDataCol(classroomNames, 5); 
+    const booleanRange = addDataCol(booleanOptions, 6);
+    const chargeModeRange = addDataCol(chargeModeOptions, 7);
 
     // Apply Validation to Template Columns (Rows 2-1000)
     for (let i = 2; i <= 1000; i++) {
+        // A: Course Name
         worksheet.getCell(`A${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [courseRange] };
+        // C: Year
         worksheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [yearRange] };
-        worksheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [semesterRange] };
-        worksheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [campusRange] };
-        worksheet.getCell(`F${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [classroomRange] };
-        worksheet.getCell(`G${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [teacherRange] };
+        // D: Campus
+        worksheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [campusRange] };
+        // E: Classroom
+        worksheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [classroomRange] };
+        // H: Teacher
         worksheet.getCell(`H${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [teacherRange] };
+        // I: Assistant
+        worksheet.getCell(`I${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [teacherRange] };
+        // J: Allow Conflict
+        worksheet.getCell(`J${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [booleanRange] };
+        // K: Need Qualification
+        worksheet.getCell(`K${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [booleanRange] };
+        // P: Charge Mode
+        worksheet.getCell(`P${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [chargeModeRange] };
     }
 
     // Generate and Download
@@ -632,7 +643,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       if (!file) return;
 
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(file);
+      const buffer = await file.arrayBuffer();
+      await workbook.xlsx.load(buffer);
       const worksheet = workbook.getWorksheet(1); // Assuming first sheet is the template
       
       if (!worksheet) {
@@ -647,18 +659,26 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           if (rowNumber === 1) return; // Skip header
 
           // Extract values (Cell access depends on exceljs version, using safe gets)
+          // Mapped to new column structure
           const courseName = row.getCell(1).text;
           const className = row.getCell(2).text;
           const year = row.getCell(3).text;
-          const semester = row.getCell(4).text;
-          const campus = row.getCell(5).text;
-          const classroom = row.getCell(6).text;
-          const teacherName = row.getCell(7).text;
-          const assistantName = row.getCell(8).text;
-          const capacity = parseInt(row.getCell(9).text) || 20;
-          const startDate = row.getCell(10).text; // Should verify format
-          const timeSlot = row.getCell(11).text;
-          const price = parseFloat(row.getCell(12).text) || 0;
+          // Col 4: Campus
+          const campus = row.getCell(4).text;
+          const classroom = row.getCell(5).text;
+          const capacity = parseInt(row.getCell(6).text) || 20;
+          const virtualSeats = parseInt(row.getCell(7).text) || 0;
+          const teacherName = row.getCell(8).text;
+          const assistantName = row.getCell(9).text;
+          const allowConflict = row.getCell(10).text === '是';
+          const needQualification = row.getCell(11).text === '是';
+          const startDate = row.getCell(12).text; // Should verify format
+          const startTime = row.getCell(13).text;
+          const endTime = row.getCell(14).text;
+          const daysText = row.getCell(15).text; // e.g. "周六,周日"
+          const chargeModeText = row.getCell(16).text;
+          const price = parseFloat(row.getCell(17).text) || 0;
+          const materialPrice = parseFloat(row.getCell(18).text) || 0;
 
           if (!courseName || !className || !campus) return; // Basic validation
 
@@ -669,20 +689,28 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
           const classId = `b-${Date.now()}-${rowNumber}`;
           
+          const timeSlot = `${startTime}-${endTime}`;
+          const scheduleDescription = `${startDate} 起 ${daysText}`;
+          
           const newClass: ClassInfo = {
               id: classId,
               name: className,
               courseId: course?.id || 'unknown',
               year,
-              semester,
+              semester: course?.semester || '寒假', // Fallback
               campus,
               classroom,
               teacherId: teacher?.id || '',
               assistant: assistant?.id || '',
               capacity,
+              virtualSeats,
+              allowConflict,
+              needQualification,
               startDate,
               timeSlot,
               price,
+              materialPrice,
+              chargeMode: chargeModeText === '分期' ? 'installment' : 'whole',
               
               // Defaults
               status: 'pending',
@@ -691,62 +719,60 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
               color: '#2DA194',
               studentCount: 0,
               createdTime: new Date().toLocaleString(),
-              city: '南京', // Default
-              district: '鼓楼区', // Default
-              chargeMode: 'whole',
-              scheduleDescription: `${startDate} 起`
+              city: '南京', 
+              district: '鼓楼区', 
+              scheduleDescription,
+              studentTag: '',
+              allowStudentSchedule: false,
+              refundPolicy: 'unused',
+              materialRefundPolicy: 'no_return',
+              subject: course?.subject || '英语',
+              grade: course?.grade || '1年级',
+              studentGrade: course?.grade || '1年级',
           };
 
-          // Generate Default Lessons (Simplistic)
+          // Generate Default Lessons
           if (course) {
               const lessonCount = course.lessons?.length || course.lessonCount || 10;
               let currentLessonDate = new Date(startDate);
-              const [startH, startM] = (timeSlot.split('-')[0] || '14:00').split(':');
-              const [endH, endM] = (timeSlot.split('-')[1] || '16:00').split(':');
+              // Parse daysText
+              const targetDays = daysText.split(/[,，、 ]/).filter((d: string) => WEEKDAYS.includes(d));
+              const targetDayIndices = targetDays.map((d: string) => WEEKDAYS.indexOf(d));
+              
+              // If invalid days or empty, fallback to weekly on startDate's day
+              if (targetDayIndices.length === 0) {
+                  targetDayIndices.push(currentLessonDate.getDay());
+              }
 
-              for (let i = 0; i < lessonCount; i++) {
-                  const dateStr = currentLessonDate.toISOString().split('T')[0];
-                  newLessonsList.push({
-                      id: `bl-${Date.now()}-${rowNumber}-${i}`,
-                      classId,
-                      name: course.lessons?.[i]?.name || `${courseName} - 第${i+1}讲`,
-                      date: dateStr,
-                      startTime: `${startH}:${startM}`,
-                      endTime: `${endH}:${endM}`,
-                      status: 'pending',
-                      teacherId: teacher?.id,
-                  });
-                  currentLessonDate.setDate(currentLessonDate.getDate() + 7); // Default weekly
+              let lessonsGenerated = 0;
+              let loopDate = new Date(currentLessonDate);
+
+              // Find first valid day >= startDate
+              while (!targetDayIndices.includes(loopDate.getDay())) {
+                  loopDate.setDate(loopDate.getDate() + 1);
+              }
+
+              while (lessonsGenerated < lessonCount) {
+                  if (targetDayIndices.includes(loopDate.getDay())) {
+                      const dateStr = loopDate.toISOString().split('T')[0];
+                      newLessonsList.push({
+                          id: `bl-${Date.now()}-${rowNumber}-${lessonsGenerated}`,
+                          classId,
+                          name: course.lessons?.[lessonsGenerated]?.name || `${courseName} - 第${lessonsGenerated+1}讲`,
+                          date: dateStr,
+                          startTime: startTime || '14:00',
+                          endTime: endTime || '16:00',
+                          status: 'pending',
+                          teacherId: teacher?.id,
+                      });
+                      lessonsGenerated++;
+                  }
+                  loopDate.setDate(loopDate.getDate() + 1);
               }
           }
 
           newClasses.push(newClass);
-          // We can call onAddClass in loop, but better to do it once if parent supports it.
-          // Since parent `handleAddClass` supports single add, we loop here.
-          // CAUTION: Calling onAddClass repeatedly in a loop might cause state update race conditions in parent.
-          // Ideally, we need `onBatchAddClass`. For now, I will modify `onAddClass` call to just call it once for the last one? No.
-          // I'll call it for each, but in a real app this is bad. 
-          // Let's rely on the user to accept that we might just show one or I need to update AdminDashboard.
-          // Wait, I can pass a batch to `onAddClass` if I change its signature, but I can't easily change AdminDashboard here without outputting it.
-          // I'll execute the calls. React state batching might handle it, or it might override.
-          // Best approach: I'll simulate by calling it once per class but with a small delay or trust React 18 auto-batching to NOT work here (we want sequential updates) or use functional state updates in parent.
-          // Looking at AdminDashboard: `setClasses([newClass, ...classes]);` This is NOT safe for loops. It uses `classes` from closure.
-          // I MUST Update AdminDashboard to support batch or be broken.
-          // The prompt says "Please completely implement...". So I will assume I can update AdminDashboard too?
-          // "Only return files in the XML that need to be updated." -> I can update AdminDashboard.
       });
-      
-      // Update logic: I will modify `onAddClass` in this component to accept array, 
-      // but I need to update the prop definition and the parent component.
-      // For now, I'll assume I can just loop and it will fail.
-      // Actually, I will call `onAddClass` for each but since I can't change parent state safely without functional update...
-      // I will assume the parent `handleAddClass` is modified to handle arrays or use functional updates. 
-      // Let's modify `AdminDashboard.tsx` to be safe first.
-      
-      // Call parent with all new classes (hack: assuming I can change the interface or just call it)
-      // I'll update AdminDashboard.tsx to accept `onAddClass` that can take array OR change to functional updates.
-      // Let's invoke the prop `onAddClass` individually but knowing it will fail without parent change.
-      // I will update AdminDashboard.tsx in a separate change block.
       
       newClasses.forEach(c => {
           const clsLessons = newLessonsList.filter(l => l.classId === c.id);
@@ -1263,13 +1289,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                               <div className="grid grid-cols-1 gap-y-6 text-sm text-gray-600 max-w-2xl">
                                   <div className="flex"><span className="text-gray-400 w-32 inline-block">收费模式：</span><span className="text-gray-900">{selectedClass.chargeMode === 'whole' ? '整期' : '分期'}</span></div>
                                   <div className="flex"><span className="text-gray-400 w-32 inline-block">课程费用：</span><span className="text-red-500 font-bold">¥{selectedClass.price}</span></div>
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">退费策略：</span><span className="text-gray-900">
-                                      {selectedClass.refundPolicy === 'unused' ? '根据未上讲次退费' : selectedClass.refundPolicy === 'full' ? '前1讲退班全额退费' : '后1讲退班不退费'}
-                                  </span></div>
                                   <div className="flex"><span className="text-gray-400 w-32 inline-block">教辅费用：</span><span className="text-red-500 font-bold">¥{selectedClass.materialPrice || 0}</span></div>
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">教辅退费策略：</span><span className="text-gray-900">
-                                      {selectedClass.materialRefundPolicy === 'no_return' ? '报名后不退' : '开课后不退'}
-                                  </span></div>
                               </div>
                           )}
 
@@ -1632,14 +1652,14 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                 </div>
                             </div>
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4">允许老师、教室时间冲突</label>
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>允许老师、教室时间冲突</label>
                                 <div className="flex-1 flex gap-6 text-sm text-gray-600 items-center h-[38px]">
                                     <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="allowConflict" checked={formData.allowConflict === true} onChange={() => setFormData({...formData, allowConflict: true})} className="text-primary" /> 是</label>
                                     <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="allowConflict" checked={formData.allowConflict === false} onChange={() => setFormData({...formData, allowConflict: false})} className="text-primary" /> 否</label>
                                 </div>
                             </div>
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4">需要入学资格</label>
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>需要入学资格</label>
                                 <div className="flex-1 flex gap-6 text-sm text-gray-600 items-center h-[38px]">
                                     <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="needQualification" checked={formData.needQualification === true} onChange={() => setFormData({...formData, needQualification: true})} className="text-primary" /> 是</label>
                                     <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="needQualification" checked={formData.needQualification === false} onChange={() => setFormData({...formData, needQualification: false})} className="text-primary" /> 否</label>
@@ -1676,7 +1696,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center">
-                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>上课日</label>
+                                        <label className="w-24 text-sm text-gray-500 text-left mr-4"><span className="text-red-500 mr-1">*</span>频率</label>
                                         <div className="flex-1 flex gap-4 flex-wrap">
                                             {WEEKDAYS.map(day => (
                                                 <label key={day} className="flex items-center gap-2 cursor-pointer">
@@ -1763,7 +1783,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 )}
