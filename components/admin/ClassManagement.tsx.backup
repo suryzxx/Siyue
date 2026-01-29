@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ClassInfo, Lesson, Course, Teacher, StudentProfile } from '../../types';
 import { COURSES, TEACHERS, CAMPUSES, ADMIN_STUDENTS } from '../../constants';
 // @ts-ignore
@@ -86,67 +86,78 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
    width?: string;
  }
 
-  const MultiSelect: React.FC<MultiSelectProps> = ({ options, selected, onChange, placeholder, width = 'w-[90px]' }) => {
-    const [isOpen, setIsOpen] = useState(false);
+ const MultiSelect: React.FC<MultiSelectProps> = ({ options, selected, onChange, placeholder, width = 'w-[90px]' }) => {
+   const [isOpen, setIsOpen] = useState(false);
+   const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const toggleOption = (option: string) => {
-      if (selected.includes(option)) {
-        onChange(selected.filter(item => item !== option));
-      } else {
-        onChange([...selected, option]);
-      }
-    };
+   useEffect(() => {
+     const handleClickOutside = (event: MouseEvent) => {
+       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+         setIsOpen(false);
+       }
+     };
+     document.addEventListener('mousedown', handleClickOutside);
+     return () => document.removeEventListener('mousedown', handleClickOutside);
+   }, []);
 
-    const clearSelection = () => {
-      onChange([]);
-    };
+   const toggleOption = (option: string) => {
+     if (selected.includes(option)) {
+       onChange(selected.filter(item => item !== option));
+     } else {
+       onChange([...selected, option]);
+     }
+   };
 
-    const displayText = selected.length > 0 
-      ? `${placeholder} (${selected.length})` 
-      : placeholder;
+   const clearSelection = () => {
+     onChange([]);
+   };
 
-    return (
-      <div className={`relative ${width} flex-shrink-0`}>
-        <button
-          className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <span className="truncate">{displayText}</span>
-          <span className="ml-1 text-xs">{isOpen ? '▲' : '▼'}</span>
-        </button>
-        
-        {isOpen && (
-          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
-            <div className="p-2 border-b border-gray-200 flex justify-between items-center">
-              <span className="text-xs text-gray-500">可多选</span>
-              {selected.length > 0 && (
-                <button
-                  onClick={clearSelection}
-                  className="text-xs text-red-500 hover:text-red-700"
-                >
-                  清空
-                </button>
-              )}
-            </div>
-            {options.map(option => (
-              <label
-                key={option}
-                className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(option)}
-                  onChange={() => toggleOption(option)}
-                  className="mr-2 text-primary"
-                />
-                <span className="text-sm">{option}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+   const displayText = selected.length > 0 
+     ? `${placeholder} (${selected.length})` 
+     : placeholder;
+
+   return (
+     <div className={`relative ${width} flex-shrink-0`} ref={dropdownRef}>
+       <button
+         className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
+         onClick={() => setIsOpen(!isOpen)}
+       >
+         <span className="truncate">{displayText}</span>
+         <span className="ml-1 text-xs">{isOpen ? '▲' : '▼'}</span>
+       </button>
+       
+       {isOpen && (
+         <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+           <div className="p-2 border-b border-gray-200 flex justify-between items-center">
+             <span className="text-xs text-gray-500">可多选</span>
+             {selected.length > 0 && (
+               <button
+                 onClick={clearSelection}
+                 className="text-xs text-red-500 hover:text-red-700"
+               >
+                 清空
+               </button>
+             )}
+           </div>
+           {options.map(option => (
+             <label
+               key={option}
+               className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+             >
+               <input
+                 type="checkbox"
+                 checked={selected.includes(option)}
+                 onChange={() => toggleOption(option)}
+                 className="mr-2 text-primary"
+               />
+               <span className="text-sm">{option}</span>
+             </label>
+           ))}
+         </div>
+       )}
+     </div>
+   );
+ };
 
  // --- Classroom Schedule Modal Component ---
 const ClassroomScheduleModal: React.FC<{ 
@@ -528,29 +539,22 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const availableClassTypes = filterGrade ? GRADE_CLASS_TYPES[filterGrade] : allClassTypes;
 
   const allDistricts = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.keys(city))));
-  const availableDistricts = filterCity.length > 0
-    ? Array.from(new Set(filterCity.flatMap(city => LOCATION_DATA[city] ? Object.keys(LOCATION_DATA[city]) : [])))
-    : allDistricts;
+  const availableDistricts = filterCity ? Object.keys(LOCATION_DATA[filterCity]) : allDistricts;
 
   const allCampusesFromData = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.values(city).flat())));
   let availableCampuses = allCampusesFromData;
-  if (filterDistrict.length > 0 && filterCity.length > 0) {
-      // Get campuses for selected cities and districts
-      availableCampuses = Array.from(new Set(filterCity.flatMap(city => 
-        filterDistrict.flatMap(district => LOCATION_DATA[city]?.[district] || [])
-      )));
-  } else if (filterCity.length > 0) {
-      // Get all campuses for selected cities
-      availableCampuses = Array.from(new Set(filterCity.flatMap(city => 
-        LOCATION_DATA[city] ? Object.values(LOCATION_DATA[city]).flat() : []
-      )));
-  } else if (filterDistrict.length > 0) {
-       // Find districts anywhere across all cities
-       availableCampuses = Array.from(new Set(
-         Object.values(LOCATION_DATA).flatMap(cityData => 
-           filterDistrict.flatMap(district => cityData[district] || [])
-         )
-       ));
+  if (filterDistrict && filterCity) {
+      availableCampuses = LOCATION_DATA[filterCity][filterDistrict] || [];
+  } else if (filterCity) {
+      availableCampuses = Object.values(LOCATION_DATA[filterCity]).flat();
+  } else if (filterDistrict) {
+       // Find district anywhere
+       for (const city in LOCATION_DATA) {
+           if (LOCATION_DATA[city][filterDistrict]) {
+               availableCampuses = LOCATION_DATA[city][filterDistrict];
+               break;
+           }
+       }
   }
 
   // Listen for trigger from parent to open modal
@@ -1894,13 +1898,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                  <option value="面授">面授</option>
                  <option value="网课">网课</option>
              </select>
-              <MultiSelect
-                options={YEARS}
-                selected={filterYear}
-                onChange={setFilterYear}
-                placeholder="年份"
-                width="w-[90px]"
-              />
+             <MultiSelect
+               options={YEARS}
+               selected={filterYear}
+               onChange={setFilterYear}
+               placeholder="年份"
+               width="w-[90px]"
+             />
              <MultiSelect
                options={SEMESTERS}
                selected={filterSemester}
