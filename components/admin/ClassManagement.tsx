@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ClassInfo, Lesson, Course, Teacher, StudentProfile } from '../../types';
 import { COURSES, TEACHERS, CAMPUSES, ADMIN_STUDENTS } from '../../constants';
+import SearchableMultiSelect from '../common/SearchableMultiSelect';
 // @ts-ignore
 import ExcelJS from 'exceljs';
 // @ts-ignore
@@ -50,44 +51,89 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
   }
 };
 
- // Updated Column Structure
- const DISPLAY_COLUMNS = [
-   { id: 'id', label: '班级ID' },
-   { id: 'name', label: '班级名称' },
-   { id: 'mode', label: '授课方式' },
-   { id: 'courseName', label: '课程名称' },
-   { id: 'courseType', label: '课程类型' },
-   { id: 'progress', label: '教学进度' },
-   { id: 'capacity', label: '预招人数' },
-   { id: 'enrolled', label: '已报人数' },
-   { id: 'remaining', label: '余位' },
-   { id: 'year', label: '年份' },
-   { id: 'semester', label: '学期' },
-   { id: 'grade', label: '班层' },
-   { id: 'teacher', label: '主教老师' },
-   { id: 'assistant', label: '助教' },
-   { id: 'city', label: '城市' },
-   { id: 'district', label: '区域' },
-   { id: 'campus', label: '校区' },
-   { id: 'classroom', label: '教室' },
-   { id: 'price', label: '课程费用' },
-   { id: 'status', label: '班级状态' },
-   { id: 'saleStatus', label: '售卖状态' },
-   { id: 'schedule', label: '上课时间' },
-   { id: 'createdTime', label: '创建时间' },
- ];
+  // 列表显示列定义（班层和上课时间合并显示）
+  const DISPLAY_COLUMNS = [
+    { id: 'id', label: '班级ID' },
+    { id: 'name', label: '班级名称' },
+    { id: 'mode', label: '授课方式' },
+    { id: 'courseName', label: '课程名称' },
+    { id: 'courseType', label: '课程类型' },
+     { id: 'progress', label: '教学进度' },
+     { id: 'capacity', label: '预招人数' },
+     { id: 'enrolled', label: '已报人数' },
+     { id: 'remaining', label: '余位' },
+     { id: 'year', label: '年份' },
+     { id: 'semester', label: '学期' },
+     { id: 'grade', label: '班层' },
+    { id: 'teacher', label: '主教老师' },
+    { id: 'assistant', label: '助教' },
+    { id: 'city', label: '城市' },
+    { id: 'district', label: '区域' },
+    { id: 'campus', label: '校区' },
+    { id: 'classroom', label: '教室' },
+    { id: 'price', label: '课程费用' },
+    { id: 'status', label: '班级状态' },
+    { id: 'saleStatus', label: '售卖状态' },
+    { id: 'schedule', label: '上课时间' },
+    { id: 'createdTime', label: '创建时间' },
+  ];
 
- // Multi-select dropdown component
- interface MultiSelectProps {
-   options: string[];
-   selected: string[];
-   onChange: (selected: string[]) => void;
-   placeholder: string;
-   width?: string;
- }
+  // 导出列定义（班层拆分为年级+班型，上课时间拆分为开课日期+结课日期+讲次时间）
+  const EXPORT_COLUMNS = [
+    { id: 'id', label: '班级ID' },
+    { id: 'name', label: '班级名称' },
+    { id: 'mode', label: '授课方式' },
+    { id: 'courseName', label: '课程名称' },
+    { id: 'courseType', label: '课程类型' },
+    { id: 'progress', label: '教学进度' },
+    { id: 'capacity', label: '预招人数' },
+     { id: 'enrolled', label: '已报人数' },
+     { id: 'remaining', label: '余位' },
+     { id: 'year', label: '年份' },
+    { id: 'semester', label: '学期' },
+    { id: 'grade', label: '年级' },
+    { id: 'classType', label: '班型' },
+    { id: 'teacher', label: '主教老师' },
+    { id: 'assistant', label: '助教' },
+    { id: 'city', label: '城市' },
+    { id: 'district', label: '区域' },
+    { id: 'campus', label: '校区' },
+    { id: 'classroom', label: '教室' },
+    { id: 'price', label: '课程费用' },
+    { id: 'status', label: '班级状态' },
+    { id: 'saleStatus', label: '售卖状态' },
+    { id: 'startDate', label: '开课日期' },
+    { id: 'endDate', label: '结课日期' },
+    { id: 'lessonTime', label: '讲次时间' },
+    { id: 'createdTime', label: '创建时间' },
+  ];
 
-  const MultiSelect: React.FC<MultiSelectProps> = ({ options, selected, onChange, placeholder, width = 'w-[90px]' }) => {
-    const [isOpen, setIsOpen] = useState(false);
+  // Multi-select dropdown component
+  interface MultiSelectProps {
+    options: string[];
+    selected: string[];
+    onChange: (selected: string[]) => void;
+    placeholder: string;
+    width?: string;
+  }
+
+   const MultiSelect: React.FC<MultiSelectProps> = ({ options, selected, onChange, placeholder, width = 'w-[90px]' }) => {
+     const [isOpen, setIsOpen] = useState(false);
+     const dropdownRef = useRef<HTMLDivElement>(null);
+
+     // 点击外部关闭下拉框
+     useEffect(() => {
+       const handleClickOutside = (event: MouseEvent) => {
+         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+           setIsOpen(false);
+         }
+       };
+
+       document.addEventListener('mousedown', handleClickOutside);
+       return () => {
+         document.removeEventListener('mousedown', handleClickOutside);
+       };
+     }, []);
 
     const toggleOption = (option: string) => {
       if (selected.includes(option)) {
@@ -105,8 +151,8 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
       ? `${placeholder} (${selected.length})` 
       : placeholder;
 
-    return (
-      <div className={`relative ${width} flex-shrink-0`}>
+     return (
+       <div className={`relative ${width} flex-shrink-0`} ref={dropdownRef}>
         <button
           className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
           onClick={() => setIsOpen(!isOpen)}
@@ -116,7 +162,7 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
         </button>
         
         {isOpen && (
-          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
             <div className="p-2 border-b border-gray-200 flex justify-between items-center">
               <span className="text-xs text-gray-500">可多选</span>
               {selected.length > 0 && (
@@ -525,7 +571,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
   // Dynamic Options
   const allClassTypes = Array.from(new Set(Object.values(GRADE_CLASS_TYPES).flat()));
-  const availableClassTypes = filterGrade ? GRADE_CLASS_TYPES[filterGrade] : allClassTypes;
+  const availableClassTypes = filterGrade.length > 0 
+    ? Array.from(new Set(filterGrade.flatMap(grade => GRADE_CLASS_TYPES[grade] || [])))
+    : allClassTypes;
 
   const allDistricts = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.keys(city))));
   const availableDistricts = filterCity.length > 0
@@ -762,15 +810,15 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     saveAs(blob, '班级批量导入模板.xlsx');
   };
 
-  // 导出班级列表功能
+  // 导出班级列表功能（使用EXPORT_COLUMNS，拆分年级+班型、开课日期+结课日期+讲次时间）
   const exportClassList = async () => {
     try {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('班级列表');
       
-      // 使用DISPLAY_COLUMNS作为表头
-      const headers = DISPLAY_COLUMNS.map(col => col.label);
-      worksheet.columns = DISPLAY_COLUMNS.map(col => ({
+      // 使用EXPORT_COLUMNS作为表头（拆分格式）
+      const headers = EXPORT_COLUMNS.map(col => col.label);
+      worksheet.columns = EXPORT_COLUMNS.map(col => ({
         header: col.label,
         key: col.id,
         width: 15
@@ -795,19 +843,39 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         const completedLessons = classLessonList.filter(l => l.status === 'completed').length;
         const progressText = `${completedLessons}/${totalLessons}`;
 
+        // 计算开课日期（首课日期）和结课日期（首课日期+课节数推算）
+        let startDate = cls.startDate || '-';
+        let endDate = '-';
+        if (cls.startDate && totalLessons > 0) {
+          try {
+            const start = new Date(cls.startDate);
+            const end = new Date(start);
+            end.setDate(end.getDate() + (totalLessons - 1) * 7); // 假设每周一节课
+            endDate = `${end.getFullYear()}.${(end.getMonth() + 1).toString().padStart(2, '0')}.${end.getDate().toString().padStart(2, '0')}`;
+            startDate = `${start.getFullYear()}.${(start.getMonth() + 1).toString().padStart(2, '0')}.${start.getDate().toString().padStart(2, '0')}`;
+          } catch {
+            endDate = '-';
+          }
+        }
+
+        // 拆分年级和班型
+        const grade = cls.grade || course?.grade || '-';
+        const classType = cls.studentTag || '-';
+
         const rowData: Record<string, any> = {
           id: cls.id,
           name: cls.name,
-          mode: '面授', // 默认值
+          mode: '面授',
           courseName: course?.name || '',
           courseType: course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课',
-          progress: progressText,
-          capacity: cls.capacity,
-          enrolled: cls.studentCount,
-          remaining: Math.max(0, (cls.capacity || 0) - (cls.studentCount || 0)),
+            progress: progressText,
+            capacity: cls.capacity,
+            enrolled: cls.studentCount,
+            remaining: Math.max(0, (cls.capacity || 0) - (cls.studentCount || 0)),
           year: cls.year || course?.year || '-',
           semester: cls.semester || course?.semester || '-',
-          grade: cls.grade || course?.grade || '-',
+          grade: grade,
+          classType: classType,
           teacher: teacher?.name || '-',
           assistant: assistant?.name || '-',
           city: cls.city || '-',
@@ -818,7 +886,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           status: cls.status === 'active' || cls.status === 'full' ? '开课中' : 
                   cls.status === 'closed' || cls.status === 'disabled' ? '已结课' : '未开课',
           saleStatus: cls.saleStatus === 'on_sale' ? '已上架' : '未上架',
-          schedule: cls.scheduleDescription || '-',
+          startDate: startDate,
+          endDate: endDate,
+          lessonTime: cls.timeSlot || '-',
           createdTime: cls.createdTime || '-'
         };
 
@@ -857,13 +927,121 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       saveAs(blob, fileName);
 
-    } catch (error) {
-      console.error('导出班级列表失败:', error);
-      alert('导出失败，请稍后重试');
-    }
-  };
+     } catch (error) {
+       console.error('导出班级列表失败:', error);
+       alert('导出失败，请稍后重试');
+     }
+   };
 
-   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   // 导出班级学生功能
+   const exportClassStudents = async () => {
+     try {
+       const workbook = new ExcelJS.Workbook();
+       const worksheet = workbook.addWorksheet('班级学生列表');
+       
+       // 定义导出列
+       const exportColumns = [
+         { key: 'id', label: '学生ID', width: 12 },
+         { key: 'name', label: '学生姓名', width: 15 },
+         { key: 'account', label: '手机号', width: 15 },
+         { key: 'gender', label: '性别', width: 8 },
+         { key: 'birthDate', label: '出生日期', width: 12 },
+         { key: 'studentNumber', label: '学号', width: 12 },
+         { key: 'evaluationLevel', label: '评估等级', width: 10 },
+         { key: 'campus', label: '校区', width: 15 },
+         { key: 'studentStatus', label: '学生状态', width: 12 },
+         { key: 'followUpStatus', label: '跟进状态', width: 12 },
+         { key: 'className', label: '班级名称', width: 20 },
+         { key: 'createdTime', label: '创建时间', width: 18 },
+         { key: 'updatedTime', label: '更新时间', width: 18 }
+       ];
+
+        worksheet.columns = exportColumns.map(col => ({
+          header: col.label,
+          key: col.key,
+          width: col.width
+        }));
+
+       // 设置表头样式
+       worksheet.getRow(1).font = { bold: true };
+       worksheet.getRow(1).fill = {
+         type: 'pattern',
+         pattern: 'solid',
+         fgColor: { argb: 'FFE0F0F5' }
+       };
+
+       // 收集所有班级的学生数据
+       const allClassStudents: any[] = [];
+       
+       filteredClasses.forEach(cls => {
+         // 获取该班级的学生（根据className匹配）
+         const classStudents = ADMIN_STUDENTS.filter(student => 
+           student.className === cls.name
+         );
+         
+         // 为每个学生添加班级信息
+         classStudents.forEach(student => {
+           allClassStudents.push({
+             ...student,
+             className: cls.name
+           });
+         });
+       });
+
+       // 如果没有找到学生数据，使用模拟数据
+       let studentsToExport = allClassStudents;
+       if (allClassStudents.length === 0) {
+         // 使用前20个学生作为模拟数据
+         studentsToExport = ADMIN_STUDENTS.slice(0, 20).map(student => ({
+           ...student,
+           className: filteredClasses.length > 0 ? filteredClasses[0].name : '未分配班级'
+         }));
+       }
+
+       // 添加数据行
+       studentsToExport.forEach((student, index) => {
+         const row = worksheet.addRow(student);
+         
+         // 设置行样式
+         if (index % 2 === 0) {
+           row.fill = {
+             type: 'pattern',
+             pattern: 'solid',
+             fgColor: { argb: 'FFF9FBFA' }
+           };
+         }
+       });
+
+       // 启用筛选功能
+       worksheet.autoFilter = {
+         from: { row: 1, column: 1 },
+         to: { row: 1, column: exportColumns.length }
+       };
+
+       // 自动调整列宽
+       worksheet.columns.forEach(column => {
+         if (column.width) {
+           column.width = Math.max(column.width || 0, 10);
+         }
+       });
+
+       // 生成文件名（包含当前时间）
+       const now = new Date();
+       const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+       const fileName = `班级学生列表_${timestamp}.xlsx`;
+
+       // 生成并下载文件
+       const buffer = await workbook.xlsx.writeBuffer();
+       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+       saveAs(blob, fileName);
+
+     } catch (error) {
+       console.error('导出班级学生失败:', error);
+       alert('导出失败，请稍后重试');
+     }
+   };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
        const file = e.target.files?.[0];
        if (!file) return;
 
@@ -1619,13 +1797,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         case 'courseName': return <span className="text-gray-800">{course?.name}</span>;
         case 'courseType': return <span className="text-gray-600">{course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课'}</span>;
         case 'progress': return <span className="text-gray-600">{progressText}</span>;
-        case 'enrolled': return (
-            <span className="text-gray-600">
-                {cls.studentCount}
-            </span>
-        );
-        case 'capacity': return <span className="text-gray-600">{cls.capacity}</span>;
-        case 'remaining': return <span className="text-gray-600">{Math.max(0, (cls.capacity || 0) - (cls.studentCount || 0))}</span>;
+         case 'enrolled': return (
+             <span className="text-gray-600">
+                 {cls.studentCount}
+             </span>
+         );
+          case 'capacity': return <span className="text-gray-600">{cls.capacity}</span>;
+         case 'remaining': return <span className="text-gray-600">{Math.max(0, (cls.capacity || 0) - (cls.studentCount || 0))}</span>;
         case 'year': return <span className="text-gray-600">{cls.year || course?.year || '-'}</span>;
         case 'semester': return <span className="text-gray-600">{cls.semester || course?.semester || '-'}</span>;
         case 'grade': return (
@@ -1741,8 +1919,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                   <div><span className="text-gray-400 w-24 inline-block">学期：</span><span className="text-gray-900">{selectedClass.semester || '-'}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">面授老师：</span><span className="text-gray-900">{teacher?.name}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">校区：</span><span className="text-gray-900">{selectedClass.campus}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">预招人数：</span><span className="text-gray-900">{selectedClass.capacity}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">教室：</span><span className="text-gray-900">{selectedClass.classroom || '-'}</span></div>
+                                   <div><span className="text-gray-400 w-24 inline-block">预招人数：</span><span className="text-gray-900">{selectedClass.capacity}</span></div>
+                                   <div><span className="text-gray-400 w-24 inline-block">调课位：</span><span className="text-gray-900">{selectedClass.virtualSeats || 0}</span></div>
+                                   <div><span className="text-gray-400 w-24 inline-block">教室：</span><span className="text-gray-900">{selectedClass.classroom || '-'}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">助教：</span><span className="text-gray-900">{selectedClass.assistant || '0'}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">年级：</span><span className="text-gray-900">{selectedClass.grade || '-'}</span></div>
                               </div>
@@ -1936,20 +2115,21 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                width="w-[100px]"
              />
 
-              {/* Teacher Select */}
-              <MultiSelect
-                options={TEACHERS.map(t => t.name)}
-                selected={filterTeacher.map(id => TEACHERS.find(t => t.id === id)?.name || '')}
-                onChange={(selectedNames) => {
-                  // 将老师姓名转换为ID
-                  const selectedIds = selectedNames.map(name => 
-                    TEACHERS.find(t => t.name === name)?.id || ''
-                  ).filter(id => id !== '');
-                  setFilterTeacher(selectedIds);
-                }}
-                placeholder="选择老师"
-                width="w-[120px]"
-              />
+               {/* Teacher Select - 支持搜索和多选 */}
+               <SearchableMultiSelect
+                 options={TEACHERS.map(t => t.name)}
+                 selected={filterTeacher.map(id => TEACHERS.find(t => t.id === id)?.name || '')}
+                 onChange={(selectedNames) => {
+                   // 将老师姓名转换为ID
+                   const selectedIds = selectedNames.map(name => 
+                     TEACHERS.find(t => t.name === name)?.id || ''
+                   ).filter(id => id !== '');
+                   setFilterTeacher(selectedIds);
+                 }}
+                 placeholder="选择老师"
+                 width="w-[140px]"
+                 searchPlaceholder="搜索老师..."
+               />
 
               {/* Status */}
               <MultiSelect
@@ -2111,7 +2291,12 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
              >
                导出班级列表
              </button>
-            <button className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors">导出班级学生</button>
+             <button 
+               onClick={exportClassStudents}
+               className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors"
+             >
+               导出班级学生
+             </button>
             <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 ml-4">
                 <input type="checkbox" checked={showActiveOnly} onChange={e => setShowActiveOnly(e.target.checked)} className="w-4 h-4 rounded text-primary focus:ring-primary"/>
                 仅展示“未开课、开课中”的班级
@@ -2119,22 +2304,22 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
          </div>
       </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-auto p-6 bg-white">
-        <div className="border-t border-gray-100">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200">
+      {/* Table - 优化边距和操作栏固定 */}
+      <div className="flex-1 overflow-hidden bg-white flex flex-col">
+        <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
+          <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
+            <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               <tr>
                 {DISPLAY_COLUMNS.map(col => (<th key={col.id} className="p-4">{col.label}</th>))}
-                <th className="p-4 text-center sticky right-0 bg-[#F9FBFA]">操作</th>
+                <th className="p-4 text-center sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredClasses.map(cls => (
                   <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
                     {DISPLAY_COLUMNS.map(col => (<td key={col.id} className="p-4">{getCellContent(col.id, cls)}</td>))}
-                    <td className="p-4 sticky right-0 bg-white hover:bg-gray-50">
-                      <div className="flex gap-2 justify-center text-primary text-sm">
+                    <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+                      <div className="flex gap-2 justify-center text-primary text-sm whitespace-nowrap">
                         <button 
                             className="hover:opacity-80" 
                             onClick={() => handleToggleSaleStatus(cls)}

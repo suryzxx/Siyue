@@ -199,26 +199,32 @@ const TeacherManagement: React.FC = () => {
         
         <div className="flex items-center gap-3 ml-auto">
           <button className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors">搜索</button>
-          <button 
-            className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-5 py-1.5 rounded text-sm transition-colors"
-            onClick={() => { setFilterName(''); setFilterPhone(''); setFilterCity(''); setFilterCampus(''); setFilterPosition(''); setFilterStatus(''); }}
-          >
-            重置
-          </button>
-          <button 
-            onClick={() => handleOpenModal()}
-            className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors ml-2"
-          >
-            新增员工
-          </button>
-        </div>
-      </div>
+           <button 
+             className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium"
+             onClick={() => { setFilterName(''); setFilterPhone(''); setFilterCity(''); setFilterCampus(''); setFilterPosition(''); setFilterStatus(''); }}
+           >
+             重置
+           </button>
+         </div>
+       </div>
 
-      {/* Table */}
-      <div className="flex-1 overflow-auto p-6 bg-white">
-        <div className="border-t border-gray-100">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200">
+       {/* ACTION BAR - 参考班级管理 */}
+       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={() => handleOpenModal()}
+               className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
+             >
+               新增员工
+             </button>
+          </div>
+       </div>
+
+        {/* Table - 统一表格样式与班级管理一致 */}
+       <div className="flex-1 overflow-hidden bg-white flex flex-col">
+         <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
+           <table className="w-full text-left text-sm min-w-max">
+             <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               <tr>
                 <th className="p-4 whitespace-nowrap">员工ID</th>
                 <th className="p-4 whitespace-nowrap">姓名</th>
@@ -230,7 +236,7 @@ const TeacherManagement: React.FC = () => {
                 <th className="p-4 whitespace-nowrap">宣传海报</th>
                 <th className="p-4 whitespace-nowrap">状态</th>
                 <th className="p-4 whitespace-nowrap">创建时间</th>
-                <th className="p-4 whitespace-nowrap">操作</th>
+                 <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -252,13 +258,13 @@ const TeacherManagement: React.FC = () => {
                      )}
                   </td>
                   <td className="p-4 text-gray-600 text-xs">{teacher.createdTime || '-'}</td>
-                  <td className="p-4 whitespace-nowrap">
-                    <div className="flex gap-3 text-sm">
-                      <button onClick={() => handleOpenModal(teacher)} className="text-primary hover:opacity-80">编辑</button>
-                      <button className="text-orange-400 hover:opacity-80">重置密码</button>
-                      <button className="text-red-500 hover:opacity-80">禁用</button>
-                    </div>
-                  </td>
+                   <td className="p-4 whitespace-nowrap sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+                     <div className="flex gap-3 text-sm">
+                       <button onClick={() => handleOpenModal(teacher)} className="text-primary hover:opacity-80">编辑</button>
+                       <button className="text-orange-400 hover:opacity-80">重置密码</button>
+                       <button className="text-red-500 hover:opacity-80">禁用</button>
+                     </div>
+                   </td>
                 </tr>
               ))}
             </tbody>

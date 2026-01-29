@@ -80,8 +80,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
         
         <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-          <NavItem id="course" label="课程产品" />
-          <NavItem id="class" label="班级管理" />
+           <NavItem id="course" label="课程产品" />
+           <NavItem id="class" label="班级管理" />
+           
+           <NavItem id="student" label="学生管理" />
+          <NavItem id="order" label="订单管理" />
           
           {/* Basic Settings Group */}
           <div 
@@ -99,11 +102,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <NavItem id="system" label="系统设置" indent />
             </>
           )}
-
-          <div className="my-2 border-t border-gray-100 mx-4"></div>
-          
-          <NavItem id="student" label="学生管理" />
-          <NavItem id="order" label="订单管理" />
         </div>
       </div>
 

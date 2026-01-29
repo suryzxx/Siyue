@@ -259,46 +259,52 @@ const AddressManagement: React.FC = () => {
                 >
                   搜索
                 </button>
-                <button 
-                  className="border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-1.5 rounded text-sm transition-colors"
-                  onClick={() => { setFilterClassroomName(''); setFilterClassroomCampus(''); setFilterClassroomStatus(''); }}
-                >
-                  重置
-                </button>
+                 <button 
+                   className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium ml-2"
+                   onClick={() => { setFilterClassroomName(''); setFilterClassroomCampus(''); setFilterClassroomStatus(''); }}
+                 >
+                   重置
+                 </button>
             </div>
          ) : (
              <div></div> // Spacer for Campus tab
-         )}
-         
-         <button 
-            onClick={() => activeTab === 'campus' ? handleOpenCampusModal() : handleOpenClassroomModal()}
-            className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0"
-         >
-            {activeTab === 'campus' ? '创建校区' : '创建教室'}
-         </button>
-      </div>
+          )}
+       </div>
 
-      <div className="flex-1 overflow-auto p-6 bg-white">
-        <div className="border-t border-gray-100">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200">
+       {/* ACTION BAR - 创建按钮居左 */}
+       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={() => activeTab === 'campus' ? handleOpenCampusModal() : handleOpenClassroomModal()}
+               className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
+             >
+               {activeTab === 'campus' ? '创建校区' : '创建教室'}
+             </button>
+          </div>
+       </div>
+
+       {/* Table - 统一表格样式与班级管理一致 */}
+      <div className="flex-1 overflow-hidden bg-white flex flex-col">
+        <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
+          <table className="w-full text-left text-sm min-w-max">
+            <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               {activeTab === 'campus' ? (
-                <tr>
-                  <th className="p-4">校区名称</th>
-                  <th className="p-4">校区地址</th>
-                  <th className="p-4">教室数量</th>
-                  <th className="p-4">状态</th>
-                  <th className="p-4 text-right">操作</th>
-                </tr>
+                 <tr>
+                   <th className="p-4">校区名称</th>
+                   <th className="p-4">校区地址</th>
+                   <th className="p-4">教室数量</th>
+                   <th className="p-4">状态</th>
+                   <th className="p-4 text-right sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
+                 </tr>
               ) : (
-                <tr>
-                  <th className="p-4">教室名称</th>
-                  <th className="p-4">所属校区</th>
-                  <th className="p-4">容纳人数</th>
-                  <th className="p-4">详细地址</th>
-                  <th className="p-4">状态</th>
-                  <th className="p-4 text-right">操作</th>
-                </tr>
+                 <tr>
+                   <th className="p-4">教室名称</th>
+                   <th className="p-4">所属校区</th>
+                   <th className="p-4">容纳人数</th>
+                   <th className="p-4">详细地址</th>
+                   <th className="p-4">状态</th>
+                   <th className="p-4 text-right sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
+                 </tr>
               )}
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -316,12 +322,12 @@ const AddressManagement: React.FC = () => {
                           <span className="bg-gray-100 text-gray-400 px-2 py-0.5 rounded text-xs border border-gray-200">已禁用</span>
                       )}
                   </td>
-                  <td className="p-4 text-right text-primary">
-                    <button onClick={() => handleOpenCampusModal(campus)} className="mr-3 hover:opacity-80">编辑</button>
-                    <button onClick={() => handleToggleCampusStatus(campus.id)} className="hover:opacity-80">
-                        {campus.status === 'active' ? '禁用' : '启用'}
-                    </button>
-                  </td>
+                   <td className="p-4 text-right text-primary sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+                     <button onClick={() => handleOpenCampusModal(campus)} className="mr-3 hover:opacity-80">编辑</button>
+                     <button onClick={() => handleToggleCampusStatus(campus.id)} className="hover:opacity-80">
+                         {campus.status === 'active' ? '禁用' : '启用'}
+                     </button>
+                   </td>
                 </tr>
               ))}
               {activeTab === 'classroom' && filteredClassrooms.map((room) => (
@@ -337,12 +343,12 @@ const AddressManagement: React.FC = () => {
                           <span className="bg-gray-100 text-gray-400 px-2 py-0.5 rounded text-xs border border-gray-200">已禁用</span>
                       )}
                   </td>
-                  <td className="p-4 text-right text-primary">
-                    <button onClick={() => handleOpenClassroomModal(room)} className="mr-3 hover:opacity-80">编辑</button>
-                    <button onClick={() => handleToggleClassroomStatus(room.id)} className="hover:opacity-80">
-                        {room.status === 'active' ? '禁用' : '启用'}
-                    </button>
-                  </td>
+                   <td className="p-4 text-right text-primary sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
+                     <button onClick={() => handleOpenClassroomModal(room)} className="mr-3 hover:opacity-80">编辑</button>
+                     <button onClick={() => handleToggleClassroomStatus(room.id)} className="hover:opacity-80">
+                         {room.status === 'active' ? '禁用' : '启用'}
+                     </button>
+                   </td>
                 </tr>
               ))}
               {activeTab === 'classroom' && filteredClassrooms.length === 0 && (

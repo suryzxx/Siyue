@@ -10,15 +10,52 @@ export interface Student {
   hasUnread?: boolean;
 }
 
-export interface StudentProfile {
-  id: string;
-  name: string;
-  account: string;
-  gender: '男' | '女';
-  className?: string;
-  createdTime: string;
-  updatedTime: string;
-}
+ // 新增枚举类型
+ export type StudentStatus = '在读学生' | '潜在学生' | '历史学生';
+ export type FollowUpStatus = '待跟进' | '跟进中' | '已邀约' | '已签约' | '退费&流失';
+ export type OrderStatus = '待支付' | '已支付' | '已取消' | '已退款';
+ export type PaymentMethod = '微信支付' | '现金';
+
+ export interface StudentProfile {
+   id: string;
+   name: string;
+   account: string;
+   gender: '男' | '女';
+   className?: string;
+   createdTime: string;
+   updatedTime: string;
+   // 新增字段
+   birthDate?: string; // 出生年月
+   studentNumber?: string; // 学号
+   evaluationLevel?: string; // 评测等级
+   campus?: string; // 所属校区
+   studentStatus?: StudentStatus; // 学生状态
+   followUpStatus?: FollowUpStatus; // 跟进状态
+ }
+
+ export interface Order {
+   id: string;
+   studentAccount: string;
+   productName: string;
+   className: string;
+   amount: number;
+   status: 'paid' | 'pending';
+   createdTime: string;
+   paymentTime: string;
+   // 新增字段
+   orderNumber?: string; // 订单编号
+   phone?: string; // 手机号
+    studentNumber?: string; // 学号（系统生成）
+    studentName?: string; // 学生姓名
+    classId?: string; // 班级ID
+    orderStatus?: OrderStatus; // 订单状态
+   paymentMethod?: PaymentMethod; // 支付方式
+   originalAmount?: number; // 原价金额
+   discountAmount?: number; // 优惠金额
+   materialFee?: number; // 教辅费
+   courseFee?: number; // 课程费
+   lessonCount?: number; // 购买节数
+ }
 
 export interface ClassInfo {
   id: string;
@@ -153,13 +190,4 @@ export interface Product {
   createdTime: string;
 }
 
-export interface Order {
-  id: string;
-  studentAccount: string;
-  productName: string;
-  className: string;
-  amount: number;
-  status: 'paid' | 'pending';
-  createdTime: string;
-  paymentTime: string;
-}
+

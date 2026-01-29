@@ -56,17 +56,17 @@ export const TEACHERS: Teacher[] = [
 ];
 
 export const ADMIN_STUDENTS: StudentProfile[] = [
-  { id: '4994', name: '朱维茜', account: '18262568828', gender: '男', className: '测试-暑G2-S', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28' },
-  { id: '4993', name: 'Randi丁柔', account: '13921447652', gender: '男', className: '测试-暑G2-R', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28' },
-  { id: '4992', name: 'Grace吴悦', account: '18260360314', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
-  { id: '4991', name: '钱晶', account: '15250965218', gender: '男', className: '测试-暑G4-A+', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
-  { id: '4990', name: '张璟秋', account: '13149918395', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
-  { id: '4989', name: 'Sara薛蓉', account: '13801597148', gender: '男', className: '测试-暑K3-进阶', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
-  { id: '4988', name: '刘嘉颖', account: '13951796802', gender: '男', className: '测试-暑G2-A', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27' },
-  { id: '11678463', name: '殷煦纶', account: '138****0455', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
-  { id: '11705283', name: '张梓墨', account: '180****7733', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
-  { id: '11950153', name: '王子萱', account: '137****4495', gender: '女', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
-  { id: '11965183', name: '蒋翊翘', account: '158****8498', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01' },
+   { id: '4994', name: '朱维茜', account: '18262568828', gender: '男', className: '测试-暑G2-S', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2015-03-15', studentNumber: 'S20250001', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '4993', name: 'Randi丁柔', account: '13921447652', gender: '男', className: '测试-暑G2-R', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2016-05-20', studentNumber: 'S20250002', evaluationLevel: 'B级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '4992', name: 'Grace吴悦', account: '18260360314', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-08-10', studentNumber: 'S20250003', evaluationLevel: 'A+级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '4991', name: '钱晶', account: '15250965218', gender: '男', className: '测试-暑G4-A+', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2014-11-25', studentNumber: 'S20250004', evaluationLevel: 'B+级', campus: '奥南校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '4990', name: '张璟秋', account: '13149918395', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-02-14', studentNumber: 'S20250005', evaluationLevel: 'C级', campus: '五台山校区', studentStatus: '潜在学生', followUpStatus: '跟进中' },
+   { id: '4989', name: 'Sara薛蓉', account: '13801597148', gender: '男', className: '测试-暑K3-进阶', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2018-07-30', studentNumber: 'S20250006', evaluationLevel: 'A级', campus: '奥体网球中心校区', studentStatus: '潜在学生', followUpStatus: '待跟进' },
+   { id: '4988', name: '刘嘉颖', account: '13951796802', gender: '男', className: '测试-暑G2-A', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2016-09-05', studentNumber: 'S20250007', evaluationLevel: 'B级', campus: '爱邦中心校区', studentStatus: '历史学生', followUpStatus: '退费&流失' },
+   { id: '11678463', name: '殷煦纶', account: '138****0455', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-12-01', studentNumber: 'S20240001', evaluationLevel: 'A+级', campus: '仙林校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '11705283', name: '张梓墨', account: '180****7733', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-08-15', studentNumber: 'S20240002', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '11950153', name: '王子萱', account: '137****4495', gender: '女', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-04-22', studentNumber: 'S20240003', evaluationLevel: 'B+级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约' },
+   { id: '11965183', name: '蒋翊翘', account: '158****8498', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-10-30', studentNumber: 'S20240004', evaluationLevel: 'A级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约' },
 ];
 
 export const CAMPUSES = [
@@ -419,12 +419,12 @@ export const PRODUCTS: Product[] = [
   { id: 'P004', name: '商品D', price: 1899, courseId: 'course2', classId: 'c_p5', deliveryType: 'offline', description: 'K3飞跃班三期(Full)', status: 'active', createdTime: '2025-06-04' },
 ];
 
-export const ORDERS: Order[] = [
-  { id: 'ORD001', studentAccount: '17788888888', productName: '商品A', className: '25暑-K3-进阶--一期', amount: 2999, status: 'paid', createdTime: '2026-01-16 10:30:00', paymentTime: '2026-01-16 10:35:00' },
-  { id: 'ORD002', studentAccount: '15588888888', productName: '商品B', className: '25寒-G5-A+--二期', amount: 2555, status: 'pending', createdTime: '2026-01-16 10:35:00', paymentTime: '-' },
-  { id: 'ORD003', studentAccount: '13866666666', productName: '商品C', className: '25暑-G1-A+--一期', amount: 3299, status: 'paid', createdTime: '2026-01-15 14:20:00', paymentTime: '2026-01-15 14:25:00' },
-  { id: 'ORD004', studentAccount: '15977777777', productName: '商品D', className: '25暑-G2-A+--二期', amount: 2799, status: 'paid', createdTime: '2026-01-14 09:15:00', paymentTime: '2026-01-14 09:20:00' },
-  { id: 'ORD005', studentAccount: '18699999999', productName: '商品E', className: '25暑-K3-飞跃--三期', amount: 1899, status: 'pending', createdTime: '2026-01-13 16:45:00', paymentTime: '-' },
-  { id: 'ORD006', studentAccount: '13644444444', productName: '商品F', className: '25暑-G3-A+--一期', amount: 3599, status: 'paid', createdTime: '2026-01-12 11:30:00', paymentTime: '2026-01-12 11:35:00' },
-  { id: 'ORD007', studentAccount: '15833333333', productName: '商品G', className: '25寒-G4-S+--二期', amount: 2299, status: 'paid', createdTime: '2026-01-11 13:20:00', paymentTime: '2026-01-11 13:25:00' },
-];
+ export const ORDERS: Order[] = [
+    { id: 'ORD001', studentAccount: '17788888888', productName: '商品A', className: '25暑-K3-进阶--一期', amount: 2999, status: 'paid', createdTime: '2026-01-16 10:30:00', paymentTime: '2026-01-16 10:35:00', orderNumber: 'ON20260116001', phone: '17788888888', studentNumber: 'S20250001', studentName: '张三', classId: 'c_p1', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3200, discountAmount: 201, materialFee: 100, courseFee: 2899, lessonCount: 12 },
+    { id: 'ORD002', studentAccount: '15588888888', productName: '商品B', className: '25寒-G5-A+--二期', amount: 2555, status: 'pending', createdTime: '2026-01-16 10:35:00', paymentTime: '-', orderNumber: 'ON20260116002', phone: '15588888888', studentNumber: 'S20250002', studentName: '李四', classId: 'c_p2', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2800, discountAmount: 245, materialFee: 0, courseFee: 2555, lessonCount: 10 },
+    { id: 'ORD003', studentAccount: '13866666666', productName: '商品C', className: '25暑-G1-A+--一期', amount: 3299, status: 'paid', createdTime: '2026-01-15 14:20:00', paymentTime: '2026-01-15 14:25:00', orderNumber: 'ON20260115001', phone: '13866666666', studentNumber: 'S20250003', studentName: '王五', classId: 'c_p3', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3500, discountAmount: 201, materialFee: 0, courseFee: 3299, lessonCount: 15 },
+    { id: 'ORD004', studentAccount: '15977777777', productName: '商品D', className: '25暑-G2-A+--二期', amount: 2799, status: 'paid', createdTime: '2026-01-14 09:15:00', paymentTime: '2026-01-14 09:20:00', orderNumber: 'ON20260114001', phone: '15977777777', studentNumber: 'S20250004', studentName: '赵六', classId: 'c_p4', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3000, discountAmount: 201, materialFee: 0, courseFee: 2799, lessonCount: 12 },
+    { id: 'ORD005', studentAccount: '18699999999', productName: '商品E', className: '25暑-K3-飞跃--三期', amount: 1899, status: 'pending', createdTime: '2026-01-13 16:45:00', paymentTime: '-', orderNumber: 'ON20260113001', phone: '18699999999', studentNumber: 'S20250005', studentName: '钱七', classId: 'c_p5', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2000, discountAmount: 101, materialFee: 0, courseFee: 1899, lessonCount: 8 },
+    { id: 'ORD006', studentAccount: '13644444444', productName: '商品F', className: '25暑-G3-A+--一期', amount: 3599, status: 'paid', createdTime: '2026-01-12 11:30:00', paymentTime: '2026-01-12 11:35:00', orderNumber: 'ON20260112001', phone: '13644444444', studentNumber: 'S20250006', studentName: '孙八', classId: '601', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3800, discountAmount: 201, materialFee: 0, courseFee: 3599, lessonCount: 15 },
+    { id: 'ORD007', studentAccount: '15833333333', productName: '商品G', className: '25寒-G4-S+--二期', amount: 2299, status: 'paid', createdTime: '2026-01-11 13:20:00', paymentTime: '2026-01-11 13:25:00', orderNumber: 'ON20260111001', phone: '15833333333', studentNumber: 'S20250007', studentName: '周九', classId: '602', orderStatus: '已取消', paymentMethod: '微信支付', originalAmount: 2500, discountAmount: 201, materialFee: 0, courseFee: 2299, lessonCount: 10 },
+ ];
