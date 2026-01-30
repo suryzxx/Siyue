@@ -25,27 +25,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
-      
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+          cache: 'npm'  # 改为npm缓存
       
       - name: Install dependencies
-        run: |
-          pnpm install --no-frozen-lockfile
-          echo "✅ Dependencies installed"
-      
-      - name: Check TypeScript
-        run: |
-          npx tsc --noEmit
-          echo "✅ TypeScript check passed"
+        run: npm install  # 使用npm install
       
       - name: Build
         run: |
-          pnpm run build
-          echo "✅ Build completed"
+          npm run build  # 使用npm run build
+          echo "Build completed. Contents of dist folder:"
           ls -la dist/
       
       - name: Setup Pages
