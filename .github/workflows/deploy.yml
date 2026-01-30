@@ -38,6 +38,7 @@ jobs:
       - name: Build
         run: |
           pnpm run build
+          touch dist/.nojekyll
           echo "✅ Build completed"
           ls -la dist/
       
