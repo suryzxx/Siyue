@@ -566,6 +566,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   // NEW FILTERS (保持单选)
   const [filterRemaining, setFilterRemaining] = useState('');
   const [filterSaleStatus, setFilterSaleStatus] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
   
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
@@ -933,28 +934,29 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
      }
    };
 
-   // 导出班级学生功能
-   const exportClassStudents = async () => {
-     try {
-       const workbook = new ExcelJS.Workbook();
-       const worksheet = workbook.addWorksheet('班级学生列表');
-       
-       // 定义导出列
-       const exportColumns = [
-         { key: 'id', label: '学生ID', width: 12 },
-         { key: 'name', label: '学生姓名', width: 15 },
-         { key: 'account', label: '手机号', width: 15 },
-         { key: 'gender', label: '性别', width: 8 },
-         { key: 'birthDate', label: '出生日期', width: 12 },
-         { key: 'studentNumber', label: '学号', width: 12 },
-         { key: 'evaluationLevel', label: '评估等级', width: 10 },
-         { key: 'campus', label: '校区', width: 15 },
-         { key: 'studentStatus', label: '学生状态', width: 12 },
-         { key: 'followUpStatus', label: '跟进状态', width: 12 },
-         { key: 'className', label: '班级名称', width: 20 },
-         { key: 'createdTime', label: '创建时间', width: 18 },
-         { key: 'updatedTime', label: '更新时间', width: 18 }
-       ];
+    // 导出班级学生功能
+    const exportClassStudents = async () => {
+      try {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('班级学生列表');
+        
+        // 定义导出列 - 按照用户要求的顺序
+        const exportColumns = [
+          { key: 'className', label: '班级名称', width: 20 },
+          { key: 'courseType', label: '课程类型', width: 12 },
+          { key: 'grade', label: '年级', width: 10 },
+          { key: 'classType', label: '班型', width: 12 },
+          { key: 'subject', label: '学科', width: 10 },
+          { key: 'semester', label: '学期', width: 10 },
+          { key: 'campus', label: '校区', width: 15 },
+          { key: 'teacher', label: '老师', width: 15 },
+          { key: 'startDate', label: '开课日期', width: 12 },
+          { key: 'endDate', label: '结束日期', width: 12 },
+          { key: 'lessonTime', label: '上课时间', width: 15 },
+          { key: 'studentId', label: '学生ID', width: 12 },
+          { key: 'studentName', label: '学生姓名', width: 15 },
+          { key: 'phone', label: '联系电话', width: 15 }
+        ];
 
         worksheet.columns = exportColumns.map(col => ({
           header: col.label,
@@ -970,33 +972,121 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
          fgColor: { argb: 'FFE0F0F5' }
        };
 
-       // 收集所有班级的学生数据
-       const allClassStudents: any[] = [];
-       
-       filteredClasses.forEach(cls => {
-         // 获取该班级的学生（根据className匹配）
-         const classStudents = ADMIN_STUDENTS.filter(student => 
-           student.className === cls.name
-         );
-         
-         // 为每个学生添加班级信息
-         classStudents.forEach(student => {
-           allClassStudents.push({
-             ...student,
-             className: cls.name
-           });
-         });
-       });
+        // 收集所有班级的学生数据
+        const allClassStudents: any[] = [];
+        
+        filteredClasses.forEach(cls => {
+          // 获取该班级的学生（根据className匹配）
+          const classStudents = ADMIN_STUDENTS.filter(student => 
+            student.className === cls.name
+          );
+          
+          // 获取班级相关信息
+          const course = COURSES.find(c => c.id === cls.courseId);
+          const teacher = TEACHERS.find(t => t.id === cls.teacherId);
+          const assistant = TEACHERS.find(t => t.id === cls.assistant);
+          
+          // 解析开课日期和结束日期
+          let startDate = cls.startDate || '-';
+          let endDate = '-';
+          
+          // 尝试从scheduleDescription解析结束日期
+          if (cls.scheduleDescription) {
+            const parts = cls.scheduleDescription.split('-');
+            if (parts.length === 2) {
+              endDate = parts[1];
+            }
+          }
+          
+          // 如果没有scheduleDescription但有startDate，计算结束日期（假设12周课程）
+          if (startDate !== '-' && endDate === '-') {
+            try {
+              const start = new Date(startDate);
+              const end = new Date(start);
+              end.setDate(end.getDate() + 12 * 7); // 假设12周课程
+              endDate = `${end.getFullYear()}.${(end.getMonth() + 1).toString().padStart(2, '0')}.${end.getDate().toString().padStart(2, '0')}`;
+              startDate = `${start.getFullYear()}.${(start.getMonth() + 1).toString().padStart(2, '0')}.${start.getDate().toString().padStart(2, '0')}`;
+            } catch {
+              endDate = '-';
+            }
+          }
+          
+          // 确定课程类型
+          const courseType = course?.type === 'long-term' ? '长期班' : 
+                            course?.type === 'short-term' ? '短期班' : '体验课';
+          
+          // 确定班型（使用studentTag字段）
+          const classType = cls.studentTag || '-';
+          
+          // 为每个学生添加班级和学生信息
+          classStudents.forEach(student => {
+            allClassStudents.push({
+              // 班级信息
+              className: cls.name,
+              courseType: courseType,
+              grade: cls.grade || '-',
+              classType: classType,
+              subject: cls.subject || '-',
+              semester: cls.semester || '-',
+              campus: cls.campus || '-',
+              teacher: teacher?.name || '-',
+              startDate: startDate,
+              endDate: endDate,
+              lessonTime: cls.timeSlot || '-',
+              
+              // 学生信息（重命名字段以匹配exportColumns的key）
+              studentId: student.id,
+              studentName: student.name,
+              phone: student.account
+            });
+          });
+        });
 
-       // 如果没有找到学生数据，使用模拟数据
-       let studentsToExport = allClassStudents;
-       if (allClassStudents.length === 0) {
-         // 使用前20个学生作为模拟数据
-         studentsToExport = ADMIN_STUDENTS.slice(0, 20).map(student => ({
-           ...student,
-           className: filteredClasses.length > 0 ? filteredClasses[0].name : '未分配班级'
-         }));
-       }
+        // 如果没有找到学生数据，使用模拟数据
+        let studentsToExport = allClassStudents;
+        if (allClassStudents.length === 0 && filteredClasses.length > 0) {
+          // 使用第一个班级和ADMIN_STUDENTS前20个学生作为模拟数据
+          const firstClass = filteredClasses[0];
+          const course = COURSES.find(c => c.id === firstClass.courseId);
+          const teacher = TEACHERS.find(t => t.id === firstClass.teacherId);
+          
+          // 解析日期
+          let startDate = firstClass.startDate || '-';
+          let endDate = '-';
+          if (firstClass.scheduleDescription) {
+            const parts = firstClass.scheduleDescription.split('-');
+            if (parts.length === 2) {
+              endDate = parts[1];
+            }
+          }
+          
+          const courseType = course?.type === 'long-term' ? '长期班' : 
+                            course?.type === 'short-term' ? '短期班' : '体验课';
+          const classType = firstClass.studentTag || '-';
+          
+          studentsToExport = ADMIN_STUDENTS.slice(0, 20).map(student => ({
+            // 班级信息
+            className: firstClass.name,
+            courseType: courseType,
+            grade: firstClass.grade || '-',
+            classType: classType,
+            subject: firstClass.subject || '-',
+            semester: firstClass.semester || '-',
+            campus: firstClass.campus || '-',
+            teacher: teacher?.name || '-',
+            startDate: startDate,
+            endDate: endDate,
+            lessonTime: firstClass.timeSlot || '-',
+            
+            // 学生信息
+            studentId: student.id,
+            studentName: student.name,
+            phone: student.account
+          }));
+        } else if (allClassStudents.length === 0) {
+          // 如果没有班级也没有学生，创建空数据
+          studentsToExport = [];
+        }
 
        // 添加数据行
        studentsToExport.forEach((student, index) => {
@@ -2185,6 +2275,30 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 <option value="has_seats">有余位</option>
                 <option value="full">已满</option>
             </select>
+
+            {/* First Lesson Date */}
+            <div className="relative">
+              <input
+                id="firstLessonDatePicker"
+                type="date"
+                value={filterStartDate}
+                onChange={(e) => setFilterStartDate(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px] pr-8"
+              />
+              <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm cursor-pointer" onClick={() => {
+                const dateInput = document.getElementById('firstLessonDatePicker');
+                if (dateInput && dateInput instanceof HTMLInputElement) {
+                  dateInput.click();
+                }
+              }}>
+                📅
+              </span>
+              {!filterStartDate && (
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                  首课日期
+                </span>
+              )}
+            </div>
         </div>
 
         {/* Row 2 */}
@@ -2300,8 +2414,11 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 ml-4">
                 <input type="checkbox" checked={showActiveOnly} onChange={e => setShowActiveOnly(e.target.checked)} className="w-4 h-4 rounded text-primary focus:ring-primary"/>
                 仅展示“未开课、开课中”的班级
-            </label>
-         </div>
+             </label>
+             <span className="ml-6 text-sm text-gray-700">
+                在班总人数：<span className="text-[#2DA194] font-medium">130</span>
+             </span>
+          </div>
       </div>
 
       {/* Table - 优化边距和操作栏固定 */}
