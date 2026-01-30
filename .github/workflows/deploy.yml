@@ -25,15 +25,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'  # 改为npm缓存
+          # 移除cache配置，因为项目没有package-lock.json
+      
+      - name: Install pnpm
+        run: npm install -g pnpm@9  # 明确指定版本
       
       - name: Install dependencies
-        run: npm install  # 使用npm install
+        run: |
+          pnpm install
+          echo "✅ Dependencies installed"
       
       - name: Build
         run: |
-          npm run build  # 使用npm run build
-          echo "Build completed. Contents of dist folder:"
+          pnpm run build
+          echo "✅ Build completed"
           ls -la dist/
       
       - name: Setup Pages
