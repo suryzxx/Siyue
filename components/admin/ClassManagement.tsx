@@ -56,8 +56,8 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'id', label: '班级ID' },
     { id: 'name', label: '班级名称' },
     { id: 'mode', label: '授课方式' },
-    { id: 'courseName', label: '课程名称' },
-    { id: 'courseType', label: '课程类型' },
+    { id: 'courseName', label: '产品名称' },
+    { id: 'courseType', label: '产品类型' },
      { id: 'progress', label: '教学进度' },
      { id: 'capacity', label: '预招人数' },
      { id: 'enrolled', label: '已报人数' },
@@ -71,7 +71,7 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'district', label: '区域' },
     { id: 'campus', label: '校区' },
     { id: 'classroom', label: '教室' },
-    { id: 'price', label: '课程费用' },
+    { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
     { id: 'schedule', label: '上课时间' },
@@ -83,8 +83,8 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'id', label: '班级ID' },
     { id: 'name', label: '班级名称' },
     { id: 'mode', label: '授课方式' },
-    { id: 'courseName', label: '课程名称' },
-    { id: 'courseType', label: '课程类型' },
+    { id: 'courseName', label: '产品名称' },
+    { id: 'courseType', label: '产品类型' },
     { id: 'progress', label: '教学进度' },
     { id: 'capacity', label: '预招人数' },
      { id: 'enrolled', label: '已报人数' },
@@ -99,7 +99,7 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'district', label: '区域' },
     { id: 'campus', label: '校区' },
     { id: 'classroom', label: '教室' },
-    { id: 'price', label: '课程费用' },
+    { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
     { id: 'startDate', label: '开课日期' },
@@ -691,7 +691,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
     // Headers based on user request
     worksheet.columns = [
-      { header: '课程名称*', key: 'courseName', width: 25 },
+      { header: '产品名称*', key: 'courseName', width: 25 },
       { header: '班级名称*', key: 'className', width: 25 },
       { header: '年份*', key: 'year', width: 10 },
       { header: '校区*', key: 'campus', width: 15 },
@@ -707,7 +707,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       { header: '上课结束时间*', key: 'endTime', width: 15 }, // HH:mm
       { header: '上课日*', key: 'days', width: 15 }, // e.g. 周六,周日
       { header: '收费模式（整期、分期）*', key: 'chargeMode', width: 25 },
-      { header: '课程费用*', key: 'price', width: 10 },
+      { header: '产品费用*', key: 'price', width: 10 },
       { header: '教辅费', key: 'materialPrice', width: 10 },
     ];
 
@@ -943,7 +943,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         // 定义导出列 - 按照用户要求的顺序
         const exportColumns = [
           { key: 'className', label: '班级名称', width: 20 },
-          { key: 'courseType', label: '课程类型', width: 12 },
+          { key: 'courseType', label: '产品类型', width: 12 },
           { key: 'grade', label: '年级', width: 10 },
           { key: 'classType', label: '班型', width: 12 },
           { key: 'subject', label: '学科', width: 10 },
@@ -1199,7 +1199,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                failedResults.push({
                    row: rowNumber,
                    className: className || '未知',
-                   error: '缺少必填字段（课程名称、班级名称或校区）'
+                   error: '缺少必填字段（产品名称、班级名称或校区）'
                });
                return;
            }
@@ -1256,7 +1256,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                failedResults.push({
                    row: rowNumber,
                    className: className,
-                   error: `课程"${courseName}"不存在`
+                   error: `产品"${courseName}"不存在`
                });
                return;
            }
@@ -1359,7 +1359,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
            successResults.push({
                row: rowNumber,
                className: className,
-               message: `成功创建班级，课程：${courseName}，校区：${campus}`
+               message: `成功创建班级，产品：${courseName}，校区：${campus}`
            });
        });
        
@@ -1631,7 +1631,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
   const handleGenerateSchedule = () => {
     if (!formData.startDate || !formData.courseId) {
-        alert("请选择首课日期和课程");
+        alert("请选择首课日期和产品");
         return;
     }
     
@@ -1988,7 +1988,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                 }`}
                               >
                                   {tab === 'basic' && '基本信息'}
-                                  {tab === 'course' && '课程信息'}
+                                  {tab === 'course' && '产品信息'}
                                   {tab === 'sales' && '售卖信息'}
                                   {tab === 'changes' && '变动信息'}
                                   {tab === 'students' && '班级学员'}
@@ -2003,7 +2003,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                       <div className="pt-6">
                           {activeDetailTab === 'basic' && (
                               <div className="grid grid-cols-2 gap-y-6 text-sm text-gray-600">
-                                  <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">课程名称：</span><span className="text-gray-900">{course?.name}</span></div>
+                                  <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">产品名称：</span><span className="text-gray-900">{course?.name}</span></div>
                                   <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">班级名称：</span><span className="text-gray-900">{selectedClass.name}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">年份：</span><span className="text-gray-900">{selectedClass.year || course?.year}</span></div>
                                   <div><span className="text-gray-400 w-24 inline-block">学期：</span><span className="text-gray-900">{selectedClass.semester || '-'}</span></div>
@@ -2051,7 +2051,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                           {activeDetailTab === 'sales' && (
                               <div className="grid grid-cols-1 gap-y-6 text-sm text-gray-600 max-w-2xl">
                                   <div className="flex"><span className="text-gray-400 w-32 inline-block">收费模式：</span><span className="text-gray-900">{selectedClass.chargeMode === 'whole' ? '整期' : '分期'}</span></div>
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">课程费用：</span><span className="text-red-500 font-bold">¥{selectedClass.price}</span></div>
+                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">产品费用：</span><span className="text-red-500 font-bold">¥{selectedClass.price}</span></div>
                                   <div className="flex"><span className="text-gray-400 w-32 inline-block">教辅费用：</span><span className="text-red-500 font-bold">¥{selectedClass.materialPrice || 0}</span></div>
                               </div>
                           )}
@@ -2127,7 +2127,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                       </div>
                       <span className="font-bold text-sm">
                           {step === 1 && '基本信息'}
-                          {step === 2 && '课程信息'}
+                          {step === 2 && '产品信息'}
                           {step === 3 && '收费标准'}
                           {step === 4 && '完成'}
                       </span>
@@ -2248,24 +2248,24 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
               {/* Course Type */}
               <MultiSelect
-                options={['长期课程', '短期课程']}
+                options={['长期产品', '短期产品']}
                 selected={filterCourseType.map(type => {
                   const typeMap: Record<string, string> = {
-                    'long-term': '长期课程',
-                    'short-term': '短期课程'
+'long-term': '长期产品',
+  'short-term': '短期产品'
                   };
                   return typeMap[type] || '';
                 }).filter(label => label !== '')}
                 onChange={(selectedLabels) => {
                   // 将中文标签转换为对应的类型值
                   const typeMap: Record<string, string> = {
-                    '长期课程': 'long-term',
-                    '短期课程': 'short-term'
+'长期产品': 'long-term',
+  '短期产品': 'short-term'
                   };
                   const selectedTypes = selectedLabels.map(label => typeMap[label] || '');
                   setFilterCourseType(selectedTypes.filter(type => type !== ''));
                 }}
-                placeholder="课程类型"
+                placeholder="产品类型"
                 width="w-[100px]"
               />
 
@@ -2283,21 +2283,22 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 type="date"
                 value={filterStartDate}
                 onChange={(e) => setFilterStartDate(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px] pr-8"
+                className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px] opacity-0 absolute inset-0 cursor-pointer"
               />
-              <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm cursor-pointer" onClick={() => {
-                const dateInput = document.getElementById('firstLessonDatePicker');
-                if (dateInput && dateInput instanceof HTMLInputElement) {
-                  dateInput.click();
-                }
-              }}>
-                📅
-              </span>
-              {!filterStartDate && (
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
-                  首课日期
+              <div 
+                className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[120px] flex-shrink-0 h-[34px] flex items-center justify-between cursor-pointer hover:border-primary transition-colors"
+                onClick={() => {
+                  const dateInput = document.getElementById('firstLessonDatePicker');
+                  if (dateInput && dateInput instanceof HTMLInputElement) {
+                    dateInput.click();
+                  }
+                }}
+              >
+                <span className="text-gray-700">
+                  {filterStartDate || '首课日期'}
                 </span>
-              )}
+                <span className="text-gray-400 text-sm">📅</span>
+              </div>
             </div>
         </div>
 
@@ -2478,13 +2479,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                         <div className="grid grid-cols-1 gap-6 max-w-[800px]">
                             {/* ... Fields ... */}
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>课程名称</label>
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>产品名称</label>
                                 <div className="flex-1 flex gap-2">
                                     <select value={formData.courseId} onChange={e => setFormData({...formData, courseId: e.target.value})} className="flex-1 bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
-                                        <option value="">请选择课程</option>
+                                        <option value="">请选择产品</option>
                                         {COURSES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
-                                    <button className="px-4 py-2 border border-primary text-primary rounded text-sm hover:bg-primary-light">选择课程</button>
+                                    <button className="px-4 py-2 border border-primary text-primary rounded text-sm hover:bg-primary-light">选择产品</button>
                                 </div>
                             </div>
                             <div className="flex items-center">
@@ -2591,7 +2592,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 {createStep === 2 && (
                     <div className="space-y-6">
                         <div className="border-l-4 border-primary pl-3 mb-2">
-                            <h3 className="font-bold text-gray-800">课程信息</h3>
+                            <h3 className="font-bold text-gray-800">产品信息</h3>
                         </div>
                         
                         <div className="pl-4">
@@ -2687,7 +2688,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                             </div>
 
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>课程费</label>
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>产品费</label>
                                 <div className="flex-1 relative">
                                     <input value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="请输入" />
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
@@ -2977,7 +2978,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-xl w-[600px] h-[500px] flex flex-col overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 className="text-lg font-bold text-gray-800">课程推送 - {selectedClassForQueue?.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-800">产品推送 - {selectedClassForQueue?.name}</h3>
                     <button onClick={() => setShowQueueModal(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4">
