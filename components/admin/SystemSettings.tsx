@@ -27,11 +27,7 @@ const SystemSettings: React.FC = () => {
   const [rescheduleConfig, setRescheduleConfig] = useState({
     autoStudent: true,
     virtualSeats: 2,
-    limitCount: 4,
-    sameTerm: true,
-    sameSubject: true,
-    sameGrade: true,
-    sameType: true
+    limitCount: 4
   });
 
   // --- Transfer State ---
@@ -43,6 +39,13 @@ const SystemSettings: React.FC = () => {
     sameType: true,
     allowPriceDiff: false, // 是否允许价格高向价格低转
     transferMaterial: false // 是否允许教辅费转入余额
+  });
+
+  // --- Settlement State ---
+  const [settlementConfig, setSettlementConfig] = useState({
+    settlementDays: 0,
+    allowModify: false,
+    allowRefund: false
   });
 
   // --- Student Upgrade Table Mock ---
@@ -131,6 +134,7 @@ const SystemSettings: React.FC = () => {
     { id: 'holidays', label: '停课日' },
     { id: 'reschedule', label: '调课配置' },
     { id: 'transfer', label: '转班配置' },
+    { id: 'settlement', label: '结算配置' },
   ];
 
   const stagesOptions = ['幼儿', '小学', '初中', '高中', '大学', '成人'];
@@ -150,59 +154,6 @@ const SystemSettings: React.FC = () => {
     <div className="max-w-4xl space-y-8 text-sm text-gray-600">
         {/* Type 1 */}
         <div className="space-y-3">
-            <div className="text-gray-800 font-medium">考勤类型扣费的有</div>
-            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
-                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
-                勾选后会根据考勤类型进行扣费
-            </div>
-            <div className="flex gap-6 pt-1">
-                {['出勤', '迟到', '早退', '请假', '旷课'].map(type => (
-                    <label key={type} className="flex items-center gap-2 cursor-pointer select-none">
-                        <input 
-                            type="checkbox" 
-                            checked={attendanceConfig.deductionTypes.includes(type)}
-                            onChange={() => {
-                                const newTypes = attendanceConfig.deductionTypes.includes(type)
-                                    ? attendanceConfig.deductionTypes.filter(t => t !== type)
-                                    : [...attendanceConfig.deductionTypes, type];
-                                setAttendanceConfig({...attendanceConfig, deductionTypes: newTypes});
-                            }}
-                            className="rounded text-primary w-4 h-4 focus:ring-primary"
-                        />
-                        <span className={attendanceConfig.deductionTypes.includes(type) ? 'text-primary' : ''}>{type}</span>
-                    </label>
-                ))}
-            </div>
-        </div>
-
-        {/* Type 2 */}
-        <div className="space-y-3">
-            <div className="text-gray-800 font-medium">是否允许班课自动考勤</div>
-            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
-                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
-                允许后，每次讲次结束后自动将“未考勤”的学生设置为“出勤”
-            </div>
-            <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={attendanceConfig.autoClass} onChange={() => setAttendanceConfig({...attendanceConfig, autoClass: true})} className="text-primary focus:ring-primary"/> 允许</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!attendanceConfig.autoClass} onChange={() => setAttendanceConfig({...attendanceConfig, autoClass: false})} className="text-primary focus:ring-primary"/> 不允许</label>
-            </div>
-        </div>
-
-        {/* Type 3 */}
-        <div className="space-y-3">
-            <div className="text-gray-800 font-medium">是否允许1对1、1对N自动考勤</div>
-            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
-                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
-                允许后，每次讲次结束后自动将“未考勤”的学生设置为“出勤”
-            </div>
-            <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={attendanceConfig.auto1to1} onChange={() => setAttendanceConfig({...attendanceConfig, auto1to1: true})} className="text-primary focus:ring-primary"/> 允许</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!attendanceConfig.auto1to1} onChange={() => setAttendanceConfig({...attendanceConfig, auto1to1: false})} className="text-primary focus:ring-primary"/> 不允许</label>
-            </div>
-        </div>
-
-        {/* Type 4 */}
-        <div className="space-y-3">
             <div className="text-gray-800 font-medium">锁定考勤不可更改</div>
             <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
                 <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
@@ -216,7 +167,7 @@ const SystemSettings: React.FC = () => {
             </div>
         </div>
 
-        {/* Type 5 */}
+        {/* Type 2 */}
         <div className="space-y-3">
             <div className="text-gray-800 font-medium">是否允许修改考勤</div>
             <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
@@ -445,56 +396,7 @@ const SystemSettings: React.FC = () => {
             </div>
         </div>
 
-        <div className="space-y-3">
-            <div className="text-gray-800 font-medium">调课虚位数设置 （面授班）</div>
-            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
-                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
-                设置后，在班级班额已满的情况下，仍可在有虚位的情况下将学生调入班级上课
-            </div>
-            <div className="flex items-center gap-2 text-gray-700">
-                虚位个数 <span className="font-bold text-lg text-primary">{rescheduleConfig.virtualSeats}</span> 位
-                <span className="text-primary cursor-pointer hover:underline ml-2">修改</span>
-            </div>
-        </div>
 
-        <div className="space-y-3">
-            <div className="text-gray-800 font-medium">课程可调课总次数设置 （面授班）</div>
-            <div className="flex items-center gap-2 text-gray-700">
-                限制次数 <span className="font-bold text-lg text-primary">{rescheduleConfig.limitCount}</span> 次
-                <span className="text-primary cursor-pointer hover:underline ml-2">修改</span>
-            </div>
-        </div>
-
-        <div className="space-y-6 pt-4 border-t border-gray-100">
-            {[
-                { label: '学生自行调课时，是否限制同学期可调?', key: 'sameTerm' },
-                { label: '学生自行调课时，是否限制同学科可调?', key: 'sameSubject' },
-                { label: '学生自行调课时，是否限制同年级可调?', key: 'sameGrade' },
-                { label: '学生自行调课时，是否限制同班型可调?', key: 'sameType' },
-            ].map(item => (
-                <div key={item.key} className="space-y-2">
-                    <div className="text-gray-700">{item.label}</div>
-                    <div className="flex gap-6">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input 
-                                type="radio" 
-                                checked={(rescheduleConfig as any)[item.key]} 
-                                onChange={() => setRescheduleConfig({...rescheduleConfig, [item.key]: true})} 
-                                className="text-primary focus:ring-primary"
-                            /> 是
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input 
-                                type="radio" 
-                                checked={!(rescheduleConfig as any)[item.key]} 
-                                onChange={() => setRescheduleConfig({...rescheduleConfig, [item.key]: false})} 
-                                className="text-primary focus:ring-primary"
-                            /> 否
-                        </label>
-                    </div>
-                </div>
-            ))}
-        </div>
     </div>
   );
 
@@ -511,79 +413,29 @@ const SystemSettings: React.FC = () => {
                 <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!transferConfig.autoStudent} onChange={() => setTransferConfig({...transferConfig, autoStudent: false})} className="text-primary focus:ring-primary"/> 不允许</label>
             </div>
         </div>
+    </div>
+  );
 
-        <div className="space-y-6 pt-2">
-            {[
-                { label: '学生自行转班时，是否限制同学期可转?', key: 'sameTerm' },
-                { label: '学生自行转班时，是否限制同学科可转?', key: 'sameSubject' },
-                { label: '学生自行转班时，是否限制同年级可转?', key: 'sameGrade' },
-                { label: '学生自行转班时，是否限制同班型可转?', key: 'sameType' },
-            ].map(item => (
-                <div key={item.key} className="space-y-2">
-                    <div className="text-gray-700">{item.label}</div>
-                    <div className="flex gap-6">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input 
-                                type="radio" 
-                                checked={(transferConfig as any)[item.key]} 
-                                onChange={() => setTransferConfig({...transferConfig, [item.key]: true})} 
-                                className="text-primary focus:ring-primary"
-                            /> 是
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input 
-                                type="radio" 
-                                checked={!(transferConfig as any)[item.key]} 
-                                onChange={() => setTransferConfig({...transferConfig, [item.key]: false})} 
-                                className="text-primary focus:ring-primary"
-                            /> 否
-                        </label>
-                    </div>
-                </div>
-            ))}
-
-            <div className="space-y-2 pt-2">
-                <div className="text-gray-700">学生自行转班时，是否允许价格高向价格低的班级转班?</div>
-                <div className="flex gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                            type="radio" 
-                            checked={transferConfig.allowPriceDiff} 
-                            onChange={() => setTransferConfig({...transferConfig, allowPriceDiff: true})} 
-                            className="text-primary focus:ring-primary"
-                        /> 是
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                            type="radio" 
-                            checked={!transferConfig.allowPriceDiff} 
-                            onChange={() => setTransferConfig({...transferConfig, allowPriceDiff: false})} 
-                            className="text-primary focus:ring-primary"
-                        /> 否
-                    </label>
-                </div>
+  const renderSettlement = () => (
+    <div className="max-w-4xl space-y-8 text-sm text-gray-600">
+        <div className="space-y-3">
+            <div className="text-gray-800 font-medium">班级结课几天后进行结算？（面授课）</div>
+            <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                默认为0天，即在结课当天晚上24点进行结算，结算后无法再修改考勤，也不能给学生原路退款
             </div>
-
-            <div className="space-y-2 pt-2">
-                <div className="text-gray-700">学生自行转班时，如果班级设置了教辅费，是否允许将教辅费转入剩余学费进行转班?</div>
-                <div className="flex gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                            type="radio" 
-                            checked={transferConfig.transferMaterial} 
-                            onChange={() => setTransferConfig({...transferConfig, transferMaterial: true})} 
-                            className="text-primary focus:ring-primary"
-                        /> 允许
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input 
-                            type="radio" 
-                            checked={!transferConfig.transferMaterial} 
-                            onChange={() => setTransferConfig({...transferConfig, transferMaterial: false})} 
-                            className="text-primary focus:ring-primary"
-                        /> 不允许
-                    </label>
-                </div>
+            <div className="flex items-center gap-4">
+                <input 
+                    type="number" 
+                    min="0" 
+                    value={settlementConfig.settlementDays}
+                    onChange={(e) => setSettlementConfig({...settlementConfig, settlementDays: parseInt(e.target.value) || 0})}
+                    className="w-32 bg-white border border-gray-200 rounded px-3 py-2 outline-none text-gray-700 text-sm focus:border-primary"
+                />
+                <span className="text-gray-600">天</span>
+                <span className="text-gray-500 text-sm">
+                    {settlementConfig.settlementDays === 0 ? '结课后 0 天进行结算' : `结课后 ${settlementConfig.settlementDays} 天进行结算`}
+                </span>
             </div>
         </div>
     </div>
@@ -703,9 +555,10 @@ const SystemSettings: React.FC = () => {
             {activeTab === 'holidays' && renderHolidays()}
             {activeTab === 'reschedule' && renderReschedule()}
             {activeTab === 'transfer' && renderTransfer()}
+            {activeTab === 'settlement' && renderSettlement()}
 
             {/* Placeholders for other tabs */}
-            {!['org_info', 'attendance', 'student_info', 'holidays', 'reschedule', 'transfer'].includes(activeTab) && (
+            {!['org_info', 'attendance', 'student_info', 'holidays', 'reschedule', 'transfer', 'settlement'].includes(activeTab) && (
               <div className="flex flex-col items-center justify-center h-96 text-gray-300">
                  <div className="text-6xl mb-6 opacity-50">🛠️</div>
                  <div className="text-lg font-medium">{strictTabs.find(t => t.id === activeTab)?.label} 功能模块开发中...</div>

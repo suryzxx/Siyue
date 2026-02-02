@@ -53,7 +53,7 @@ const OrderManagement: React.FC = () => {
          { key: 'originalAmount', label: '原价金额', width: 12, format: ExcelFormatters.currency },
          { key: 'discountAmount', label: '优惠金额', width: 12, format: ExcelFormatters.currency },
          { key: 'materialFee', label: '教辅费', width: 12, format: ExcelFormatters.currency },
-         { key: 'courseFee', label: '课程费', width: 12, format: ExcelFormatters.currency },
+         { key: 'courseFee', label: '产品费', width: 12, format: ExcelFormatters.currency },
          { key: 'lessonCount', label: '购买节数', width: 10 },
          { key: 'createdTime', label: '订单创建时间', width: 18, format: ExcelFormatters.datetime },
        ];
@@ -185,7 +185,7 @@ const OrderManagement: React.FC = () => {
                 <th className="p-4 whitespace-nowrap">原价金额</th>
                 <th className="p-4 whitespace-nowrap">优惠金额</th>
                 <th className="p-4 whitespace-nowrap">教辅费</th>
-                <th className="p-4 whitespace-nowrap">课程费</th>
+                <th className="p-4 whitespace-nowrap">产品费</th>
                 <th className="p-4 whitespace-nowrap">购买节数</th>
                 <th className="p-4 whitespace-nowrap">订单创建时间</th>
                  <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>

@@ -80,7 +80,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
         
         <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-           <NavItem id="course" label="课程产品" />
+           <NavItem id="course" label="产品" />
            <NavItem id="class" label="班级管理" />
            
            <NavItem id="student" label="学生管理" />
