@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ClassInfo, Lesson, Course, Product } from '../../types';
+import { ClassInfo, Lesson, Course, Product, StudentProfile } from '../../types';
 import { PRODUCTS } from '../../constants';
 import ClassManagement from './ClassManagement';
 import CoursePath from './CoursePath';
@@ -8,6 +8,7 @@ import TeacherManagement from './TeacherManagement'; // Using this as Employee M
 import AddressManagement from './AddressManagement';
 import SystemSettings from './SystemSettings';
 import StudentManagement from './StudentManagement';
+import StudentDetailPage from './StudentDetailPage';
 import OrderManagement from './OrderManagement';
 
 interface AdminDashboardProps {
@@ -28,6 +29,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   setCourses
 }) => {
   const [activePanel, setActivePanel] = useState<string>('class'); // Default to class management
+  const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
 
@@ -132,12 +134,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <SystemSettings />
         )}
         {activePanel === 'student' && (
-          <StudentManagement />
+          <StudentManagement onStudentSelect={(student) => {
+            setSelectedStudent(student);
+            setActivePanel('student-detail');
+          }} />
+        )}
+        {activePanel === 'student-detail' && selectedStudent && (
+          <StudentDetailPage student={selectedStudent} onBack={() => setActivePanel('student')} />
         )}
         {activePanel === 'order' && (
           <OrderManagement />
         )}
-        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'order' ].includes(activePanel) && (
+        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order' ].includes(activePanel) && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>

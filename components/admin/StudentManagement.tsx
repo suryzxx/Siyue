@@ -4,7 +4,11 @@ import { StudentProfile, StudentStatus, FollowUpStatus } from '../../types';
 import SearchableMultiSelect from '../common/SearchableMultiSelect';
 import { exportToExcel, ExcelFormatters } from '../../utils/excelExport';
 
-const StudentManagement: React.FC = () => {
+interface StudentManagementProps {
+  onStudentSelect: (student: StudentProfile) => void;
+}
+
+const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }) => {
   // 筛选状态
   const [filterName, setFilterName] = useState('');
   const [filterAccount, setFilterAccount] = useState('');
@@ -17,9 +21,6 @@ const StudentManagement: React.FC = () => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showNewStudentModal, setShowNewStudentModal] = useState(false);
-  
-  // 当前选中的学生
-  const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
   
   // 编辑表单数据
   const [editFormData, setEditFormData] = useState({
@@ -131,7 +132,6 @@ const StudentManagement: React.FC = () => {
 
   // 操作处理函数
   const handleEdit = (student: StudentProfile) => {
-    setSelectedStudent(student);
     setEditFormData({
       name: student.name,
       account: student.account,
@@ -148,7 +148,6 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleTransferClass = (student: StudentProfile) => {
-    setSelectedStudent(student);
     setTransferFormData({
       currentClass: student.className || '',
       targetClass: '',
@@ -159,7 +158,6 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleViewOperationLog = (student: StudentProfile) => {
-    setSelectedStudent(student);
     // 模拟操作记录数据
     setOperationLogs([
       { id: 1, action: '创建学生档案', operator: '管理员A', timestamp: '2025-01-15 10:30:00', details: '创建学生基本信息' },
@@ -223,7 +221,7 @@ const StudentManagement: React.FC = () => {
     }
     
     // 实际应用中这里会调用API处理转班
-    alert(`学生 ${selectedStudent?.name} 已成功从 ${transferFormData.currentClass} 转班到 ${transferFormData.targetClass}`);
+    alert(`学生已成功从 ${transferFormData.currentClass} 转班到 ${transferFormData.targetClass}`);
     setShowTransferModal(false);
   };
 
@@ -371,7 +369,12 @@ const StudentManagement: React.FC = () => {
               {filteredStudents.map(student => (
                 <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.id}</td>
-                  <td className="p-4 text-gray-800 font-medium whitespace-nowrap">{student.name}</td>
+                  <td 
+                    className="p-4 text-primary font-medium whitespace-nowrap cursor-pointer hover:underline"
+                    onClick={() => onStudentSelect(student)}
+                  >
+                    {student.name}
+                  </td>
                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.account}</td>
                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.gender}</td>
                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.birthDate || '-'}</td>
@@ -644,10 +647,10 @@ const StudentManagement: React.FC = () => {
              </div>
              
              <div className="p-6 space-y-4">
-               <div className="flex items-center">
-                 <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">学生姓名</label>
-                 <span className="text-gray-800 font-medium">{selectedStudent?.name}</span>
-               </div>
+                <div className="flex items-center">
+                  <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">学生姓名</label>
+                  <span className="text-gray-800 font-medium">{transferFormData.currentClass ? '已选中学生' : '未选择'}</span>
+                </div>
 
                <div className="flex items-center">
                  <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">当前班级</label>
@@ -708,7 +711,7 @@ const StudentManagement: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-xl shadow-xl w-[800px] h-[600px] flex flex-col overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 className="text-lg font-bold text-gray-800">操作记录 - {selectedStudent?.name}</h3>
+                <h3 className="text-lg font-bold text-gray-800">操作记录</h3>
                 <button onClick={() => setShowOperationLogModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
               </div>
               
@@ -937,6 +940,7 @@ const StudentManagement: React.FC = () => {
             </div>
           </div>
         )}
+
       </div>
     );
   };
