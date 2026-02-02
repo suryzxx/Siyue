@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Course, CourseType, CourseLesson } from '../../types';
 
 interface CoursePathProps {
   courses: Course[];
   onAddCourse: (course: Course) => void;
   onUpdateCourse: (updatedCourse: Course) => void;
+  onDeleteCourse?: (courseId: string) => void;
 }
 
 const GRADE_CLASS_TYPES: Record<string, string[]> = {
@@ -31,6 +32,12 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
   // Lesson Modal State
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [newLessonName, setNewLessonName] = useState('');
+
+  const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // New Course Form State
   const [formData, setFormData] = useState({
@@ -60,33 +67,42 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
       return;
     }
 
-    const lessonCount = formData.lessonCount;
-    const lessons = lessonCount > 0 ? Array.from({ length: lessonCount }, (_, index) => ({
-      id: `cl-${Date.now()}-${index}`,
-      name: `第${index + 1}讲`,
-      taskCount: 0,
-      order: index + 1,
-      isOnlineBound: true
-    })) : [];
+    setIsSaving(true);
+    try {
+      const lessonCount = formData.lessonCount;
+      const lessons = lessonCount > 0 ? Array.from({ length: lessonCount }, (_, index) => ({
+        id: `cl-${Date.now()}-${index}`,
+        name: `第${index + 1}讲`,
+        taskCount: 0,
+        order: index + 1,
+        isOnlineBound: true
+      })) : [];
 
-    const newCourse: Course = {
-      id: `new-${Date.now()}`,
-      name: formData.name,
-      type: formData.type,
-      lessonCount: lessonCount,
-      semester: formData.semester,
-      subject: formData.subject,
-      grade: formData.grade,
-      classType: formData.classType,
-      description: formData.description,
-      tags: formData.tags.split(' ').filter(t => t),
-      lessons: lessons
-    };
+      const newCourse: Course = {
+        id: `new-${Date.now()}`,
+        name: formData.name,
+        type: formData.type,
+        lessonCount: lessonCount,
+        semester: formData.semester,
+        subject: formData.subject,
+        grade: formData.grade,
+        classType: formData.classType,
+        description: formData.description,
+        tags: formData.tags.split(' ').filter(t => t),
+        lessons: lessons
+      };
 
-    onAddCourse(newCourse);
-    setShowModal(false);
-    setSelectedCourseId(newCourse.id);
-    resetForm();
+      onAddCourse(newCourse);
+      setShowModal(false);
+      setSelectedCourseId(newCourse.id);
+      resetForm();
+      alert('产品创建成功！');
+    } catch (error) {
+      console.error('Error creating course:', error);
+      alert('创建失败，请重试');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddLesson = () => {
@@ -139,6 +155,114 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
       });
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showDropdown && !(event.target as Element).closest('.relative')) {
+        setShowDropdown(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowDropdown(null);
+        setShowModal(false);
+        setShowLessonModal(false);
+        setIsEditing(false);
+        setEditingCourseId(null);
+        resetForm();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showDropdown]);
+
+  const handleEditCourse = (course: Course) => {
+    setIsEditing(true);
+    setEditingCourseId(course.id);
+    setFormData({
+      name: course.name,
+      type: course.type,
+      semester: course.semester,
+      subject: course.subject,
+      grade: course.grade,
+      classType: course.classType,
+      description: course.description,
+      tags: course.tags.join(' '),
+      lessonCount: course.lessonCount,
+    });
+    setShowModal(true);
+  };
+
+  const handleDeleteCourse = (courseId: string) => {
+    if (window.confirm('确定要删除这个产品吗？')) {
+      setIsDeleting(true);
+      try {
+        if (onDeleteCourse) {
+          onDeleteCourse(courseId);
+        } else {
+          // Fallback to local state if onDeleteCourse is not provided
+          const updatedCourses = courses.filter(c => c.id !== courseId);
+          if (updatedCourses.length > 0 && selectedCourseId === courseId) {
+            setSelectedCourseId(updatedCourses[0].id);
+          }
+        }
+        setShowDropdown(null);
+      } catch (error) {
+        console.error('Error deleting course:', error);
+        alert('删除失败，请重试');
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleUpdateCourse = () => {
+    if (!formData.name) {
+      alert('请输入产品名称');
+      return;
+    }
+
+    if (!formData.lessonCount || formData.lessonCount <= 0) {
+      alert('请输入讲次数量');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updatedCourse: Course = {
+        id: editingCourseId || `updated-${Date.now()}`,
+        name: formData.name,
+        type: formData.type,
+        lessonCount: formData.lessonCount,
+        semester: formData.semester,
+        subject: formData.subject,
+        grade: formData.grade,
+        classType: formData.classType,
+        description: formData.description,
+        tags: formData.tags.split(' ').filter(t => t),
+        lessons: selectedCourse.lessons || [], // Keep existing lessons
+      };
+
+      onUpdateCourse(updatedCourse);
+      setShowModal(false);
+      setIsEditing(false);
+      setEditingCourseId(null);
+      resetForm();
+      alert('产品更新成功！');
+    } catch (error) {
+      console.error('Error updating course:', error);
+      alert('更新失败，请重试');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="flex h-full bg-bg-gray overflow-hidden">
       {/* Left Sidebar: Course List */}
@@ -176,7 +300,45 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
               }`}
             >
               <span className="font-medium text-sm truncate">{course.name}</span>
-              <span className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">•••</span>
+              <div className="relative">
+                <span 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDropdown(showDropdown === course.id ? null : course.id);
+                  }}
+                  className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  •••
+                </span>
+                
+                {showDropdown === course.id && (
+                  <div className="absolute right-0 top-6 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCourse(course);
+                          setShowDropdown(null);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      >
+                        编辑
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCourse(course.id);
+                          setShowDropdown(null);
+                        }}
+                        disabled={isDeleting}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isDeleting ? '删除中...' : '删除'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -274,10 +436,15 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
            <div className="bg-white rounded-lg shadow-xl w-[600px] flex flex-col max-h-[90vh]">
-             <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-gray-800">新建产品</h3>
-               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-             </div>
+              <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+                 <h3 className="text-lg font-bold text-gray-800">{isEditing ? '编辑产品' : '新建产品'}</h3>
+                <button onClick={() => {
+        setShowModal(false);
+        setIsEditing(false);
+        setEditingCourseId(null);
+        resetForm();
+      }} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+              </div>
              
              <div className="p-6 overflow-y-auto space-y-5">
                
@@ -313,6 +480,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                         onChange={e => setFormData({...formData, lessonCount: parseInt(e.target.value) || 0})}
                         placeholder="请输入课节数量"
                         className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                        disabled={isEditing}
                       />
                     </div>
                 </div>
@@ -378,11 +546,11 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>路径描述 :</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>产品介绍 :</label>
                   <textarea 
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="请输入路径描述"
+                    placeholder="请输入产品介绍"
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary h-24 resize-none"
                   />
                 </div>
@@ -399,10 +567,21 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
 
              </div>
 
-             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
-               <button onClick={() => setShowModal(false)} className="px-5 py-2 rounded text-sm text-gray-600 border border-gray-300 hover:bg-gray-50">取消</button>
-               <button onClick={handleSaveCourse} className="px-6 py-2 rounded text-sm text-white bg-primary hover:bg-teal-600 shadow-sm">保存</button>
-             </div>
+              <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
+                <button onClick={() => {
+        setShowModal(false);
+        setIsEditing(false);
+        setEditingCourseId(null);
+        resetForm();
+      }} className="px-5 py-2 rounded text-sm text-gray-600 border border-gray-300 hover:bg-gray-50">取消</button>
+                <button 
+                  onClick={isEditing ? handleUpdateCourse : handleSaveCourse}
+                  disabled={isSaving}
+                  className="px-6 py-2 rounded text-sm text-white bg-primary hover:bg-teal-600 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? '处理中...' : (isEditing ? '更新' : '保存')}
+                </button>
+              </div>
            </div>
         </div>
       )}
