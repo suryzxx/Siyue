@@ -4,7 +4,7 @@ import { ClassInfo, Lesson, Student, Task, Course, Teacher, StudentProfile, Prod
 export const COURSES: Course[] = [
   { 
     id: 'course1', 
-    name: '春剑少综合冲刺班', 
+    name: '产品名称1', 
     type: 'short-term', 
     lessonCount: 12, 
     tags: ['K3', 'K3进阶'],
@@ -13,12 +13,12 @@ export const COURSES: Course[] = [
     isRecommended: false,
     year: '2026', semester: '春季', subject: '英语', grade: '小学组', classType: '无', status: 'active',
     lessons: Array.from({length: 12}, (_, i) => ({
-      id: `l1-${i}`, name: `25暑-Day${i+1}-课程任务`, taskCount: Math.floor(Math.random() * 10) + 2, order: i+1
+      id: `l1-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 10) + 2, order: i+1
     }))
   },
   { 
     id: 'course2', 
-    name: '江宁试听PU2（1S/2A/2S）', 
+    name: '产品名称2', 
     type: 'experience', 
     lessonCount: 13, 
     tags: ['K3', 'K3飞跃'],
@@ -27,16 +27,16 @@ export const COURSES: Course[] = [
     isRecommended: true,
     year: '2026', semester: '寒假', subject: '英语', grade: '小学组', classType: '无', status: 'active',
     lessons: [
-      { id: 'c2-1', name: '25暑-Day1-课程任务', taskCount: 17, order: 1 },
+      { id: 'c2-1', name: '第一讲', taskCount: 17, order: 1 },
     ]
   },
-  { id: 'course3', name: '江宁试听PU0（K3/1R/1A）', type: 'experience', lessonCount: 15, tags: ['G1', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '启蒙', classType: '无', status: 'active', lessons: [] },
-  { id: 'course4', name: '2026年春季中班启蒙', type: 'long-term', lessonCount: 10, tags: [], year: '2026', semester: '春季', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: [] },
-  { id: 'course5', name: '2026年寒假中班启蒙', type: 'long-term', lessonCount: 10, tags: ['G2', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: [] },
-  { id: 'course6', name: '寒FCE-4次写作口语班', type: 'short-term', lessonCount: 4, tags: [], year: '2026', semester: '寒假', subject: '英语', grade: '5年级', classType: '无', status: 'active', lessons: [] },
-  { id: 'course7', name: '2026寒G2-R预备冲刺班', type: 'short-term', lessonCount: 10, tags: ['G3', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '2年级', classType: '火箭R-预备', status: 'active', lessons: [] },
-  { id: 'course8', name: '2026寒G1-R预备冲刺班', type: 'short-term', lessonCount: 10, tags: ['G4', 'S+'], year: '2026', semester: '寒假', subject: '英语', grade: '1年级', classType: '火箭R-预备', status: 'active', lessons: [] },
-  { id: 'course9', name: '25寒-G5-A+', type: 'short-term', lessonCount: 10, tags: ['G5', 'A+'], year: '2025', semester: '寒假', subject: '英语', grade: '5年级', classType: '领航A+', status: 'active', lessons: [] },
+  { id: 'course3', name: '产品名称3', type: 'experience', lessonCount: 15, tags: ['G1', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '启蒙', classType: '无', status: 'active', lessons: Array.from({length: 15}, (_, i) => ({ id: `c3-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
+  { id: 'course4', name: '产品名称4', type: 'long-term', lessonCount: 10, tags: [], year: '2026', semester: '春季', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c4-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 6) + 1, order: i+1 })) },
+  { id: 'course5', name: '产品名称5', type: 'long-term', lessonCount: 10, tags: ['G2', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c5-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 6) + 1, order: i+1 })) },
+  { id: 'course6', name: '产品名称6', type: 'short-term', lessonCount: 4, tags: [], year: '2026', semester: '寒假', subject: '英语', grade: '5年级', classType: '无', status: 'active', lessons: Array.from({length: 4}, (_, i) => ({ id: `c6-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 5) + 1, order: i+1 })) },
+  { id: 'course7', name: '产品名称7', type: 'short-term', lessonCount: 10, tags: ['G3', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '2年级', classType: '火箭R-预备', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c7-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
+  { id: 'course8', name: '产品名称8', type: 'short-term', lessonCount: 10, tags: ['G4', 'S+'], year: '2026', semester: '寒假', subject: '英语', grade: '1年级', classType: '火箭R-预备', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c8-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
+  { id: 'course9', name: '产品名称9', type: 'short-term', lessonCount: 10, tags: ['G5', 'A+'], year: '2025', semester: '寒假', subject: '英语', grade: '5年级', classType: '领航A+', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c9-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
 ];
 
 export const TEACHERS: Teacher[] = [
@@ -403,28 +403,28 @@ export const TASKS: Task[] = [
 ];
 
 export const LESSONS: Lesson[] = [
-  { id: 'l1', classId: 'c1', name: 'Unit 1: Hello World', date: '2025-07-20', startTime: '14:00', endTime: '15:30', status: 'completed', teacherId: 't1', pushTime: '2025-07-20 13:55', pushStatus: 'success' },
-  { id: 'l2', classId: 'c1', name: 'Unit 2: My Family', date: '2025-07-22', startTime: '14:00', endTime: '15:30', status: 'completed', teacherId: 't1', pushTime: '2025-07-22 13:55', pushStatus: 'success' },
-  { id: 'l3', classId: 'c1', name: 'Unit 3: Animals', date: '2025-07-24', startTime: '14:00', endTime: '15:30', status: 'pending', teacherId: 't1', pushTime: '2025-07-24 13:55', pushStatus: 'pending' },
-  { id: 'l4', classId: 'c1', name: 'Unit 4: Colors', date: '2025-07-26', startTime: '14:00', endTime: '15:30', status: 'pending', teacherId: 't1', pushTime: '2025-07-26 13:55', pushStatus: 'pending' },
-  { id: 'l11', classId: 'c_p1', name: 'Day 1: Intro', date: '2025-07-16', startTime: '14:30', endTime: '16:00', status: 'completed', teacherId: '219', pushTime: '2025-07-16 14:00', pushStatus: 'success' },
-  { id: 'l12', classId: 'c_p1', name: 'Day 2: Vocab', date: '2025-07-17', startTime: '14:30', endTime: '16:00', status: 'completed', teacherId: '219', pushTime: '2025-07-17 14:00', pushStatus: 'success' },
-  { id: 'l13', classId: 'c_p1', name: 'Day 3: Grammar', date: '2025-07-18', startTime: '14:30', endTime: '16:00', status: 'pending', teacherId: '219', pushTime: '2025-07-18 14:00', pushStatus: 'pending' },
+  { id: 'l1', classId: 'c1', name: '第一讲', date: '2025-07-20', startTime: '14:00', endTime: '15:30', status: 'completed', teacherId: 't1', pushTime: '2025-07-20 13:55', pushStatus: 'success' },
+  { id: 'l2', classId: 'c1', name: '第二讲', date: '2025-07-22', startTime: '14:00', endTime: '15:30', status: 'completed', teacherId: 't1', pushTime: '2025-07-22 13:55', pushStatus: 'success' },
+  { id: 'l3', classId: 'c1', name: '第三讲', date: '2025-07-24', startTime: '14:00', endTime: '15:30', status: 'pending', teacherId: 't1', pushTime: '2025-07-24 13:55', pushStatus: 'pending' },
+  { id: 'l4', classId: 'c1', name: '第四讲', date: '2025-07-26', startTime: '14:00', endTime: '15:30', status: 'pending', teacherId: 't1', pushTime: '2025-07-26 13:55', pushStatus: 'pending' },
+  { id: 'l11', classId: 'c_p1', name: '第一讲', date: '2025-07-16', startTime: '14:30', endTime: '16:00', status: 'completed', teacherId: '219', pushTime: '2025-07-16 14:00', pushStatus: 'success' },
+  { id: 'l12', classId: 'c_p1', name: '第二讲', date: '2025-07-17', startTime: '14:30', endTime: '16:00', status: 'completed', teacherId: '219', pushTime: '2025-07-17 14:00', pushStatus: 'success' },
+  { id: 'l13', classId: 'c_p1', name: '第三讲', date: '2025-07-18', startTime: '14:30', endTime: '16:00', status: 'pending', teacherId: '219', pushTime: '2025-07-18 14:00', pushStatus: 'pending' },
 ];
 
 export const PRODUCTS: Product[] = [
-  { id: 'P001', name: '商品A', price: 2999, courseId: 'course1', classId: 'c_p1', deliveryType: 'offline', description: 'K3进阶班首期', status: 'active', createdTime: '2025-06-01' },
-  { id: 'P002', name: '商品B', price: 2555, courseId: 'course9', classId: 'c_p2', deliveryType: 'offline', description: 'G5A+寒假班', status: 'active', createdTime: '2025-06-02' },
-  { id: 'P003', name: '商品C', price: 3299, courseId: 'course3', classId: 'c_p3', deliveryType: 'offline', description: 'G1A+暑期班', status: 'active', createdTime: '2025-06-03' },
-  { id: 'P004', name: '商品D', price: 1899, courseId: 'course2', classId: 'c_p5', deliveryType: 'offline', description: 'K3飞跃班三期(Full)', status: 'active', createdTime: '2025-06-04' },
+  { id: 'P001', name: '产品名称1', price: 2999, courseId: 'course1', classId: 'c_p1', deliveryType: 'offline', description: 'K3进阶班首期', status: 'active', createdTime: '2025-06-01' },
+  { id: 'P002', name: '产品名称2', price: 2555, courseId: 'course9', classId: 'c_p2', deliveryType: 'offline', description: 'G5A+寒假班', status: 'active', createdTime: '2025-06-02' },
+  { id: 'P003', name: '产品名称3', price: 3299, courseId: 'course3', classId: 'c_p3', deliveryType: 'offline', description: 'G1A+暑期班', status: 'active', createdTime: '2025-06-03' },
+  { id: 'P004', name: '产品名称4', price: 1899, courseId: 'course2', classId: 'c_p5', deliveryType: 'offline', description: 'K3飞跃班三期(Full)', status: 'active', createdTime: '2025-06-04' },
 ];
 
  export const ORDERS: Order[] = [
-    { id: 'ORD001', studentAccount: '17788888888', productName: '商品A', className: '25暑-K3-进阶--一期', amount: 2999, status: 'paid', createdTime: '2026-01-16 10:30:00', paymentTime: '2026-01-16 10:35:00', orderNumber: 'ON20260116001', phone: '17788888888', studentNumber: 'S20250001', studentName: '张三', classId: 'c_p1', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3200, discountAmount: 201, materialFee: 100, courseFee: 2899, lessonCount: 12 },
-    { id: 'ORD002', studentAccount: '15588888888', productName: '商品B', className: '25寒-G5-A+--二期', amount: 2555, status: 'pending', createdTime: '2026-01-16 10:35:00', paymentTime: '-', orderNumber: 'ON20260116002', phone: '15588888888', studentNumber: 'S20250002', studentName: '李四', classId: 'c_p2', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2800, discountAmount: 245, materialFee: 0, courseFee: 2555, lessonCount: 10 },
-    { id: 'ORD003', studentAccount: '13866666666', productName: '商品C', className: '25暑-G1-A+--一期', amount: 3299, status: 'paid', createdTime: '2026-01-15 14:20:00', paymentTime: '2026-01-15 14:25:00', orderNumber: 'ON20260115001', phone: '13866666666', studentNumber: 'S20250003', studentName: '王五', classId: 'c_p3', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3500, discountAmount: 201, materialFee: 0, courseFee: 3299, lessonCount: 15 },
-    { id: 'ORD004', studentAccount: '15977777777', productName: '商品D', className: '25暑-G2-A+--二期', amount: 2799, status: 'paid', createdTime: '2026-01-14 09:15:00', paymentTime: '2026-01-14 09:20:00', orderNumber: 'ON20260114001', phone: '15977777777', studentNumber: 'S20250004', studentName: '赵六', classId: 'c_p4', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3000, discountAmount: 201, materialFee: 0, courseFee: 2799, lessonCount: 12 },
-    { id: 'ORD005', studentAccount: '18699999999', productName: '商品E', className: '25暑-K3-飞跃--三期', amount: 1899, status: 'pending', createdTime: '2026-01-13 16:45:00', paymentTime: '-', orderNumber: 'ON20260113001', phone: '18699999999', studentNumber: 'S20250005', studentName: '钱七', classId: 'c_p5', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2000, discountAmount: 101, materialFee: 0, courseFee: 1899, lessonCount: 8 },
-    { id: 'ORD006', studentAccount: '13644444444', productName: '商品F', className: '25暑-G3-A+--一期', amount: 3599, status: 'paid', createdTime: '2026-01-12 11:30:00', paymentTime: '2026-01-12 11:35:00', orderNumber: 'ON20260112001', phone: '13644444444', studentNumber: 'S20250006', studentName: '孙八', classId: '601', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3800, discountAmount: 201, materialFee: 0, courseFee: 3599, lessonCount: 15 },
-    { id: 'ORD007', studentAccount: '15833333333', productName: '商品G', className: '25寒-G4-S+--二期', amount: 2299, status: 'paid', createdTime: '2026-01-11 13:20:00', paymentTime: '2026-01-11 13:25:00', orderNumber: 'ON20260111001', phone: '15833333333', studentNumber: 'S20250007', studentName: '周九', classId: '602', orderStatus: '已取消', paymentMethod: '微信支付', originalAmount: 2500, discountAmount: 201, materialFee: 0, courseFee: 2299, lessonCount: 10 },
+    { id: 'ORD001', studentAccount: '17788888888', productName: '产品名称1', className: '25暑-K3-进阶--一期', amount: 2999, status: 'paid', createdTime: '2026-01-16 10:30:00', paymentTime: '2026-01-16 10:35:00', orderNumber: 'ON20260116001', phone: '17788888888', studentNumber: 'S20250001', studentName: '张三', classId: 'c_p1', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3200, discountAmount: 201, materialFee: 100, courseFee: 2899, lessonCount: 12 },
+    { id: 'ORD002', studentAccount: '15588888888', productName: '产品名称2', className: '25寒-G5-A+--二期', amount: 2555, status: 'pending', createdTime: '2026-01-16 10:35:00', paymentTime: '-', orderNumber: 'ON20260116002', phone: '15588888888', studentNumber: 'S20250002', studentName: '李四', classId: 'c_p2', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2800, discountAmount: 245, materialFee: 0, courseFee: 2555, lessonCount: 10 },
+    { id: 'ORD003', studentAccount: '13866666666', productName: '产品名称3', className: '25暑-G1-A+--一期', amount: 3299, status: 'paid', createdTime: '2026-01-15 14:20:00', paymentTime: '2026-01-15 14:25:00', orderNumber: 'ON20260115001', phone: '13866666666', studentNumber: 'S20250003', studentName: '王五', classId: 'c_p3', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3500, discountAmount: 201, materialFee: 0, courseFee: 3299, lessonCount: 15 },
+    { id: 'ORD004', studentAccount: '15977777777', productName: '产品名称1', className: '25暑-G2-A+--二期', amount: 2799, status: 'paid', createdTime: '2026-01-14 09:15:00', paymentTime: '2026-01-14 09:20:00', orderNumber: 'ON20260114001', phone: '15977777777', studentNumber: 'S20250004', studentName: '赵六', classId: 'c_p4', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3000, discountAmount: 201, materialFee: 0, courseFee: 2799, lessonCount: 12 },
+    { id: 'ORD005', studentAccount: '18699999999', productName: '产品名称4', className: '25暑-K3-飞跃--三期', amount: 1899, status: 'pending', createdTime: '2026-01-13 16:45:00', paymentTime: '-', orderNumber: 'ON20260113001', phone: '18699999999', studentNumber: 'S20250005', studentName: '钱七', classId: 'c_p5', orderStatus: '待支付', paymentMethod: '现金', originalAmount: 2000, discountAmount: 101, materialFee: 0, courseFee: 1899, lessonCount: 8 },
+    { id: 'ORD006', studentAccount: '13644444444', productName: '产品名称7', className: '25暑-G3-A+--一期', amount: 3599, status: 'paid', createdTime: '2026-01-12 11:30:00', paymentTime: '2026-01-12 11:35:00', orderNumber: 'ON20260112001', phone: '13644444444', studentNumber: 'S20250006', studentName: '孙八', classId: '601', orderStatus: '已支付', paymentMethod: '微信支付', originalAmount: 3800, discountAmount: 201, materialFee: 0, courseFee: 3599, lessonCount: 15 },
+    { id: 'ORD007', studentAccount: '15833333333', productName: '产品名称8', className: '25寒-G4-S+--二期', amount: 2299, status: 'paid', createdTime: '2026-01-11 13:20:00', paymentTime: '2026-01-11 13:25:00', orderNumber: 'ON20260111001', phone: '15833333333', studentNumber: 'S20250007', studentName: '周九', classId: '602', orderStatus: '已取消', paymentMethod: '微信支付', originalAmount: 2500, discountAmount: 201, materialFee: 0, courseFee: 2299, lessonCount: 10 },
  ];

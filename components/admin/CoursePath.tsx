@@ -63,7 +63,7 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
     const lessonCount = formData.lessonCount;
     const lessons = lessonCount > 0 ? Array.from({ length: lessonCount }, (_, index) => ({
       id: `cl-${Date.now()}-${index}`,
-      name: `第${index + 1}课`,
+      name: `第${index + 1}讲`,
       taskCount: 0,
       order: index + 1,
       isOnlineBound: true
@@ -240,11 +240,11 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                 <div className="p-8">
                     <div className="flex items-center">
                         <label className="w-24 text-sm text-gray-600 text-right mr-4 font-medium whitespace-nowrap">
-                            <span className="text-red-500 mr-1">*</span>课节名称：
+                            <span className="text-red-500 mr-1">*</span>额外任务名称：
                         </label>
                         <input 
                             className="flex-1 border border-gray-300 rounded px-3 py-2.5 text-sm focus:outline-none focus:border-primary placeholder-gray-400"
-                            placeholder="请输入课节名称"
+                            placeholder="请输入额外任务名称"
                             value={newLessonName}
                             onChange={e => setNewLessonName(e.target.value)}
                             autoFocus
