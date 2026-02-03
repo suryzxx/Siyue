@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClassInfo, Lesson, Course, Product, StudentProfile } from '../../types';
-import { PRODUCTS } from '../../constants';
+import { PRODUCTS, ADMIN_STUDENTS } from '../../constants';
 import ClassManagement from './ClassManagement';
+import ClassDetailPage from './ClassDetailPage';
 import CoursePath from './CoursePath';
-import TeacherManagement from './TeacherManagement'; // Using this as Employee Management
+import TeacherManagement from './TeacherManagement';
 import AddressManagement from './AddressManagement';
 import SystemSettings from './SystemSettings';
 import StudentManagement from './StudentManagement';
@@ -28,10 +29,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   setLessons,
   setCourses
 }) => {
-  const [activePanel, setActivePanel] = useState<string>('class'); // Default to class management
+  const [activePanel, setActivePanel] = useState<string>('class');
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
+
+  useEffect(() => {
+    const handleNavigateToClassDetail = (event: CustomEvent<{ classId: string }>) => {
+      const { classId } = event.detail;
+      setSelectedClassId(classId);
+      setActivePanel('class-detail');
+    };
+
+    const handleNavigateToStudentDetail = (event: CustomEvent<{ studentId: string }>) => {
+      const { studentId } = event.detail;
+      const student = ADMIN_STUDENTS.find(s => s.id === studentId);
+      if (student) {
+        setSelectedStudent(student);
+        setActivePanel('student-detail');
+      }
+    };
+
+    window.addEventListener('navigate-to-class-detail', handleNavigateToClassDetail as EventListener);
+    window.addEventListener('navigate-to-student-detail', handleNavigateToStudentDetail as EventListener);
+
+    return () => {
+      window.removeEventListener('navigate-to-class-detail', handleNavigateToClassDetail as EventListener);
+      window.removeEventListener('navigate-to-student-detail', handleNavigateToStudentDetail as EventListener);
+    };
+  }, []);
 
   const handleAddClass = (newClass: ClassInfo, newLessons: Lesson[]) => {
     // Check if class exists (update mode)
@@ -142,10 +169,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {activePanel === 'student-detail' && selectedStudent && (
           <StudentDetailPage student={selectedStudent} onBack={() => setActivePanel('student')} />
         )}
-        {activePanel === 'order' && (
-          <OrderManagement />
+         {activePanel === 'order' && (
+           <OrderManagement 
+             onNavigateToClass={(classId) => {
+               setSelectedClassId(classId);
+               setActivePanel('class-detail');
+             }}
+             onNavigateToStudent={(studentId) => {
+               const student = ADMIN_STUDENTS.find(s => s.id === studentId);
+               if (student) {
+                 setSelectedStudent(student);
+                 setActivePanel('student-detail');
+               }
+             }}
+           />
+         )}
+        {activePanel === 'class-detail' && selectedClassId && (
+          <ClassDetailPage 
+            classId={selectedClassId}
+            classes={classes}
+            lessons={lessons}
+            onBack={() => {
+              setSelectedClassId(null);
+              setActivePanel('class');
+            }}
+          />
         )}
-        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order' ].includes(activePanel) && (
+        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order', 'class-detail' ].includes(activePanel) && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>

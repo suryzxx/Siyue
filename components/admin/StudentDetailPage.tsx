@@ -701,7 +701,7 @@ const getStatusBadge = (status: string) => {
   const handleClassDetailClick = (lessonNumber: string) => {
     const event = new CustomEvent('navigate-to-class-detail', {
       detail: {
-        lessonNumber: lessonNumber,
+        classId: '546',
         autoSwitchTab: 'students'
       }
     });
@@ -1172,20 +1172,20 @@ const getStatusBadge = (status: string) => {
                            <tbody>
                              {orderClasses.map((classItem) => (
                                <tr key={classItem.id}>
-                                 <td>
-                                   <button 
-                                     className="table-link"
-                                     onClick={() => {
-                                       if (typeof window !== 'undefined') {
-                                         window.dispatchEvent(new CustomEvent('navigate-to-class-detail', { 
-                                           detail: { classId: 'second-class' } 
-                                         }));
-                                       }
-                                     }}
-                                   >
-                                     {classItem.className}
-                                   </button>
-                                 </td>
+                                  <td>
+                                    <button 
+                                      className="table-link"
+                                      onClick={() => {
+                                        if (typeof window !== 'undefined') {
+                                          window.dispatchEvent(new CustomEvent('navigate-to-class-detail', { 
+                                            detail: { classId: '546' } 
+                                          }));
+                                        }
+                                      }}
+                                    >
+                                      {classItem.className}
+                                    </button>
+                                  </td>
                                  <td>{classItem.courseName}</td>
                                  <td>{classItem.teacher}</td>
                                  <td>{classItem.type}</td>
