@@ -868,7 +868,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           name: cls.name,
           mode: '面授',
           courseName: course?.name || '',
-          courseType: course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课',
+          courseType: course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '短期课程',
             progress: progressText,
             capacity: cls.capacity,
             enrolled: cls.studentCount,
@@ -1013,7 +1013,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           
           // 确定课程类型
           const courseType = course?.type === 'long-term' ? '长期班' : 
-                            course?.type === 'short-term' ? '短期班' : '体验课';
+                            course?.type === 'short-term' ? '短期班' : '短期课程';
           
           // 确定班型（使用studentTag字段）
           const classType = cls.studentTag || '-';
@@ -1061,7 +1061,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           }
           
           const courseType = course?.type === 'long-term' ? '长期班' : 
-                            course?.type === 'short-term' ? '短期班' : '体验课';
+                            course?.type === 'short-term' ? '短期班' : '短期课程';
           const classType = firstClass.studentTag || '-';
           
           studentsToExport = ADMIN_STUDENTS.slice(0, 20).map(student => ({
@@ -1885,7 +1885,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         );
         case 'mode': return <span className="text-gray-600">面授</span>;
         case 'courseName': return <span className="text-gray-800">{course?.name}</span>;
-        case 'courseType': return <span className="text-gray-600">{course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课'}</span>;
+        case 'courseType': return <span className="text-gray-600">{course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '短期课程'}</span>;
         case 'progress': return <span className="text-gray-600">{progressText}</span>;
          case 'enrolled': return (
              <span className="text-gray-600">

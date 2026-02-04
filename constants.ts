@@ -19,10 +19,10 @@ export const COURSES: Course[] = [
   { 
     id: 'course2', 
     name: '产品名称2', 
-    type: 'experience', 
+    type: 'short-term', 
     lessonCount: 13, 
     tags: ['K3', 'K3飞跃'],
-    description: '试听课',
+    description: '短期课程',
     module: 'English',
     isRecommended: true,
     year: '2026', semester: '寒假', subject: '英语', grade: '小学组', classType: '无', status: 'active',
@@ -30,7 +30,7 @@ export const COURSES: Course[] = [
       { id: 'c2-1', name: '第一讲', taskCount: 17, order: 1 },
     ]
   },
-  { id: 'course3', name: '产品名称3', type: 'experience', lessonCount: 15, tags: ['G1', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '启蒙', classType: '无', status: 'active', lessons: Array.from({length: 15}, (_, i) => ({ id: `c3-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
+  { id: 'course3', name: '产品名称3', type: 'short-term', lessonCount: 15, tags: ['G1', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '启蒙', classType: '无', status: 'active', lessons: Array.from({length: 15}, (_, i) => ({ id: `c3-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 8) + 1, order: i+1 })) },
   { id: 'course4', name: '产品名称4', type: 'long-term', lessonCount: 10, tags: [], year: '2026', semester: '春季', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c4-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 6) + 1, order: i+1 })) },
   { id: 'course5', name: '产品名称5', type: 'long-term', lessonCount: 10, tags: ['G2', 'A+'], year: '2026', semester: '寒假', subject: '英语', grade: '中班', classType: '无', status: 'active', lessons: Array.from({length: 10}, (_, i) => ({ id: `c5-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 6) + 1, order: i+1 })) },
   { id: 'course6', name: '产品名称6', type: 'short-term', lessonCount: 4, tags: [], year: '2026', semester: '寒假', subject: '英语', grade: '5年级', classType: '无', status: 'active', lessons: Array.from({length: 4}, (_, i) => ({ id: `c6-${i}`, name: `第${i+1}讲`, taskCount: Math.floor(Math.random() * 5) + 1, order: i+1 })) },
