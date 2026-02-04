@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { exportToExcel, ExcelFormatters } from '../../utils/excelExport';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { CLASSES, ADMIN_STUDENTS } from '../../constants';
+import { CLASSES, ADMIN_STUDENTS, CAMPUSES, TEACHERS, COURSES } from '../../constants';
 
 enum OrderStatusEnum {
   SUCCESS = '交易成功',
@@ -333,6 +333,36 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ options, selected, onChange, 
   );
 };
 
+interface ManualOrderStudent {
+  id: string;
+  name: string;
+  phone: string;
+  campus: string;
+  gender: '男' | '女';
+}
+
+interface ManualOrderClass {
+  id: string;
+  name: string;
+  businessType: '新签' | '续报' | '预售';
+  paymentOption: '整期' | '分期';
+  amount: number;
+  classId: string;
+  productName: string;
+  enrolledCount: number;
+  capacity: number;
+  courseType: string;
+  gradeLevel: string;
+  classType: string;
+  campus: string;
+  semester: string;
+  teacher: string;
+  startedLessons: number;
+  totalLessons: number;
+  startTime: string;
+  fee: number;
+}
+
 interface OrderManagementProps {
   onNavigateToClass?: (classId: string) => void;
   onNavigateToStudent?: (studentId: string) => void;
@@ -343,6 +373,13 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
   const [studentInfo, setStudentInfo] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
+
+  const [showManualOrder, setShowManualOrder] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<ManualOrderStudent | null>(null);
+  const [selectedClasses, setSelectedClasses] = useState<ManualOrderClass[]>([]);
+  const [showStudentSelectModal, setShowStudentSelectModal] = useState(false);
+  const [showNewStudentModal, setShowNewStudentModal] = useState(false);
+  const [showClassSelectModal, setShowClassSelectModal] = useState(false);
 
   const filteredOrders = MOCK_ORDERS.filter(order => {
     const matchProductName = !productName || order.subOrders.some(sub => 
@@ -516,6 +553,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
         <div className="flex items-center gap-3">
           <button 
+            onClick={() => setShowManualOrder(true)}
             className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
           >
             手动录单
@@ -586,6 +624,548 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
           <option>50 条/页</option>
         </select>
       </div>
+
+
+      {showManualOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[1200px] max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800">手动录单</h3>
+              <button onClick={() => setShowManualOrder(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-6 space-y-6">
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-md font-semibold text-gray-800">选择学生</h4>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setShowStudentSelectModal(true)}
+                      className="px-4 py-1.5 border border-primary text-primary rounded text-sm hover:bg-primary-light"
+                    >
+                      选择学生
+                    </button>
+                    <button 
+                      onClick={() => setShowNewStudentModal(true)}
+                      className="px-4 py-1.5 bg-primary text-white rounded text-sm hover:bg-teal-600"
+                    >
+                      新生录入
+                    </button>
+                  </div>
+                </div>
+                
+                {selectedStudent ? (
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-gray-600 font-medium">
+                        <tr>
+                          <th className="px-4 py-3 text-left">姓名</th>
+                          <th className="px-4 py-3 text-left">电话</th>
+                          <th className="px-4 py-3 text-left">校区</th>
+                          <th className="px-4 py-3 text-left">性别</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3">{selectedStudent.name}</td>
+                          <td className="px-4 py-3">{selectedStudent.phone}</td>
+                          <td className="px-4 py-3">{selectedStudent.campus}</td>
+                          <td className="px-4 py-3">{selectedStudent.gender}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400">
+                    请选择学生或录入新生
+                  </div>
+                )}
+              </div>
+
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-md font-semibold text-gray-800">选择班级</h4>
+                  <button 
+                    onClick={() => setShowClassSelectModal(true)}
+                    className="px-4 py-1.5 border border-primary text-primary rounded text-sm hover:bg-primary-light"
+                  >
+                    选择班级
+                  </button>
+                </div>
+                
+                {selectedClasses.length > 0 ? (
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-gray-600 font-medium">
+                        <tr>
+                          <th className="px-4 py-3 text-left">业务</th>
+                          <th className="px-4 py-3 text-left">班级名称</th>
+                          <th className="px-4 py-3 text-left">支付选项</th>
+                          <th className="px-4 py-3 text-left">应收金额</th>
+                          <th className="px-4 py-3 text-left">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {selectedClasses.map((cls, index) => (
+                          <tr key={cls.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3">
+                              <select 
+                                value={cls.businessType}
+                                onChange={(e) => {
+                                  const updated = [...selectedClasses];
+                                  updated[index].businessType = e.target.value as '新签' | '续报' | '预售';
+                                  setSelectedClasses(updated);
+                                }}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+                              >
+                                <option value="新签">新签</option>
+                                <option value="续报">续报</option>
+                                <option value="预售">预售</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3">
+                              <button 
+                                onClick={() => onNavigateToClass?.(cls.classId)}
+                                className="text-primary hover:underline"
+                              >
+                                {cls.name}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3">
+                              <select 
+                                value={cls.paymentOption}
+                                onChange={(e) => {
+                                  const updated = [...selectedClasses];
+                                  updated[index].paymentOption = e.target.value as '整期' | '分期';
+                                  if (e.target.value === '分期') {
+                                    updated[index].amount = Math.round(cls.fee * 0.5);
+                                  } else {
+                                    updated[index].amount = cls.fee;
+                                  }
+                                  setSelectedClasses(updated);
+                                }}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+                              >
+                                <option value="整期">整期</option>
+                                <option value="分期">分期</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 font-medium">{formatCurrency(cls.amount)}</td>
+                            <td className="px-4 py-3">
+                              <button 
+                                onClick={() => {
+                                  setSelectedClasses(prev => prev.filter(c => c.id !== cls.id));
+                                }}
+                                className="text-red-500 hover:text-red-700 text-sm"
+                              >
+                                删除
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400">
+                    请选择班级
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+              <button 
+                onClick={() => {
+                  setShowManualOrder(false);
+                  setSelectedStudent(null);
+                  setSelectedClasses([]);
+                }}
+                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+              >
+                取消
+              </button>
+              <button 
+                onClick={() => {
+                  alert('订单提交成功！');
+                  setShowManualOrder(false);
+                  setSelectedStudent(null);
+                  setSelectedClasses([]);
+                }}
+                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+                disabled={!selectedStudent || selectedClasses.length === 0}
+              >
+                立即报名
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showStudentSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[900px] max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800">选择学生</h3>
+              <button onClick={() => setShowStudentSelectModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="p-6 border-b border-gray-100 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="输入学生姓名、电话搜索"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary pl-9"
+                  />
+                  <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
+                </div>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">校区</option>
+                  {CAMPUSES.map(campus => (
+                    <option key={campus} value={campus}>{campus}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-6 py-3 w-12">选择</th>
+                    <th className="px-6 py-3">学生ID</th>
+                    <th className="px-6 py-3">学生姓名</th>
+                    <th className="px-6 py-3">电话</th>
+                    <th className="px-6 py-3">校区</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {ADMIN_STUDENTS.map(student => (
+                    <tr key={student.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-3">
+                        <input
+                          type="radio"
+                          name="studentSelect"
+                          className="text-primary"
+                          onChange={() => {
+                            setSelectedStudent({
+                              id: student.id,
+                              name: student.name,
+                              phone: student.account,
+                              campus: student.campus || '',
+                              gender: student.gender
+                            });
+                          }}
+                        />
+                      </td>
+                      <td className="px-6 py-3">{student.id}</td>
+                      <td className="px-6 py-3 font-medium">{student.name}</td>
+                      <td className="px-6 py-3">{student.account}</td>
+                      <td className="px-6 py-3">{student.campus || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+              <div className="text-sm text-gray-600">
+                共 {ADMIN_STUDENTS.length} 条记录
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&lt;</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">2</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">3</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&gt;</button>
+                  <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary">
+                    <option>20 条/页</option>
+                    <option>50 条/页</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+              <button 
+                onClick={() => setShowStudentSelectModal(false)}
+                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+              >
+                取消
+              </button>
+              <button 
+                onClick={() => {
+                  if (selectedStudent) {
+                    setShowStudentSelectModal(false);
+                  }
+                }}
+                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+                disabled={!selectedStudent}
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewStudentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800">新生录入</h3>
+              <button onClick={() => setShowNewStudentModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>姓名</label>
+                  <input 
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    placeholder="请输入学生姓名"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>电话</label>
+                  <input 
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    placeholder="请输入电话"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-600">校区</label>
+                  <select 
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                  >
+                    <option value="">请选择校区</option>
+                    {CAMPUSES.map(campus => <option key={campus} value={campus}>{campus}</option>)}
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-600">性别</label>
+                  <select 
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                  >
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+              <button 
+                onClick={() => setShowNewStudentModal(false)}
+                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+              >
+                取消
+              </button>
+              <button 
+                onClick={() => {
+                  setShowNewStudentModal(false);
+                }}
+                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showClassSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[1200px] max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800">选择班级</h3>
+              <button onClick={() => setShowClassSelectModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="p-6 border-b border-gray-100 space-y-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="relative min-w-[180px]">
+                  <input
+                    type="text"
+                    placeholder="班级名称"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                  />
+                </div>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">产品类型</option>
+                  <option value="course">课程</option>
+                  <option value="material">教辅</option>
+                </select>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">年级</option>
+                  <option value="K3">K3</option>
+                  <option value="G1">G1</option>
+                  <option value="G2">G2</option>
+                  <option value="G3">G3</option>
+                  <option value="G4">G4</option>
+                  <option value="G5">G5</option>
+                </select>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">班型</option>
+                  <option value="进阶">进阶</option>
+                  <option value="飞跃">飞跃</option>
+                  <option value="A+">A+</option>
+                  <option value="S+">S+</option>
+                </select>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">校区</option>
+                  {CAMPUSES.map(campus => (
+                    <option key={campus} value={campus}>{campus}</option>
+                  ))}
+                </select>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">学期</option>
+                  <option value="寒假">寒假</option>
+                  <option value="暑假">暑假</option>
+                  <option value="春季">春季</option>
+                  <option value="秋季">秋季</option>
+                </select>
+                
+                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
+                  <option value="">主讲老师</option>
+                  {TEACHERS.map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-6 py-3 w-12">选择</th>
+                    <th className="px-6 py-3">班级ID</th>
+                    <th className="px-6 py-3">班级名称</th>
+                    <th className="px-6 py-3">产品名称</th>
+                    <th className="px-6 py-3">已报/预招人数</th>
+                    <th className="px-6 py-3">课程类型</th>
+                    <th className="px-6 py-3">班层（年级、班型）</th>
+                    <th className="px-6 py-3">学期</th>
+                    <th className="px-6 py-3">主讲老师</th>
+                    <th className="px-6 py-3">已开/总讲次</th>
+                    <th className="px-6 py-3">开课时间</th>
+                    <th className="px-6 py-3">校区</th>
+                    <th className="px-6 py-3">收费</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {CLASSES.map(cls => {
+                    const course = COURSES.find(c => c.id === cls.courseId);
+                    const teacher = TEACHERS.find(t => t.id === cls.teacherId);
+                    const enrolledCount = cls.studentCount || 0;
+                    const capacity = cls.capacity || 0;
+                    
+                    return (
+                      <tr key={cls.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-3">
+                          <input
+                            type="checkbox"
+                            className="text-primary"
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedClasses(prev => [...prev, {
+                                  id: cls.id,
+                                  name: cls.name,
+                                  businessType: '新签',
+                                  paymentOption: '整期',
+                                  amount: cls.price || 0,
+                                  classId: cls.id,
+                                  productName: course?.name || cls.name,
+                                  enrolledCount,
+                                  capacity,
+                                  courseType: cls.subject || '',
+                                  gradeLevel: cls.grade || '',
+                                  classType: cls.studentTag || '',
+                                  campus: cls.campus || '',
+                                  semester: cls.semester || '',
+                                  teacher: teacher?.name || '',
+                                  startedLessons: 0,
+                                  totalLessons: course?.lessonCount || 0,
+                                  startTime: cls.startDate || '',
+                                  fee: cls.price || 0
+                                }]);
+                              } else {
+                                setSelectedClasses(prev => prev.filter(c => c.id !== cls.id));
+                              }
+                            }}
+                          />
+                        </td>
+                        <td className="px-6 py-3">{cls.id}</td>
+                        <td className="px-6 py-3 font-medium">{cls.name}</td>
+                        <td className="px-6 py-3">{course?.name || '-'}</td>
+                        <td className="px-6 py-3">{enrolledCount}/{capacity}</td>
+                        <td className="px-6 py-3">{cls.subject || '-'}</td>
+                        <td className="px-6 py-3">{cls.grade || ''} {cls.studentTag || ''}</td>
+                        <td className="px-6 py-3">{cls.semester || '-'}</td>
+                        <td className="px-6 py-3">{teacher?.name || '-'}</td>
+                        <td className="px-6 py-3">0/{course?.lessonCount || 0}</td>
+                        <td className="px-6 py-3">{cls.startDate || '-'}</td>
+                        <td className="px-6 py-3">{cls.campus || '-'}</td>
+                        <td className="px-6 py-3">{formatCurrency(cls.price || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+              <div className="text-sm text-gray-600">
+                共 {CLASSES.length} 条记录
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&lt;</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">2</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">3</button>
+                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&gt;</button>
+                  <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary">
+                    <option>20 条/页</option>
+                    <option>50 条/页</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+              <button 
+                onClick={() => setShowClassSelectModal(false)}
+                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+              >
+                取消
+              </button>
+              <button 
+                onClick={() => {
+                  setShowClassSelectModal(false);
+                }}
+                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
