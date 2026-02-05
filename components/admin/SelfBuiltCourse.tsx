@@ -226,7 +226,7 @@ const SelfBuiltCourse: React.FC<SelfBuiltCourseProps> = ({ courses, setCourses, 
                 <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4 text-blue-600 font-medium cursor-pointer hover:underline">{course.name}</td>
                   <td className="p-4 text-gray-600">
-                      {course.type === 'long-term' ? '长期班' : course.type === 'short-term' ? '短期班' : '短期课程'}
+                      {course.type === 'long-term' ? '体系课' : course.type === 'short-term' ? '专项课' : '短期课程'}
                   </td>
                   <td className="p-4 text-gray-600">{course.subject || '-'}</td>
                   <td className="p-4 text-gray-600">{course.grade || '-'}</td>
@@ -321,8 +321,8 @@ const SelfBuiltCourse: React.FC<SelfBuiltCourseProps> = ({ courses, setCourses, 
                                     onChange={e => setFormData({...formData, courseType: e.target.value as any})}
                                     className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                                 >
-                                    <option value="long-term">长期班</option>
-                                    <option value="short-term">短期班</option>
+                                    <option value="long-term">体系课</option>
+                                    <option value="short-term">专项课</option>
                                 </select>
                             </div>
 

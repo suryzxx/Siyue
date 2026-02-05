@@ -310,11 +310,55 @@ interface AttendanceRecord {
   hasClassChange?: boolean;
 }
 
+interface EvaluationRecord {
+  id: string;
+  // Title will be auto-generated as "年份+学期+试卷类型"
+  year: string;
+  semester: string;
+  paperType: string;
+  subject: string;
+  city: string;
+  grade: string; // 年级 from provided list
+  classType: string; // 班型 from provided list
+  createdAt: string;
+  updatedAt: string;
+  attachments: Attachment[];
+}
+
+interface LearningSituation {
+  id: string;
+  studentId: string;
+  content: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+interface Attachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: 'image' | 'document';
+  uploadedAt: string;
+}
+
 const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'waitlist' | 'coupons'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'waitlist' | 'coupons' | 'evaluations'>('orders');
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [isEditingLearningSituation, setIsEditingLearningSituation] = useState(false);
+  
+  // Form state for evaluation modal
+  const [evaluationForm, setEvaluationForm] = useState({
+    year: '',
+    semester: '',
+    paperType: '',
+    subject: '英语',
+    city: '',
+    grade: '',
+    classType: ''
+  });
 
   // Mock data for student orders
   const mockOrders: Order[] = [
@@ -327,13 +371,13 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
     {
       id: '2',
       orderNumber: 'MS115450016254267394', 
-      courseType: '长期班',
+      courseType: '体系课',
       enrollmentDate: '2025-10-28 15:57:24',
     },
     {
       id: '3',
       orderNumber: 'MS113156075144548354',
-      courseType: '长期班',
+      courseType: '体系课',
       enrollmentDate: '2024-09-18 09:58:01',
     }
   ];
@@ -659,6 +703,78 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       deductionStatus: '已扣费',
       hasClassChange: false,
     }
+  ];
+
+  // Mock data for learning situation
+  const mockLearningSituation: LearningSituation = {
+    id: '1',
+    studentId: student.id,
+    content: '学员目前数学基础较好，英语需要加强，学习态度积极，期待通过系统学习提升综合能力。',
+    updatedAt: '2025-01-15 10:30:22',
+    updatedBy: '张老师'
+  };
+
+  // Initialize learning situation content
+  const [learningSituationContent, setLearningSituationContent] = useState(mockLearningSituation.content);
+
+  // Mock data for evaluation records
+  const mockEvaluationRecords: EvaluationRecord[] = [
+    {
+      id: '1',
+      year: '2025',
+      semester: '寒假',
+      paperType: '领航A卷',
+      subject: '英语',
+      city: '南京',
+      grade: 'G5',
+      classType: 'A',
+      createdAt: '2025-01-15 10:30:22',
+      updatedAt: '2025-01-15 10:30:22',
+      attachments: [
+        {
+          id: '1',
+          fileName: '数学试卷.jpg',
+          fileUrl: '#',
+          fileType: 'image',
+          uploadedAt: '2025-01-15 10:30:22'
+        }
+      ]
+    },
+    {
+      id: '2',
+      year: '2024',
+      semester: '秋季',
+      paperType: '跳级测',
+      subject: '英语',
+      city: '上海',
+      grade: 'G4',
+      classType: 'B',
+      createdAt: '2024-09-10 14:20:15',
+      updatedAt: '2024-09-10 14:20:15',
+      attachments: []
+    }
+  ];
+
+  // Grade options from provided list
+  const gradeOptions = [
+    'K1启蒙', 'K2启蒙', 'K2进阶', 'K3启蒙', 'K3进阶', 'K3飞跃', 
+    '1A', '1A+', '1S', '1S+', '1R', '1R预备', 
+    '2A', 'K1', 'K2', 'K3', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9',
+    '3A', '3A+', '3S', '3S+', '3R', 
+    '4A', '4A+', '4S', '4S+', '4R', 
+    '5A', '5A+', '5S', '5S+', '5R', 
+    '6A', '6A+', '6S', '6S+', '6R', 
+    'G7国际托管班', 'G7国际菁英班', 'G7国际英才', 
+    'G8国际托管班', 'G8国际菁英班', 'G8国际英才', 
+    'G9国际托管班', 'G9国际菁英班', 'G9国际英才'
+  ];
+
+  // Class type options (need to be determined from grade list or provided separately)
+  // Based on the grade list, we can infer some class types
+  const classTypeOptions = [
+    'A', 'A+', 'S', 'S+', 'R', 'R预备',
+    '启蒙', '进阶', '飞跃',
+    '国际托管班', '国际菁英班', '国际英才'
   ];
 
   const getClassChangeTag = (record: AttendanceRecord) => {
@@ -1097,11 +1213,12 @@ const getStatusBadge = (status: string) => {
            {/* Tabs */}
            <div className="border-b border-gray-100">
              <div className="flex">
-               {[
-                 { id: 'orders', label: '学生订单' },
-                 { id: 'waitlist', label: '候补记录' },
-                 { id: 'coupons', label: '优惠券' }
-               ].map(tab => (
+                {[
+                  { id: 'orders', label: '学生订单' },
+                  { id: 'waitlist', label: '候补记录' },
+                  { id: 'coupons', label: '优惠券' },
+                  { id: 'evaluations', label: '评测记录' }
+                ].map(tab => (
                  <div
                    key={tab.id}
                    onClick={() => setActiveTab(tab.id as any)}
@@ -1260,22 +1377,380 @@ const getStatusBadge = (status: string) => {
                </div>
              )}
 
-             {/* Coupons Tab */}
-             {activeTab === 'coupons' && (
-               <div>
-                 <h3 className="text-lg font-medium text-gray-800 mb-4">优惠券</h3>
-                 <div className="text-center py-12 text-gray-400">
-                   <div className="mb-4">🎫</div>
-                   <p>优惠券功能开发中...</p>
+              {/* Coupons Tab */}
+              {activeTab === 'coupons' && (
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">优惠券</h3>
+                  <div className="text-center py-12 text-gray-400">
+                    <div className="mb-4">🎫</div>
+                    <p>优惠券功能开发中...</p>
+                  </div>
+                </div>
+              )}
+
+               {/* Evaluations Tab */}
+               {activeTab === 'evaluations' && (
+                 <div className="space-y-6">
+                   {/* Learning Situation Section */}
+                   <div className="bg-white border border-gray-200 rounded-lg p-6">
+                     <div className="flex justify-between items-center mb-4">
+                       <h3 className="text-lg font-medium text-gray-800">学情记录</h3>
+                       {isEditingLearningSituation ? (
+                         <div className="flex gap-2">
+                           <button 
+                             onClick={() => {
+                               // Save logic would go here
+                               setIsEditingLearningSituation(false);
+                             }}
+                             className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                           >
+                             保存
+                           </button>
+                           <button 
+                             onClick={() => {
+                               setLearningSituationContent(mockLearningSituation.content);
+                               setIsEditingLearningSituation(false);
+                             }}
+                             className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+                           >
+                             取消
+                           </button>
+                         </div>
+                       ) : (
+                         <button 
+                           onClick={() => setIsEditingLearningSituation(true)}
+                           className="px-3 py-1.5 text-sm text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                         >
+                           编辑
+                         </button>
+                       )}
+                     </div>
+                     
+                     {isEditingLearningSituation ? (
+                       <div>
+                         <textarea 
+                           value={learningSituationContent}
+                           onChange={(e) => setLearningSituationContent(e.target.value)}
+                           rows={4}
+                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                           placeholder="记录学员目前的学习情况、学习规划及期待"
+                         />
+                         <p className="text-xs text-gray-500 mt-1">填写了学情和成绩，才有资格报体系课，成绩有效期为录入成绩后三个月内</p>
+                       </div>
+                      ) : (
+                        <div className="bg-gray-50 p-4 rounded">
+                          <p className="text-gray-600 text-sm">{learningSituationContent}</p>
+                        </div>
+                      )}
+                   </div>
+                   
+                   {/* Evaluation Records Section */}
+                   <div>
+                     <div className="flex justify-between items-center mb-6">
+                       <h3 className="text-lg font-medium text-gray-800">评测记录</h3>
+                       <button 
+                         onClick={() => setShowEvaluationModal(true)}
+                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
+                       >
+                         添加评测记录
+                       </button>
+                     </div>
+                     
+                     {mockEvaluationRecords.length === 0 ? (
+                       <div className="text-center py-12 text-gray-400">
+                         <div className="mb-4">📊</div>
+                         <p>暂无评测记录</p>
+                         <p className="text-sm mt-2">点击"添加评测记录"按钮开始记录</p>
+                       </div>
+                      ) : (
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+                              <tr>
+                                <th className="p-4">标题</th>
+                                <th className="p-4">评测等级</th>
+                                <th className="p-4">城市</th>
+                                <th className="p-4">年份</th>
+                                <th className="p-4">学期</th>
+                                <th className="p-4">学科</th>
+                                <th className="p-4">试卷类型</th>
+                                <th className="p-4">附件</th>
+                                <th className="p-4">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {mockEvaluationRecords.map(record => {
+                                // Auto-generate title: "年份+学期+试卷类型"
+                                const autoTitle = `${record.year}年${record.semester}${record.paperType}`;
+                                // Combine grade and classType for evaluation level
+                                const evaluationLevel = `${record.grade}${record.classType}`;
+                                
+                                return (
+                                  <tr key={record.id} className="hover:bg-gray-50">
+                                    <td className="p-4">
+                                      <div className="font-medium text-gray-800">{autoTitle}</div>
+                                      <div className="text-xs text-gray-400 mt-1">
+                                        创建时间: {record.createdAt}
+                                      </div>
+                                    </td>
+                                    <td className="p-4">
+                                      <span className="bg-blue-50 text-blue-500 border border-blue-200 px-2 py-0.5 rounded text-xs">
+                                        {evaluationLevel}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-gray-600">{record.city}</td>
+                                    <td className="p-4 text-gray-600">{record.year}</td>
+                                    <td className="p-4 text-gray-600">{record.semester}</td>
+                                    <td className="p-4 text-gray-600">{record.subject}</td>
+                                    <td className="p-4 text-gray-600">{record.paperType}</td>
+                                    <td className="p-4">
+                                      {record.attachments.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1">
+                                          {record.attachments.map(attachment => (
+                                            <a 
+                                              key={attachment.id}
+                                              href={attachment.fileUrl}
+                                              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 text-xs text-gray-600"
+                                              title={attachment.fileName}
+                                            >
+                                              {attachment.fileType === 'image' ? '🖼️' : '📄'}
+                                              <span className="truncate max-w-[80px]">{attachment.fileName}</span>
+                                            </a>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <span className="text-gray-400 text-xs">无附件</span>
+                                      )}
+                                    </td>
+                                    <td className="p-4">
+                                      <div className="flex gap-2">
+                                        <button className="px-2 py-1 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded">
+                                          编辑
+                                        </button>
+                                        <button className="px-2 py-1 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 rounded">
+                                          删除
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                   </div>
                  </div>
-               </div>
-)}
+               )}
             </div>
           </div>
+         </div>
         </div>
-      </div>
-    </>
-  );
-};
+
+      {/* Add Evaluation Record Modal */}
+      {showEvaluationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-medium text-gray-800">添加评测记录</h2>
+                <button 
+                  onClick={() => setShowEvaluationModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+               <div className="space-y-6">
+
+                  {/* Section 1: 成绩标签 - City, Year, Semester in one row */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">成绩标签</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* City */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          城市 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={evaluationForm.city}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, city: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="请输入城市"
+                        />
+                      </div>
+                      
+                      {/* Year */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          年份 <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.year}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, year: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">选择年份</option>
+                          <option value="2026">2026</option>
+                          <option value="2025">2025</option>
+                          <option value="2024">2024</option>
+                          <option value="2023">2023</option>
+                        </select>
+                      </div>
+                      
+                      {/* Semester */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学期 <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.semester}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, semester: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">选择学期</option>
+                          <option value="寒假">寒假</option>
+                          <option value="春季">春季</option>
+                          <option value="暑假">暑假</option>
+                          <option value="秋季">秋季</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: 成绩 - Subject, Paper Type, Grade, Class Type in one row */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">成绩</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      {/* Subject - Fixed to English only */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学科 <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.subject}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, subject: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="英语">英语</option>
+                        </select>
+                      </div>
+                      
+                      {/* Paper Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          试卷类型 <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.paperType}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, paperType: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">选择试卷类型</option>
+                          <optgroup label="入学测（新生）">
+                            <option value="入学测">入学测</option>
+                            <option value="领航A卷">领航A卷</option>
+                            <option value="领航B卷">领航B卷</option>
+                            <option value="高端A卷">高端A卷</option>
+                            <option value="高端B卷">高端B卷</option>
+                            <option value="1V1面诊">1V1面诊</option>
+                            <option value="试听面诊">试听面诊</option>
+                            <option value="绿色通道">绿色通道</option>
+                            <option value="剑桥官方卷">剑桥官方卷</option>
+                            <option value="0基础直入">0基础直入</option>
+                          </optgroup>
+                          <optgroup label="跳级测（老生）">
+                            <option value="跳级测">跳级测</option>
+                            <option value="三个月内免测入班">三个月内免测入班</option>
+                          </optgroup>
+                        </select>
+                      </div>
+                      
+                      {/* Grade */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          评测等级（年级） <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.grade}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, grade: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">选择年级</option>
+                          {gradeOptions.map((grade, index) => (
+                            <option key={index} value={grade}>{grade}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Class Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          评测等级（班型） <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          value={evaluationForm.classType}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, classType: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">选择班型</option>
+                          {classTypeOptions.map((classType, index) => (
+                            <option key={index} value={classType}>{classType}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                {/* 附件上传 */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">附件上传</h3>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <div className="mb-4">
+                      <div className="text-4xl mb-2">📎</div>
+                      <p className="text-gray-600">支持上传图片、文件格式</p>
+                      <p className="text-sm text-gray-400 mt-1">点击或拖拽文件到此处上传</p>
+                    </div>
+                    <input 
+                      type="file"
+                      multiple
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label 
+                      htmlFor="file-upload"
+                      className="inline-block px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors cursor-pointer"
+                    >
+                      选择文件
+                    </label>
+                  </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                  <button 
+                    type="button"
+                    onClick={() => setShowEvaluationModal(false)}
+                    className="px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    type="button"
+                    className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  >
+                    保存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+         </div>
+        )}
+      </>
+   );
+ };
 
 export default StudentDetailPage;
