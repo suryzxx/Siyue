@@ -660,8 +660,8 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 text-gray-600 font-medium">
                         <tr>
-                          <th className="px-4 py-3 text-left">姓名</th>
-                          <th className="px-4 py-3 text-left">电话</th>
+                          <th className="px-4 py-3 text-left">学生姓名</th>
+                          <th className="px-4 py-3 text-left">联系电话</th>
                           <th className="px-4 py-3 text-left">校区</th>
                           <th className="px-4 py-3 text-left">性别</th>
                         </tr>
@@ -817,7 +817,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="输入学生姓名、电话搜索"
+                    placeholder="输入学生姓名、联系电话搜索"
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary pl-9"
                   />
                   <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
@@ -839,7 +839,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                     <th className="px-6 py-3 w-12">选择</th>
                     <th className="px-6 py-3">学生ID</th>
                     <th className="px-6 py-3">学生姓名</th>
-                    <th className="px-6 py-3">电话</th>
+                    <th className="px-6 py-3">联系电话</th>
                     <th className="px-6 py-3">校区</th>
                   </tr>
                 </thead>
@@ -933,10 +933,10 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>电话</label>
+                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>联系电话</label>
                   <input 
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                    placeholder="请输入电话"
+                    placeholder="请输入联系电话"
                   />
                 </div>
                 

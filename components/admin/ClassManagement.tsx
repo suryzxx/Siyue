@@ -2086,9 +2086,9 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                   <table className="w-full text-sm text-left border border-gray-100 rounded-lg overflow-hidden">
                                       <thead className="bg-gray-50 text-gray-500 font-medium">
                                           <tr>
-                                              <th className="p-3">学员姓名</th>
+                                              <th className="p-3">学生姓名</th>
                                               <th className="p-3">性别</th>
-                                              <th className="p-3">登录账号</th>
+                                              <th className="p-3">联系电话</th>
                                               <th className="p-3">入班时间</th>
                                               <th className="p-3">状态</th>
                                           </tr>
@@ -2248,19 +2248,19 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
               {/* Course Type */}
               <MultiSelect
-                options={['长期产品', '短期产品']}
+                options={['长期班', '短期班']}
                 selected={filterCourseType.map(type => {
                   const typeMap: Record<string, string> = {
-'long-term': '长期产品',
-  'short-term': '短期产品'
+'long-term': '长期班',
+  'short-term': '短期班'
                   };
                   return typeMap[type] || '';
                 }).filter(label => label !== '')}
                 onChange={(selectedLabels) => {
                   // 将中文标签转换为对应的类型值
                   const typeMap: Record<string, string> = {
-'长期产品': 'long-term',
-  '短期产品': 'short-term'
+'长期班': 'long-term',
+  '短期班': 'short-term'
                   };
                   const selectedTypes = selectedLabels.map(label => typeMap[label] || '');
                   setFilterCourseType(selectedTypes.filter(type => type !== ''));
@@ -2899,7 +2899,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                               <h4 className="font-bold text-gray-700 text-sm mb-2">可选学员</h4>
                               <input 
                                 className="w-full border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
-                                placeholder="搜索学员姓名/账号"
+                                placeholder="搜索学生姓名/联系电话"
                                 value={studentSearch}
                                 onChange={e => setStudentSearch(e.target.value)}
                               />

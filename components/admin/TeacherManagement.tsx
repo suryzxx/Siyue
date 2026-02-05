@@ -88,7 +88,7 @@ const TeacherManagement: React.FC = () => {
 
   const handleSave = () => {
     if (!formData.name || !formData.phone || !formData.city || !formData.campus) {
-      alert('请填写完整信息 (姓名、电话、城市、校区为必填)');
+      alert('请填写完整信息 (员工姓名、联系电话、城市、校区为必填)');
       return;
     }
 
@@ -129,10 +129,10 @@ const TeacherManagement: React.FC = () => {
       {/* Filter Bar */}
       <div className="p-6 border-b border-gray-100 flex flex-wrap gap-4 items-center bg-white">
         <div className="flex items-center gap-2">
-           <span className="text-sm text-gray-700">姓名:</span>
+           <span className="text-sm text-gray-700">员工姓名:</span>
            <input 
              className="border border-gray-300 rounded px-3 py-1.5 text-sm w-32 focus:outline-none focus:border-primary"
-             placeholder="请输入姓名"
+             placeholder="请输入员工姓名"
              value={filterName}
              onChange={e => setFilterName(e.target.value)}
            />
@@ -141,7 +141,7 @@ const TeacherManagement: React.FC = () => {
            <span className="text-sm text-gray-700">联系电话:</span>
            <input 
              className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36 focus:outline-none focus:border-primary"
-             placeholder="请输入电话"
+             placeholder="请输入联系电话"
              value={filterPhone}
              onChange={e => setFilterPhone(e.target.value)}
            />
@@ -227,7 +227,7 @@ const TeacherManagement: React.FC = () => {
              <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               <tr>
                 <th className="p-4 whitespace-nowrap">员工ID</th>
-                <th className="p-4 whitespace-nowrap">姓名</th>
+                <th className="p-4 whitespace-nowrap">员工姓名</th>
                 <th className="p-4 whitespace-nowrap">联系电话</th>
                 <th className="p-4 whitespace-nowrap">所属城市</th>
                 <th className="p-4 whitespace-nowrap">所属校区</th>
@@ -235,7 +235,7 @@ const TeacherManagement: React.FC = () => {
                 <th className="p-4 whitespace-nowrap">头像</th>
                 <th className="p-4 whitespace-nowrap">宣传海报</th>
                 <th className="p-4 whitespace-nowrap">状态</th>
-                <th className="p-4 whitespace-nowrap">创建时间</th>
+                <th className="p-4 whitespace-nowrap">注册时间</th>
                  <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
               </tr>
             </thead>
@@ -301,7 +301,7 @@ const TeacherManagement: React.FC = () => {
             
             <div className="p-8 space-y-6">
               <div className="flex items-center">
-                <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>姓名</label>
+                <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>员工姓名</label>
                 <input 
                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                   value={formData.name}

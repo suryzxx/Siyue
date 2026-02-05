@@ -1042,13 +1042,13 @@ const getStatusBadge = (status: string) => {
            <div className="flex justify-between items-start mb-6">
              <div>
                <h2 className="text-xl font-bold text-gray-800 mb-2">{student.name}</h2>
-               <div className="flex items-center gap-3 text-sm text-gray-500">
-                 <span>ID: {student.id}</span>
-                 <span>登录账号: {student.account}</span>
-                 <span>性别: {student.gender}</span>
-                 {student.birthDate && <span>出生年月: {student.birthDate}</span>}
-                 {student.studentNumber && <span>学号: {student.studentNumber}</span>}
-               </div>
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span>ID: {student.id}</span>
+                  <span>登录账号: {student.account}</span>
+                  <span>性别: {student.gender}</span>
+                   {student.birthDate && <span>出生年月: {student.birthDate}</span>}
+                   {student.englishName && <span>英文名: {student.englishName}</span>}
+                </div>
              </div>
            </div>
            
@@ -1057,10 +1057,10 @@ const getStatusBadge = (status: string) => {
                <span className="text-gray-400">所属校区:</span>
                <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
              </div>
-             <div>
-               <span className="text-gray-400">所属班级:</span>
-               <span className="text-gray-900 ml-2">{student.className || '-'}</span>
-             </div>
+              <div>
+                <span className="text-gray-400">在读年级:</span>
+                <span className="text-gray-900 ml-2">{student.grade || '-'}</span>
+              </div>
              <div>
                <span className="text-gray-400">学生状态:</span>
                <span className="ml-2">
@@ -1073,14 +1073,18 @@ const getStatusBadge = (status: string) => {
                  {getStatusBadge(student.followUpStatus || '待跟进')}
                </span>
              </div>
-             <div>
-               <span className="text-gray-400">评测等级:</span>
-               <span className="text-gray-900 ml-2">{student.evaluationLevel || '-'}</span>
-             </div>
-             <div>
-               <span className="text-gray-400">创建时间:</span>
-               <span className="text-gray-900 ml-2">{student.createdTime}</span>
-             </div>
+              <div>
+                <span className="text-gray-400">在读学校:</span>
+                <span className="text-gray-900 ml-2">{student.school || '-'}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">评测等级:</span>
+                <span className="text-gray-900 ml-2">{student.evaluationLevel || '-'}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">注册时间:</span>
+                <span className="text-gray-900 ml-2">{student.createdTime}</span>
+              </div>
              <div>
                <span className="text-gray-400">更新时间:</span>
                <span className="text-gray-900 ml-2">{student.updatedTime}</span>

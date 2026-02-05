@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ADMIN_STUDENTS, CAMPUSES } from '../../constants';
+import { ADMIN_STUDENTS, CAMPUSES, GRADE_OPTIONS, SCHOOL_OPTIONS } from '../../constants';
 import { StudentProfile, StudentStatus, FollowUpStatus } from '../../types';
 import SearchableMultiSelect from '../common/SearchableMultiSelect';
 import { exportToExcel, ExcelFormatters } from '../../utils/excelExport';
@@ -22,19 +22,21 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showNewStudentModal, setShowNewStudentModal] = useState(false);
   
-  // 编辑表单数据
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    account: '',
-    gender: '男' as '男' | '女',
-    birthDate: '',
-    studentNumber: '',
-    evaluationLevel: '',
-    campus: '',
-    className: '',
-    studentStatus: '在读学生' as StudentStatus,
-    followUpStatus: '待跟进' as FollowUpStatus,
-  });
+   // 编辑表单数据
+   const [editFormData, setEditFormData] = useState({
+     name: '',
+     account: '',
+     gender: '男' as '男' | '女',
+     birthDate: '',
+     evaluationLevel: '',
+     campus: '',
+     className: '',
+     studentStatus: '在读学生' as StudentStatus,
+     followUpStatus: '待跟进' as FollowUpStatus,
+     englishName: '',
+     grade: '',
+     school: '',
+   });
 
   // 转班表单数据
   const [transferFormData, setTransferFormData] = useState({
@@ -44,23 +46,25 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     reason: '',
   });
 
-  // 新生录入表单数据
-  const [newStudentFormData, setNewStudentFormData] = useState({
-    name: '',
-    account: '',
-    gender: '男' as '男' | '女',
-    birthDate: '',
-    studentNumber: '',
-    evaluationLevel: '',
-    campus: '',
-    className: '',
-    studentStatus: '潜在学生' as StudentStatus,
-    followUpStatus: '待跟进' as FollowUpStatus,
-    parentName: '',
-    parentPhone: '',
-    emergencyContact: '',
-    emergencyPhone: '',
-  });
+   // 新生录入表单数据
+   const [newStudentFormData, setNewStudentFormData] = useState({
+     name: '',
+     account: '',
+     gender: '男' as '男' | '女',
+     birthDate: '',
+     evaluationLevel: '',
+     campus: '',
+     className: '',
+     studentStatus: '潜在学生' as StudentStatus,
+     followUpStatus: '待跟进' as FollowUpStatus,
+     englishName: '',
+     grade: '',
+     school: '',
+     parentName: '',
+     parentPhone: '',
+     emergencyContact: '',
+     emergencyPhone: '',
+   });
 
   // 操作记录数据
   const [operationLogs, setOperationLogs] = useState<Array<{
@@ -98,21 +102,22 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
   // 导出学生列表
   const exportStudentList = async () => {
     try {
-      const columns = [
-        { key: 'id', label: '学生ID', width: 12 },
-        { key: 'name', label: '姓名', width: 15 },
-        { key: 'account', label: '登录账号', width: 15 },
-        { key: 'gender', label: '性别', width: 8 },
-        { key: 'birthDate', label: '出生年月', width: 12, format: ExcelFormatters.date },
-        { key: 'studentNumber', label: '学号', width: 12 },
-        { key: 'evaluationLevel', label: '评测等级', width: 10 },
-        { key: 'campus', label: '所属校区', width: 15 },
-        { key: 'className', label: '所属班级', width: 20 },
-        { key: 'studentStatus', label: '学生状态', width: 12, format: ExcelFormatters.status },
-        { key: 'followUpStatus', label: '跟进状态', width: 12, format: ExcelFormatters.status },
-        { key: 'createdTime', label: '创建时间', width: 18, format: ExcelFormatters.datetime },
-        { key: 'updatedTime', label: '更新时间', width: 18, format: ExcelFormatters.datetime },
-      ];
+       const columns = [
+         { key: 'id', label: '学生ID', width: 12 },
+         { key: 'name', label: '学生姓名', width: 15 },
+         { key: 'englishName', label: '英文名', width: 15 },
+         { key: 'account', label: '联系电话', width: 15 },
+         { key: 'gender', label: '性别', width: 8 },
+         { key: 'birthDate', label: '出生年月', width: 12, format: ExcelFormatters.date },
+         { key: 'evaluationLevel', label: '评测等级', width: 10 },
+         { key: 'campus', label: '所属校区', width: 15 },
+         { key: 'grade', label: '在读年级', width: 12 },
+         { key: 'school', label: '在读学校', width: 20 },
+         { key: 'studentStatus', label: '学生状态', width: 12, format: ExcelFormatters.status },
+         { key: 'followUpStatus', label: '跟进状态', width: 12, format: ExcelFormatters.status },
+         { key: 'createdTime', label: '注册时间', width: 18, format: ExcelFormatters.datetime },
+         { key: 'updatedTime', label: '更新时间', width: 18, format: ExcelFormatters.datetime },
+       ];
 
       await exportToExcel({
         data: filteredStudents,
@@ -130,22 +135,24 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     }
   };
 
-  // 操作处理函数
-  const handleEdit = (student: StudentProfile) => {
-    setEditFormData({
-      name: student.name,
-      account: student.account,
-      gender: student.gender,
-      birthDate: student.birthDate || '',
-      studentNumber: student.studentNumber || '',
-      evaluationLevel: student.evaluationLevel || '',
-      campus: student.campus || '',
-      className: student.className || '',
-      studentStatus: student.studentStatus || '在读学生',
-      followUpStatus: student.followUpStatus || '待跟进',
-    });
-    setShowEditModal(true);
-  };
+   // 操作处理函数
+   const handleEdit = (student: StudentProfile) => {
+     setEditFormData({
+       name: student.name,
+       account: student.account,
+       gender: student.gender,
+       birthDate: student.birthDate || '',
+       evaluationLevel: student.evaluationLevel || '',
+       campus: student.campus || '',
+       className: student.className || '',
+       studentStatus: student.studentStatus || '在读学生',
+       followUpStatus: student.followUpStatus || '待跟进',
+       englishName: student.englishName || '',
+       grade: student.grade || '',
+       school: student.school || '',
+     });
+     setShowEditModal(true);
+   };
 
   const handleTransferClass = (student: StudentProfile) => {
     setTransferFormData({
@@ -181,30 +188,32 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     // 实际应用中这里会调用API生成验证码并记录到数据库
   };
 
-  const handleAddNewStudent = () => {
-    setNewStudentFormData({
-      name: '',
-      account: '',
-      gender: '男',
-      birthDate: '',
-      studentNumber: '',
-      evaluationLevel: '',
-      campus: '',
-      className: '',
-      studentStatus: '潜在学生',
-      followUpStatus: '待跟进',
-      parentName: '',
-      parentPhone: '',
-      emergencyContact: '',
-      emergencyPhone: '',
-    });
-    setShowNewStudentModal(true);
-  };
+   const handleAddNewStudent = () => {
+     setNewStudentFormData({
+       name: '',
+       account: '',
+       gender: '男',
+     birthDate: '',
+     evaluationLevel: '',
+       campus: '',
+       className: '',
+       studentStatus: '潜在学生',
+       followUpStatus: '待跟进',
+       englishName: '',
+       grade: '',
+       school: '',
+       parentName: '',
+       parentPhone: '',
+       emergencyContact: '',
+       emergencyPhone: '',
+     });
+     setShowNewStudentModal(true);
+   };
 
   // 保存编辑
   const handleSaveEdit = () => {
     if (!editFormData.name || !editFormData.account) {
-      alert('请填写姓名和登录账号');
+      alert('请填写学生姓名和联系电话');
       return;
     }
     
@@ -228,7 +237,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
   // 保存新生录入
   const handleSaveNewStudent = () => {
     if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.parentPhone) {
-      alert('请填写必填信息（姓名、登录账号、家长电话）');
+      alert('请填写必填信息（学生姓名、联系电话、家长电话）');
       return;
     }
     
@@ -246,23 +255,23 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
 
       {/* Filter Bar */}
       <div className="p-6 pb-2 border-b border-gray-100 flex flex-wrap gap-4 items-center bg-white">
-        {/* 姓名筛选 */}
+        {/* 学生姓名筛选 */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">姓名:</span>
+          <span className="text-sm text-gray-700">学生姓名:</span>
           <input 
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-primary"
-            placeholder="请输入姓名"
+            placeholder="请输入学生姓名"
             value={filterName}
             onChange={e => setFilterName(e.target.value)}
           />
         </div>
 
-        {/* 登录账号筛选 */}
+        {/* 联系电话筛选 */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">登录账号:</span>
+          <span className="text-sm text-gray-700">联系电话:</span>
           <input 
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-primary"
-            placeholder="请输入登录账号"
+            placeholder="请输入联系电话"
             value={filterAccount}
             onChange={e => setFilterAccount(e.target.value)}
           />
@@ -348,58 +357,54 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
         <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
           <table className="w-full text-left text-sm min-w-max">
             <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
-              <tr>
-                <th className="p-4 whitespace-nowrap">学生ID</th>
-                <th className="p-4 whitespace-nowrap">姓名</th>
-                <th className="p-4 whitespace-nowrap">登录账号</th>
-                <th className="p-4 whitespace-nowrap">性别</th>
-                <th className="p-4 whitespace-nowrap">出生年月</th>
-                <th className="p-4 whitespace-nowrap">学号</th>
-                <th className="p-4 whitespace-nowrap">评测等级</th>
-                <th className="p-4 whitespace-nowrap">所属校区</th>
-                <th className="p-4 whitespace-nowrap">所属班级</th>
-                <th className="p-4 whitespace-nowrap">学生状态</th>
-                <th className="p-4 whitespace-nowrap">跟进状态</th>
-                <th className="p-4 whitespace-nowrap">创建时间</th>
-                <th className="p-4 whitespace-nowrap">更新时间</th>
-                <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
-              </tr>
+               <tr>
+                 <th className="p-4 whitespace-nowrap">学生ID</th>
+                 <th className="p-4 whitespace-nowrap">学生姓名</th>
+                 <th className="p-4 whitespace-nowrap">英文名</th>
+                 <th className="p-4 whitespace-nowrap">联系电话</th>
+                 <th className="p-4 whitespace-nowrap">性别</th>
+                 <th className="p-4 whitespace-nowrap">出生年月</th>
+                 <th className="p-4 whitespace-nowrap">评测等级</th>
+                 <th className="p-4 whitespace-nowrap">所属校区</th>
+                 <th className="p-4 whitespace-nowrap">在读年级</th>
+                 <th className="p-4 whitespace-nowrap">在读学校</th>
+                 <th className="p-4 whitespace-nowrap">学生状态</th>
+                 <th className="p-4 whitespace-nowrap">跟进状态</th>
+                 <th className="p-4 whitespace-nowrap">注册时间</th>
+                 <th className="p-4 whitespace-nowrap">更新时间</th>
+                 <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
+               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredStudents.map(student => (
                 <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.id}</td>
-                  <td 
-                    className="p-4 text-primary font-medium whitespace-nowrap cursor-pointer hover:underline"
-                    onClick={() => onStudentSelect(student)}
-                  >
-                    {student.name}
-                  </td>
-                  <td className="p-4 text-gray-600 whitespace-nowrap">{student.account}</td>
-                  <td className="p-4 text-gray-600 whitespace-nowrap">{student.gender}</td>
-                  <td className="p-4 text-gray-600 whitespace-nowrap">{student.birthDate || '-'}</td>
-                  <td className="p-4 text-gray-600 whitespace-nowrap">{student.studentNumber || '-'}</td>
-                  <td className="p-4 whitespace-nowrap">
-                    {student.evaluationLevel ? (
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        student.evaluationLevel.includes('A+') ? 'bg-red-50 text-red-600 border border-red-200' :
-                        student.evaluationLevel.includes('A') ? 'bg-orange-50 text-orange-600 border border-orange-200' :
-                        student.evaluationLevel.includes('B+') ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
-                        student.evaluationLevel.includes('B') ? 'bg-green-50 text-green-600 border border-green-200' :
-                        'bg-gray-50 text-gray-600 border border-gray-200'
-                      }`}>
-                        {student.evaluationLevel}
-                      </span>
-                    ) : '-'}
-                  </td>
-                  <td className="p-4 text-gray-600 whitespace-nowrap">{student.campus || '-'}</td>
-                  <td className="p-4 whitespace-nowrap">
-                    {student.className ? (
-                      <span className="bg-blue-50 text-blue-500 border border-blue-200 px-2 py-0.5 rounded text-xs">
-                        {student.className}
-                      </span>
-                    ) : '-'}
-                  </td>
+                   <td 
+                     className="p-4 text-primary font-medium whitespace-nowrap cursor-pointer hover:underline"
+                     onClick={() => onStudentSelect(student)}
+                   >
+                     {student.name}
+                   </td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.englishName || '-'}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.account}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.gender}</td>
+                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.birthDate || '-'}</td>
+                    <td className="p-4 whitespace-nowrap">
+                     {student.evaluationLevel ? (
+                       <span className={`px-2 py-0.5 rounded text-xs ${
+                         student.evaluationLevel.includes('A+') ? 'bg-red-50 text-red-600 border border-red-200' :
+                         student.evaluationLevel.includes('A') ? 'bg-orange-50 text-orange-600 border border-orange-200' :
+                         student.evaluationLevel.includes('B+') ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
+                         student.evaluationLevel.includes('B') ? 'bg-green-50 text-green-600 border border-green-200' :
+                         'bg-gray-50 text-gray-600 border border-gray-200'
+                       }`}>
+                         {student.evaluationLevel}
+                       </span>
+                     ) : '-'}
+                   </td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.campus || '-'}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.grade || '-'}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.school || '-'}</td>
                   <td className="p-4 whitespace-nowrap">
                     {student.studentStatus ? (
                       <span className={`px-2 py-0.5 rounded text-xs ${
@@ -492,7 +497,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
              
              <div className="p-6 space-y-4">
                <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>姓名</label>
+                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>学生姓名</label>
                  <input 
                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                    value={editFormData.name}
@@ -502,12 +507,12 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                </div>
 
                <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>登录账号</label>
+                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>联系电话</label>
                  <input 
                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                    value={editFormData.account}
                    onChange={e => setEditFormData({...editFormData, account: e.target.value})}
-                   placeholder="请输入登录账号"
+                   placeholder="请输入联系电话"
                  />
                </div>
 
@@ -545,17 +550,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                  />
                </div>
 
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">学号</label>
-                 <input 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={editFormData.studentNumber}
-                   onChange={e => setEditFormData({...editFormData, studentNumber: e.target.value})}
-                   placeholder="请输入学号"
-                 />
-               </div>
-
-               <div className="flex items-center">
+                <div className="flex items-center">
                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">评测等级</label>
                  <select 
                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
@@ -586,17 +581,41 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                  </select>
                </div>
 
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">所属班级</label>
-                 <input 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={editFormData.className}
-                   onChange={e => setEditFormData({...editFormData, className: e.target.value})}
-                   placeholder="请输入班级名称"
-                 />
-               </div>
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">英文名</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.englishName}
+                    onChange={e => setEditFormData({...editFormData, englishName: e.target.value})}
+                    placeholder="请输入英文名"
+                  />
+                </div>
 
-               <div className="flex items-center">
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读年级</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.grade}
+                    onChange={e => setEditFormData({...editFormData, grade: e.target.value})}
+                  >
+                    <option value="">请选择在读年级</option>
+                    {GRADE_OPTIONS.map(grade => <option key={grade} value={grade}>{grade}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读学校</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.school}
+                    onChange={e => setEditFormData({...editFormData, school: e.target.value})}
+                  >
+                    <option value="">请选择在读学校</option>
+                    {SCHOOL_OPTIONS.map(school => <option key={school} value={school}>{school}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex items-center">
                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">学生状态</label>
                  <select 
                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
@@ -777,12 +796,12 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   </div>
                   
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>登录账号</label>
+                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>联系电话</label>
                     <input 
                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                       value={newStudentFormData.account}
                       onChange={e => setNewStudentFormData({...newStudentFormData, account: e.target.value})}
-                      placeholder="请输入登录账号"
+                      placeholder="请输入联系电话"
                     />
                   </div>
                   
@@ -805,16 +824,6 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
                       value={newStudentFormData.birthDate}
                       onChange={e => setNewStudentFormData({...newStudentFormData, birthDate: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">学号</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.studentNumber}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, studentNumber: e.target.value})}
-                      placeholder="请输入学号"
                     />
                   </div>
                   
@@ -850,13 +859,37 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   </div>
                   
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">所属班级</label>
+                    <label className="text-sm font-medium text-gray-600">英文名</label>
                     <input 
                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.className}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, className: e.target.value})}
-                      placeholder="请输入班级名称"
+                      value={newStudentFormData.englishName}
+                      onChange={e => setNewStudentFormData({...newStudentFormData, englishName: e.target.value})}
+                      placeholder="请输入英文名"
                     />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-600">在读年级</label>
+                    <select 
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                      value={newStudentFormData.grade}
+                      onChange={e => setNewStudentFormData({...newStudentFormData, grade: e.target.value})}
+                    >
+                      <option value="">请选择在读年级</option>
+                      {GRADE_OPTIONS.map(grade => <option key={grade} value={grade}>{grade}</option>)}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-600">在读学校</label>
+                    <select 
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                      value={newStudentFormData.school}
+                      onChange={e => setNewStudentFormData({...newStudentFormData, school: e.target.value})}
+                    >
+                      <option value="">请选择在读学校</option>
+                      {SCHOOL_OPTIONS.map(school => <option key={school} value={school}>{school}</option>)}
+                    </select>
                   </div>
                   
                   <div className="space-y-1">

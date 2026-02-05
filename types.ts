@@ -16,22 +16,24 @@ export interface Student {
  export type OrderStatus = '待支付' | '已支付' | '已取消' | '已退款';
  export type PaymentMethod = '微信支付' | '现金';
 
- export interface StudentProfile {
-   id: string;
-   name: string;
-   account: string;
-   gender: '男' | '女';
-   className?: string;
-   createdTime: string;
-   updatedTime: string;
-   // 新增字段
-   birthDate?: string; // 出生年月
-   studentNumber?: string; // 学号
-   evaluationLevel?: string; // 评测等级
-   campus?: string; // 所属校区
-   studentStatus?: StudentStatus; // 学生状态
-   followUpStatus?: FollowUpStatus; // 跟进状态
- }
+  export interface StudentProfile {
+    id: string;
+    name: string;
+    account: string;
+    gender: '男' | '女';
+    className?: string;
+    createdTime: string;
+    updatedTime: string;
+    // 新增字段
+     birthDate?: string; // 出生年月
+     evaluationLevel?: string; // 评测等级
+    campus?: string; // 所属校区
+    studentStatus?: StudentStatus; // 学生状态
+    followUpStatus?: FollowUpStatus; // 跟进状态
+    englishName?: string; // 英文名
+    grade?: string; // 在读年级
+    school?: string; // 在读学校
+  }
 
  export interface Order {
    id: string;
@@ -43,10 +45,9 @@ export interface Student {
    createdTime: string;
    paymentTime: string;
    // 新增字段
-   orderNumber?: string; // 订单编号
-   phone?: string; // 手机号
-    studentNumber?: string; // 学号（系统生成）
-    studentName?: string; // 学生姓名
+    orderNumber?: string; // 订单编号
+    phone?: string; // 手机号
+     studentName?: string; // 学生姓名
     classId?: string; // 班级ID
     orderStatus?: OrderStatus; // 订单状态
    paymentMethod?: PaymentMethod; // 支付方式

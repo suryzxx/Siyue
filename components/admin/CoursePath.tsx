@@ -466,8 +466,8 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                         onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
                         className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
                       >
-                        <option value="long-term">长期产品</option>
-                        <option value="short-term">短期产品</option>
+                        <option value="long-term">长期班</option>
+                        <option value="short-term">短期班</option>
                       </select>
                     </div>
                     <div>
