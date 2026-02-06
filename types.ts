@@ -16,24 +16,27 @@ export interface Student {
  export type OrderStatus = '待支付' | '已支付' | '已取消' | '已退款';
  export type PaymentMethod = '微信支付' | '现金';
 
-  export interface StudentProfile {
-    id: string;
-    name: string;
-    account: string;
-    gender: '男' | '女';
-    className?: string;
-    createdTime: string;
-    updatedTime: string;
-    // 新增字段
-     birthDate?: string; // 出生年月
-     evaluationLevel?: string; // 评测等级
-    campus?: string; // 所属校区
-    studentStatus?: StudentStatus; // 学生状态
-    followUpStatus?: FollowUpStatus; // 跟进状态
-    englishName?: string; // 英文名
-    grade?: string; // 在读年级
-    school?: string; // 在读学校
-  }
+   export interface StudentProfile {
+     id: string;
+     name: string;
+     account: string;
+     gender: '男' | '女';
+     className?: string;
+     createdTime: string;
+     updatedTime: string;
+     // 新增字段
+      birthDate?: string; // 出生年月
+      evaluationLevel?: string; // 评测等级
+     campus?: string; // 所属校区
+     studentStatus?: StudentStatus; // 学生状态
+     followUpStatus?: FollowUpStatus; // 跟进状态
+     englishName?: string; // 英文名
+     grade?: string; // 在读年级
+     school?: string; // 在读学校
+     studyCity?: string; // 就读城市
+     registrationChannel?: '前台注册' | 'APP注册'; // 注册渠道
+     acquisitionChannel?: '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号'; // 获客渠道
+   }
 
  export interface Order {
    id: string;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ADMIN_STUDENTS, CAMPUSES, GRADE_OPTIONS, SCHOOL_OPTIONS } from '../../constants';
+import { ADMIN_STUDENTS, CAMPUSES, GRADE_OPTIONS, SCHOOL_OPTIONS, STUDY_CITY_OPTIONS, REGISTRATION_CHANNEL_OPTIONS, ACQUISITION_CHANNEL_OPTIONS } from '../../constants';
 import { StudentProfile, StudentStatus, FollowUpStatus } from '../../types';
 import SearchableMultiSelect from '../common/SearchableMultiSelect';
 import { exportToExcel, ExcelFormatters } from '../../utils/excelExport';
@@ -20,45 +20,42 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
    const [showEditModal, setShowEditModal] = useState(false);
    const [showNewStudentModal, setShowNewStudentModal] = useState(false);
   
-   // 编辑表单数据
-   const [editFormData, setEditFormData] = useState({
-     name: '',
-     account: '',
-     gender: '男' as '男' | '女',
-     birthDate: '',
-     evaluationLevel: '',
-     campus: '',
-     className: '',
-     studentStatus: '在读学生' as StudentStatus,
-     followUpStatus: '待跟进' as FollowUpStatus,
-     englishName: '',
-     grade: '',
-     school: '',
-   });
+    // 编辑表单数据
+    const [editFormData, setEditFormData] = useState({
+      name: '',
+      account: '',
+      gender: '男' as '男' | '女',
+      englishName: '',
+      grade: '',
+      school: '',
+      studyCity: '',
+      acquisitionChannel: '' as '' | '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号',
+    });
 
-   // 新生录入表单数据
-   const [newStudentFormData, setNewStudentFormData] = useState({
-     name: '',
-     account: '',
-     gender: '男' as '男' | '女',
-     birthDate: '',
-     evaluationLevel: '',
-     campus: '',
-     className: '',
-     studentStatus: '潜在学生' as StudentStatus,
-     followUpStatus: '待跟进' as FollowUpStatus,
-     englishName: '',
-     grade: '',
-     school: '',
-     parentName: '',
-     parentPhone: '',
-     emergencyContact: '',
-     emergencyPhone: '',
-   });
+    // 新生录入表单数据
+    const [newStudentFormData, setNewStudentFormData] = useState({
+      name: '',
+      account: '',
+      gender: '男' as '男' | '女',
+      englishName: '',
+      grade: '',
+      school: '',
+      studyCity: '',
+      acquisitionChannel: '' as '' | '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号',
+    });
 
    // 学生状态选项
   const studentStatusOptions: StudentStatus[] = ['在读学生', '潜在学生', '历史学生'];
   const followUpStatusOptions: FollowUpStatus[] = ['待跟进', '跟进中', '已邀约', '已签约', '退费&流失'];
+  
+  // 新生录入专用选项
+  const newStudentStudyCityOptions = ['南京', '深圳'];
+  const newStudentAcquisitionChannelOptions = [
+    '朋友/熟人推荐',
+    '小红书',
+    '思悦社群',
+    '思悦公众号/视频号'
+  ];
 
   // 筛选逻辑
   const filteredStudents = ADMIN_STUDENTS.filter(student => {
@@ -84,21 +81,24 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
   const exportStudentList = async () => {
     try {
        const columns = [
-         { key: 'id', label: '学生ID', width: 12 },
-         { key: 'name', label: '学生姓名', width: 15 },
-         { key: 'englishName', label: '英文名', width: 15 },
-         { key: 'account', label: '联系电话', width: 15 },
-         { key: 'gender', label: '性别', width: 8 },
-         { key: 'birthDate', label: '出生年月', width: 12, format: ExcelFormatters.date },
-         { key: 'evaluationLevel', label: '评测等级', width: 10 },
-         { key: 'campus', label: '所属校区', width: 15 },
-         { key: 'grade', label: '在读年级', width: 12 },
-         { key: 'school', label: '在读学校', width: 20 },
-         { key: 'studentStatus', label: '学生状态', width: 12, format: ExcelFormatters.status },
-         { key: 'followUpStatus', label: '跟进状态', width: 12, format: ExcelFormatters.status },
-         { key: 'createdTime', label: '注册时间', width: 18, format: ExcelFormatters.datetime },
-         { key: 'updatedTime', label: '更新时间', width: 18, format: ExcelFormatters.datetime },
-       ];
+          { key: 'id', label: '学生ID', width: 12 },
+          { key: 'name', label: '学生姓名', width: 15 },
+          { key: 'englishName', label: '英文名', width: 15 },
+          { key: 'account', label: '联系电话', width: 15 },
+          { key: 'gender', label: '性别', width: 8 },
+          { key: 'birthDate', label: '出生年月', width: 12, format: ExcelFormatters.date },
+          { key: 'evaluationLevel', label: '评测等级', width: 10 },
+          { key: 'campus', label: '所属校区', width: 15 },
+          { key: 'grade', label: '在读年级', width: 12 },
+          { key: 'school', label: '在读学校', width: 20 },
+          { key: 'studyCity', label: '就读城市', width: 15 },
+          { key: 'studentStatus', label: '学生状态', width: 12, format: ExcelFormatters.status },
+          { key: 'followUpStatus', label: '跟进状态', width: 12, format: ExcelFormatters.status },
+          { key: 'createdTime', label: '注册时间', width: 18, format: ExcelFormatters.datetime },
+          { key: 'updatedTime', label: '更新时间', width: 18, format: ExcelFormatters.datetime },
+          { key: 'registrationChannel', label: '注册渠道', width: 15 },
+          { key: 'acquisitionChannel', label: '获客渠道', width: 20 },
+        ];
 
       await exportToExcel({
         data: filteredStudents,
@@ -116,24 +116,20 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     }
   };
 
-   // 操作处理函数
-   const handleEdit = (student: StudentProfile) => {
-     setEditFormData({
-       name: student.name,
-       account: student.account,
-       gender: student.gender,
-       birthDate: student.birthDate || '',
-       evaluationLevel: student.evaluationLevel || '',
-       campus: student.campus || '',
-       className: student.className || '',
-       studentStatus: student.studentStatus || '在读学生',
-       followUpStatus: student.followUpStatus || '待跟进',
-       englishName: student.englishName || '',
-       grade: student.grade || '',
-       school: student.school || '',
-     });
-     setShowEditModal(true);
-   };
+    // 操作处理函数
+    const handleEdit = (student: StudentProfile) => {
+      setEditFormData({
+        name: student.name,
+        account: student.account,
+        gender: student.gender,
+        englishName: student.englishName || '',
+        grade: student.grade || '',
+        school: student.school || '',
+        studyCity: student.studyCity || '',
+        acquisitionChannel: student.acquisitionChannel || '',
+      });
+      setShowEditModal(true);
+    };
 
 
 
@@ -150,32 +146,24 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     // 实际应用中这里会调用API生成验证码并记录到数据库
   };
 
-   const handleAddNewStudent = () => {
-     setNewStudentFormData({
-       name: '',
-       account: '',
-       gender: '男',
-     birthDate: '',
-     evaluationLevel: '',
-       campus: '',
-       className: '',
-       studentStatus: '潜在学生',
-       followUpStatus: '待跟进',
-       englishName: '',
-       grade: '',
-       school: '',
-       parentName: '',
-       parentPhone: '',
-       emergencyContact: '',
-       emergencyPhone: '',
-     });
-     setShowNewStudentModal(true);
-   };
+    const handleAddNewStudent = () => {
+      setNewStudentFormData({
+        name: '',
+        account: '',
+        gender: '男',
+        englishName: '',
+        grade: '',
+        school: '',
+        studyCity: '',
+        acquisitionChannel: '',
+      });
+      setShowNewStudentModal(true);
+    };
 
   // 保存编辑
   const handleSaveEdit = () => {
-    if (!editFormData.name || !editFormData.account) {
-      alert('请填写学生姓名和联系电话');
+    if (!editFormData.name || !editFormData.account || !editFormData.grade) {
+      alert('请填写必填信息（学生姓名、联系电话、在读年级）');
       return;
     }
     
@@ -184,10 +172,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     setShowEditModal(false);
   };
 
-   // 保存新生录入
+    // 保存新生录入
   const handleSaveNewStudent = () => {
-    if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.parentPhone) {
-      alert('请填写必填信息（学生姓名、联系电话、家长电话）');
+    if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.grade) {
+      alert('请填写必填信息（学生姓名、联系电话、在读年级）');
       return;
     }
     
@@ -307,23 +295,26 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
         <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
           <table className="w-full text-left text-sm min-w-max">
             <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
-               <tr>
-                 <th className="p-4 whitespace-nowrap">学生ID</th>
-                 <th className="p-4 whitespace-nowrap">学生姓名</th>
-                 <th className="p-4 whitespace-nowrap">英文名</th>
-                 <th className="p-4 whitespace-nowrap">联系电话</th>
-                 <th className="p-4 whitespace-nowrap">性别</th>
-                 <th className="p-4 whitespace-nowrap">出生年月</th>
-                 <th className="p-4 whitespace-nowrap">评测等级</th>
-                 <th className="p-4 whitespace-nowrap">所属校区</th>
-                 <th className="p-4 whitespace-nowrap">在读年级</th>
-                 <th className="p-4 whitespace-nowrap">在读学校</th>
-                 <th className="p-4 whitespace-nowrap">学生状态</th>
-                 <th className="p-4 whitespace-nowrap">跟进状态</th>
-                 <th className="p-4 whitespace-nowrap">注册时间</th>
-                 <th className="p-4 whitespace-nowrap">更新时间</th>
-                 <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
-               </tr>
+                <tr>
+                  <th className="p-4 whitespace-nowrap">学生ID</th>
+                  <th className="p-4 whitespace-nowrap">学生姓名</th>
+                  <th className="p-4 whitespace-nowrap">英文名</th>
+                  <th className="p-4 whitespace-nowrap">联系电话</th>
+                  <th className="p-4 whitespace-nowrap">性别</th>
+                  <th className="p-4 whitespace-nowrap">出生年月</th>
+                  <th className="p-4 whitespace-nowrap">评测等级</th>
+                  <th className="p-4 whitespace-nowrap">所属校区</th>
+                  <th className="p-4 whitespace-nowrap">在读年级</th>
+                  <th className="p-4 whitespace-nowrap">在读学校</th>
+                  <th className="p-4 whitespace-nowrap">就读城市</th>
+                  <th className="p-4 whitespace-nowrap">学生状态</th>
+                  <th className="p-4 whitespace-nowrap">跟进状态</th>
+                  <th className="p-4 whitespace-nowrap">注册时间</th>
+                  <th className="p-4 whitespace-nowrap">更新时间</th>
+                  <th className="p-4 whitespace-nowrap">注册渠道</th>
+                  <th className="p-4 whitespace-nowrap">获客渠道</th>
+                  <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
+                </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredStudents.map(student => (
@@ -354,33 +345,36 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                    </td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.campus || '-'}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.grade || '-'}</td>
-                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.school || '-'}</td>
-                  <td className="p-4 whitespace-nowrap">
-                    {student.studentStatus ? (
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        student.studentStatus === '在读学生' ? 'bg-green-50 text-green-600 border border-green-200' :
-                        student.studentStatus === '潜在学生' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
-                        'bg-gray-50 text-gray-600 border border-gray-200'
-                      }`}>
-                        {student.studentStatus}
-                      </span>
-                    ) : '-'}
-                  </td>
-                  <td className="p-4 whitespace-nowrap">
-                    {student.followUpStatus ? (
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        student.followUpStatus === '已签约' ? 'bg-green-50 text-green-600 border border-green-200' :
-                        student.followUpStatus === '已邀约' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
-                        student.followUpStatus === '跟进中' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
-                        student.followUpStatus === '待跟进' ? 'bg-orange-50 text-orange-600 border border-orange-200' :
-                        'bg-red-50 text-red-600 border border-red-200'
-                      }`}>
-                        {student.followUpStatus}
-                      </span>
-                    ) : '-'}
-                  </td>
-                  <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.createdTime}</td>
-                  <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.updatedTime}</td>
+                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.school || '-'}</td>
+                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.studyCity || '-'}</td>
+                   <td className="p-4 whitespace-nowrap">
+                     {student.studentStatus ? (
+                       <span className={`px-2 py-0.5 rounded text-xs ${
+                         student.studentStatus === '在读学生' ? 'bg-green-50 text-green-600 border border-green-200' :
+                         student.studentStatus === '潜在学生' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
+                         'bg-gray-50 text-gray-600 border border-gray-200'
+                       }`}>
+                         {student.studentStatus}
+                       </span>
+                     ) : '-'}
+                   </td>
+                   <td className="p-4 whitespace-nowrap">
+                     {student.followUpStatus ? (
+                       <span className={`px-2 py-0.5 rounded text-xs ${
+                         student.followUpStatus === '已签约' ? 'bg-green-50 text-green-600 border border-green-200' :
+                         student.followUpStatus === '已邀约' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
+                         student.followUpStatus === '跟进中' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
+                         student.followUpStatus === '待跟进' ? 'bg-orange-50 text-orange-600 border border-orange-200' :
+                         'bg-red-50 text-red-600 border border-red-200'
+                       }`}>
+                         {student.followUpStatus}
+                       </span>
+                     ) : '-'}
+                   </td>
+                   <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.createdTime}</td>
+                   <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.updatedTime}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.registrationChannel || '-'}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.acquisitionChannel || '-'}</td>
                   <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                      <div className="flex flex-col gap-1.5 text-xs whitespace-nowrap">
                        <div className="flex gap-3">
@@ -433,104 +427,32 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
              </div>
              
-             <div className="p-6 space-y-4">
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>学生姓名</label>
-                 <input 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={editFormData.name}
-                   onChange={e => setEditFormData({...editFormData, name: e.target.value})}
-                   placeholder="请输入学生姓名"
-                 />
-               </div>
-
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>联系电话</label>
-                 <input 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={editFormData.account}
-                   onChange={e => setEditFormData({...editFormData, account: e.target.value})}
-                   placeholder="请输入联系电话"
-                 />
-               </div>
-
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">性别</label>
-                 <div className="flex gap-6 text-sm">
-                   <label className="flex items-center gap-2 cursor-pointer">
-                     <input 
-                       type="radio" 
-                       name="gender" 
-                       checked={editFormData.gender === '男'} 
-                       onChange={() => setEditFormData({...editFormData, gender: '男'})}
-                       className="text-primary"
-                     /> 男
-                   </label>
-                   <label className="flex items-center gap-2 cursor-pointer">
-                     <input 
-                       type="radio" 
-                       name="gender" 
-                       checked={editFormData.gender === '女'} 
-                       onChange={() => setEditFormData({...editFormData, gender: '女'})}
-                       className="text-primary"
-                     /> 女
-                   </label>
-                 </div>
-               </div>
-
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">出生年月</label>
-                 <input 
-                   type="date"
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={editFormData.birthDate}
-                   onChange={e => setEditFormData({...editFormData, birthDate: e.target.value})}
-                 />
-               </div>
-
+              <div className="p-6 space-y-4">
+                {/* 1. 学生姓名（必填） */}
                 <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">评测等级</label>
-                 <select 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                   value={editFormData.evaluationLevel}
-                   onChange={e => setEditFormData({...editFormData, evaluationLevel: e.target.value})}
-                 >
-                   <option value="">请选择评测等级</option>
-                   <option value="A+">A+</option>
-                   <option value="A">A</option>
-                   <option value="A-">A-</option>
-                   <option value="B+">B+</option>
-                   <option value="B">B</option>
-                   <option value="B-">B-</option>
-                   <option value="C+">C+</option>
-                   <option value="C">C</option>
-                 </select>
-               </div>
-
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">所属校区</label>
-                 <select 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                   value={editFormData.campus}
-                   onChange={e => setEditFormData({...editFormData, campus: e.target.value})}
-                 >
-                   <option value="">请选择校区</option>
-                   {CAMPUSES.map(campus => <option key={campus} value={campus}>{campus}</option>)}
-                 </select>
-               </div>
-
-                <div className="flex items-center">
-                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">英文名</label>
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>学生姓名</label>
                   <input 
                     className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                    value={editFormData.englishName}
-                    onChange={e => setEditFormData({...editFormData, englishName: e.target.value})}
-                    placeholder="请输入英文名"
+                    value={editFormData.name}
+                    onChange={e => setEditFormData({...editFormData, name: e.target.value})}
+                    placeholder="请输入学生姓名"
                   />
                 </div>
 
+                {/* 2. 联系电话（必填） */}
                 <div className="flex items-center">
-                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读年级</label>
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>联系电话</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.account}
+                    onChange={e => setEditFormData({...editFormData, account: e.target.value})}
+                    placeholder="请输入联系电话"
+                  />
+                </div>
+
+                {/* 3. 在读年级（必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>在读年级</label>
                   <select 
                     className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
                     value={editFormData.grade}
@@ -541,42 +463,87 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   </select>
                 </div>
 
+                {/* 4. 性别（非必填） */}
                 <div className="flex items-center">
-                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读学校</label>
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">性别</label>
                   <select 
                     className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                    value={editFormData.school}
-                    onChange={e => setEditFormData({...editFormData, school: e.target.value})}
+                    value={editFormData.gender}
+                    onChange={e => setEditFormData({...editFormData, gender: e.target.value as '男' | '女'})}
                   >
-                    <option value="">请选择在读学校</option>
-                    {SCHOOL_OPTIONS.map(school => <option key={school} value={school}>{school}</option>)}
+                    <option value="男">男</option>
+                    <option value="女">女</option>
                   </select>
                 </div>
 
+                {/* 5. 英文名（非必填） */}
                 <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">学生状态</label>
-                 <select 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                   value={editFormData.studentStatus}
-                   onChange={e => setEditFormData({...editFormData, studentStatus: e.target.value as StudentStatus})}
-                 >
-                   {studentStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
-                 </select>
-               </div>
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">英文名</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.englishName}
+                    onChange={e => setEditFormData({...editFormData, englishName: e.target.value})}
+                    placeholder="请输入英文名"
+                  />
+                </div>
 
-               <div className="flex items-center">
-                 <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">跟进状态</label>
-                 <select 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                   value={editFormData.followUpStatus}
-                   onChange={e => setEditFormData({...editFormData, followUpStatus: e.target.value as FollowUpStatus})}
-                 >
-                   {followUpStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
-                 </select>
-               </div>
-             </div>
+                {/* 6. 在读学校（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读学校</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.school}
+                    onChange={e => setEditFormData({...editFormData, school: e.target.value})}
+                    placeholder="请输入在读学校"
+                  />
+                </div>
 
-             <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                {/* 7. 就读城市（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">就读城市</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.studyCity}
+                    onChange={e => setEditFormData({...editFormData, studyCity: e.target.value})}
+                  >
+                    <option value="">请选择就读城市</option>
+                    {newStudentStudyCityOptions.map(city => <option key={city} value={city}>{city}</option>)}
+                  </select>
+                </div>
+
+                {/* 8. 获客渠道（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">获客渠道</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={
+                      editFormData.acquisitionChannel === '朋友/熟人推荐' ? '朋友/熟人推荐' :
+                      editFormData.acquisitionChannel === '小红书' ? '小红书' :
+                      editFormData.acquisitionChannel === '思悦社群' ? '思悦社群' :
+                      editFormData.acquisitionChannel === '思悦公众号/视频号' ? '思悦公众号/视频号' :
+                      ''
+                    }
+                    onChange={e => {
+                      const displayValue = e.target.value;
+                      let originalValue: '' | '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号' = '';
+                      
+                      if (displayValue === '朋友/熟人推荐') originalValue = '朋友/熟人推荐';
+                      else if (displayValue === '小红书') originalValue = '小红书';
+                      else if (displayValue === '思悦社群') originalValue = '思悦社群';
+                      else if (displayValue === '思悦公众号/视频号') originalValue = '思悦公众号/视频号';
+                      
+                      setEditFormData({...editFormData, acquisitionChannel: originalValue});
+                    }}
+                  >
+                    <option value="">请选择获客渠道</option>
+                    {newStudentAcquisitionChannelOptions.map(channel => (
+                      <option key={channel} value={channel}>{channel}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                <button 
                  onClick={() => setShowEditModal(false)}
                  className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
@@ -601,186 +568,141 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
         {/* 新生录入模态框 */}
         {showNewStudentModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-xl w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
+             <div className="bg-white rounded-xl shadow-xl w-[600px] max-h-[90vh] flex flex-col overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 className="text-lg font-bold text-gray-800">新生录入</h3>
                 <button onClick={() => setShowNewStudentModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
               </div>
-              
-              <div className="flex-1 overflow-auto p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>学生姓名</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.name}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, name: e.target.value})}
-                      placeholder="请输入学生姓名"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>联系电话</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.account}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, account: e.target.value})}
-                      placeholder="请输入联系电话"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">性别</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.gender}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, gender: e.target.value as '男' | '女'})}
-                    >
-                      <option value="男">男</option>
-                      <option value="女">女</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">出生年月</label>
-                    <input 
-                      type="date"
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.birthDate}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, birthDate: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">评测等级</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.evaluationLevel}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, evaluationLevel: e.target.value})}
-                    >
-                      <option value="">请选择评测等级</option>
-                      <option value="A+">A+</option>
-                      <option value="A">A</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B">B</option>
-                      <option value="B-">B-</option>
-                      <option value="C+">C+</option>
-                      <option value="C">C</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">所属校区</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.campus}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, campus: e.target.value})}
-                    >
-                      <option value="">请选择校区</option>
-                      {CAMPUSES.map(campus => <option key={campus} value={campus}>{campus}</option>)}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">英文名</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.englishName}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, englishName: e.target.value})}
-                      placeholder="请输入英文名"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">在读年级</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.grade}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, grade: e.target.value})}
-                    >
-                      <option value="">请选择在读年级</option>
-                      {GRADE_OPTIONS.map(grade => <option key={grade} value={grade}>{grade}</option>)}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">在读学校</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.school}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, school: e.target.value})}
-                    >
-                      <option value="">请选择在读学校</option>
-                      {SCHOOL_OPTIONS.map(school => <option key={school} value={school}>{school}</option>)}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">学生状态</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.studentStatus}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, studentStatus: e.target.value as StudentStatus})}
-                    >
-                      {studentStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">跟进状态</label>
-                    <select 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      value={newStudentFormData.followUpStatus}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, followUpStatus: e.target.value as FollowUpStatus})}
-                    >
-                      {followUpStatusOptions.map(status => <option key={status} value={status}>{status}</option>)}
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>家长姓名</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.parentName}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, parentName: e.target.value})}
-                      placeholder="请输入家长姓名"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>家长电话</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.parentPhone}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, parentPhone: e.target.value})}
-                      placeholder="请输入家长电话"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">紧急联系人</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.emergencyContact}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, emergencyContact: e.target.value})}
-                      placeholder="请输入紧急联系人"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-600">紧急联系电话</label>
-                    <input 
-                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                      value={newStudentFormData.emergencyPhone}
-                      onChange={e => setNewStudentFormData({...newStudentFormData, emergencyPhone: e.target.value})}
-                      placeholder="请输入紧急联系电话"
-                    />
-                  </div>
-                </div>
-              </div>
+               
+               <div className="p-6 space-y-4">
+                 {/* 学生姓名 */}
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       学生姓名 <span className="text-red-500">*</span>
+                     </label>
+                     <input
+                       type="text"
+                       value={newStudentFormData.studentName}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, studentName: e.target.value})}
+                       className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                       placeholder="请输入学生姓名"
+                     />
+                   </div>
+                   
+                   {/* 联系电话 */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       联系电话 <span className="text-red-500">*</span>
+                     </label>
+                     <input
+                       type="text"
+                       value={newStudentFormData.phone}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, phone: e.target.value})}
+                       className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                       placeholder="请输入联系电话"
+                     />
+                   </div>
+                 </div>
+                 
+                 {/* 在读年级 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     在读年级 <span className="text-red-500">*</span>
+                   </label>
+                   <select
+                     value={newStudentFormData.grade}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, grade: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   >
+                     <option value="">请选择在读年级</option>
+                     {GRADE_OPTIONS.map(grade => (
+                       <option key={grade} value={grade}>{grade}</option>
+                     ))}
+                   </select>
+                 </div>
+                 
+                 {/* 性别 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     性别
+                   </label>
+                   <select
+                     value={newStudentFormData.gender}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, gender: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   >
+                     <option value="">请选择性别</option>
+                     <option value="男">男</option>
+                     <option value="女">女</option>
+                   </select>
+                 </div>
+                 
+                 {/* 英文名 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     英文名
+                   </label>
+                   <input
+                     type="text"
+                     value={newStudentFormData.englishName}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, englishName: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                     placeholder="请输入英文名"
+                   />
+                 </div>
+                 
+                 {/* 在读学校 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     在读学校
+                   </label>
+                   <input
+                     type="text"
+                     value={newStudentFormData.school}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, school: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                     placeholder="请输入在读学校"
+                   />
+                 </div>
+                 
+                 {/* 就读城市 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     就读城市
+                   </label>
+                   <select
+                     value={newStudentFormData.city}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, city: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   >
+                     <option value="">请选择就读城市</option>
+                     <option value="南京">南京</option>
+                     <option value="深圳">深圳</option>
+                   </select>
+                 </div>
+                 
+                 {/* 获客渠道 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     获客渠道
+                   </label>
+                   <select
+                     value={newStudentFormData.channel}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, channel: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   >
+                     <option value="">请选择获客渠道</option>
+                     {ACQUISITION_CHANNEL_OPTIONS.map(channel => (
+                       <option key={channel} value={channel}>
+                         {channel}
+                       </option>
+                     ))}
+                   </select>
+                 </div>
+               </div>
 
-              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+               <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                 <button 
                   onClick={() => setShowNewStudentModal(false)}
                   className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"

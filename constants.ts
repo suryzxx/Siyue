@@ -56,17 +56,17 @@ export const TEACHERS: Teacher[] = [
 ];
 
 export const ADMIN_STUDENTS: StudentProfile[] = [
-    { id: '4994', name: '朱维茜', account: '18262568828', gender: '男', className: '测试-暑G2-S', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2015-03-15', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Zhu Weiqian', grade: '四年级', school: '琅琊路小学' },
-     { id: '4993', name: 'Randi丁柔', account: '13921447652', gender: '男', className: '测试-暑G2-R', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2016-05-20', evaluationLevel: 'B级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Randi Ding', grade: '三年级', school: '力学小学' },
-     { id: '4992', name: 'Grace吴悦', account: '18260360314', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-08-10', evaluationLevel: 'A+级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Grace Wu', grade: '二年级', school: '拉萨路小学' },
-     { id: '4991', name: '钱晶', account: '15250965218', gender: '男', className: '测试-暑G4-A+', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2014-11-25', evaluationLevel: 'B+级', campus: '奥南校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Qian Jing', grade: '五年级', school: '琅琊路小学' },
-     { id: '4990', name: '张璟秋', account: '13149918395', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-02-14', evaluationLevel: 'C级', campus: '五台山校区', studentStatus: '潜在学生', followUpStatus: '跟进中', englishName: 'Zhang Jingqiu', grade: '一年级', school: '力学小学' },
-     { id: '4989', name: 'Sara薛蓉', account: '13801597148', gender: '男', className: '测试-暑K3-进阶', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2018-07-30', evaluationLevel: 'A级', campus: '奥体网球中心校区', studentStatus: '潜在学生', followUpStatus: '待跟进', englishName: 'Sara Xue', grade: '大班', school: '琅琊路小学' },
-     { id: '4988', name: '刘嘉颖', account: '13951796802', gender: '男', className: '测试-暑G2-A', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2016-09-05', evaluationLevel: 'B级', campus: '爱邦中心校区', studentStatus: '历史学生', followUpStatus: '退费&流失', englishName: 'Liu Jiaying', grade: '三年级', school: '南京市第一中学' },
-     { id: '11678463', name: '殷煦纶', account: '138****0455', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-12-01', evaluationLevel: 'A+级', campus: '仙林校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Yin Xulun', grade: '六年级', school: '南京师范大学附属中学' },
-     { id: '11705283', name: '张梓墨', account: '180****7733', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-08-15', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Zhang Zimo', grade: '六年级', school: '南京市金陵中学' },
-     { id: '11950153', name: '王子萱', account: '137****4495', gender: '女', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-04-22', evaluationLevel: 'B+级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Wang Zixuan', grade: '七年级', school: '南京市第一中学' },
-     { id: '11965183', name: '蒋翊翘', account: '158****8498', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-10-30', evaluationLevel: 'A级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Jiang Yiqiao', grade: '七年级', school: '南京师范大学附属中学' },
+    { id: '4994', name: '朱维茜', account: '18262568828', gender: '男', className: '测试-暑G2-S', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2015-03-15', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Zhu Weiqian', grade: '四年级', school: '琅琊路小学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '朋友/熟人推荐' },
+     { id: '4993', name: 'Randi丁柔', account: '13921447652', gender: '男', className: '测试-暑G2-R', createdTime: '2025-06-30 19:52:28', updatedTime: '2025-06-30 19:52:28', birthDate: '2016-05-20', evaluationLevel: 'B级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Randi Ding', grade: '三年级', school: '力学小学', studyCity: '南京', registrationChannel: 'APP注册', acquisitionChannel: '小红书' },
+     { id: '4992', name: 'Grace吴悦', account: '18260360314', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-08-10', evaluationLevel: 'A+级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Grace Wu', grade: '二年级', school: '拉萨路小学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '思悦社群' },
+     { id: '4991', name: '钱晶', account: '15250965218', gender: '男', className: '测试-暑G4-A+', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2014-11-25', evaluationLevel: 'B+级', campus: '奥南校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Qian Jing', grade: '五年级', school: '琅琊路小学', studyCity: '南京', registrationChannel: 'APP注册', acquisitionChannel: '思悦公众号/视频号' },
+     { id: '4990', name: '张璟秋', account: '13149918395', gender: '男', className: '测试-暑G1-R', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2017-02-14', evaluationLevel: 'C级', campus: '五台山校区', studentStatus: '潜在学生', followUpStatus: '跟进中', englishName: 'Zhang Jingqiu', grade: '一年级', school: '力学小学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '朋友/熟人推荐' },
+     { id: '4989', name: 'Sara薛蓉', account: '13801597148', gender: '男', className: '测试-暑K3-进阶', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2018-07-30', evaluationLevel: 'A级', campus: '奥体网球中心校区', studentStatus: '潜在学生', followUpStatus: '待跟进', englishName: 'Sara Xue', grade: '大班', school: '琅琊路小学', studyCity: '南京', registrationChannel: 'APP注册', acquisitionChannel: '小红书' },
+     { id: '4988', name: '刘嘉颖', account: '13951796802', gender: '男', className: '测试-暑G2-A', createdTime: '2025-06-30 19:52:27', updatedTime: '2025-06-30 19:52:27', birthDate: '2016-09-05', evaluationLevel: 'B级', campus: '爱邦中心校区', studentStatus: '历史学生', followUpStatus: '退费&流失', englishName: 'Liu Jiaying', grade: '三年级', school: '南京市第一中学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '思悦社群' },
+     { id: '11678463', name: '殷煦纶', account: '138****0455', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-12-01', evaluationLevel: 'A+级', campus: '仙林校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Yin Xulun', grade: '六年级', school: '南京师范大学附属中学', studyCity: '南京', registrationChannel: 'APP注册', acquisitionChannel: '思悦公众号/视频号' },
+     { id: '11705283', name: '张梓墨', account: '180****7733', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-08-15', evaluationLevel: 'A级', campus: '龙江校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Zhang Zimo', grade: '六年级', school: '南京市金陵中学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '朋友/熟人推荐' },
+     { id: '11950153', name: '王子萱', account: '137****4495', gender: '女', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-04-22', evaluationLevel: 'B+级', campus: '辰龙校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Wang Zixuan', grade: '七年级', school: '南京市第一中学', studyCity: '南京', registrationChannel: 'APP注册', acquisitionChannel: '小红书' },
+     { id: '11965183', name: '蒋翊翘', account: '158****8498', gender: '男', className: '寒G5-A+', createdTime: '2025-01-01', updatedTime: '2025-01-01', birthDate: '2013-10-30', evaluationLevel: 'A级', campus: '大行宫校区', studentStatus: '在读学生', followUpStatus: '已签约', englishName: 'Jiang Yiqiao', grade: '七年级', school: '南京师范大学附属中学', studyCity: '南京', registrationChannel: '前台注册', acquisitionChannel: '思悦社群' },
 ];
 
  export const CAMPUSES = [
@@ -96,15 +96,41 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
    '九年级'
  ];
 
- // 学校选项
- export const SCHOOL_OPTIONS = [
-   '琅琊路小学',
-   '力学小学',
-   '拉萨路小学',
-   '南京师范大学附属中学',
-   '南京市金陵中学',
-   '南京市第一中学'
- ];
+  // 学校选项
+  export const SCHOOL_OPTIONS = [
+    '琅琊路小学',
+    '力学小学',
+    '拉萨路小学',
+    '南京师范大学附属中学',
+    '南京市金陵中学',
+    '南京市第一中学'
+  ];
+
+  // 就读城市选项
+  export const STUDY_CITY_OPTIONS = [
+    '南京',
+    '上海',
+    '北京',
+    '广州',
+    '深圳',
+    '杭州',
+    '苏州',
+    '成都'
+  ];
+
+  // 注册渠道选项
+  export const REGISTRATION_CHANNEL_OPTIONS = [
+    '前台注册',
+    'APP注册'
+  ] as const;
+
+  // 获客渠道选项
+  export const ACQUISITION_CHANNEL_OPTIONS = [
+    '朋友/熟人推荐',
+    '小红书',
+    '思悦社群',
+    '思悦公众号/视频号'
+  ] as const;
 
  export const CLASSES: ClassInfo[] = [
   {
