@@ -288,16 +288,7 @@ interface OrderClass {
   actualPaid: number;
 }
 
-interface WaitlistRecord {
-  id: string;
-  className: string;
-  classStatus: string;
-  campus: string;
-  firstLessonDate: string;
-  totalWaitlistCount: number;
-  waitlistTime: string;
-  status: string;
-}
+
 
 interface AttendanceRecord {
   id: string;
@@ -333,32 +324,72 @@ interface LearningSituation {
   updatedBy: string;
 }
 
-interface Attachment {
-  id: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: 'image' | 'document';
-  uploadedAt: string;
-}
+ interface Attachment {
+   id: string;
+   fileName: string;
+   fileUrl: string;
+   fileType: 'image' | 'document';
+   uploadedAt: string;
+ }
+
+ // Behavior Trajectory Interfaces
+ interface BehaviorTrajectoryRecord {
+   id: string;
+    type: 'referral' | 'enrollment-unpaid' | 'pre-order';
+   date: string;
+   description: string;
+   targetStudentId?: string; // For referral type
+   targetStudentName?: string; // For referral type
+    className?: string; // For enrollment-unpaid, pre-order types
+    classId?: string; // For enrollment-unpaid, pre-order types
+ }
+
+  // Follow-up Records Interfaces
+  interface FollowUpRecord {
+    id: string;
+    operator: string; // 操作人 (系统自动添加)
+    content: string; // 跟进内容
+    detailImages?: string[]; // 详情图片 URLs
+    nextFollowUpTime?: string; // 下次跟进时间
+    createdAt: string; // 创建时间
+  }
+
+  // Operation Records Interfaces
+  interface OperationRecord {
+    id: string;
+    serialNumber: number; // 序号
+    operationType: '录入学生' | '编辑学生' | '查看电话'; // 操作类型
+    operator: string; // 操作人
+    operationTime: string; // 操作时间
+    operationDetails: string; // 操作详情
+  }
 
 const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'waitlist' | 'coupons' | 'evaluations'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'evaluations' | 'behavior-trajectory' | 'follow-up-records' | 'operation-records'>('orders');
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [isEditingLearningSituation, setIsEditingLearningSituation] = useState(false);
   
-  // Form state for evaluation modal
-  const [evaluationForm, setEvaluationForm] = useState({
-    year: '',
-    semester: '',
-    paperType: '',
-    subject: '英语',
-    city: '',
-    grade: '',
-    classType: ''
-  });
+   // Form state for evaluation modal
+   const [evaluationForm, setEvaluationForm] = useState({
+     year: '',
+     semester: '',
+     paperType: '',
+     subject: '英语',
+     city: '',
+     grade: '',
+     classType: ''
+   });
+
+   // State for follow-up records modal
+   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+   const [followUpForm, setFollowUpForm] = useState({
+     content: '',
+     detailImages: [] as string[],
+     nextFollowUpTime: ''
+   });
 
   // Mock data for student orders
   const mockOrders: Order[] = [
@@ -479,32 +510,134 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
     }
   ];
 
-  // Mock data for waitlist records
-  const mockWaitlistRecords: WaitlistRecord[] = [
-    {
-      id: '1',
-      className: 'G4数学菁英班',
-      classStatus: '已满员',
-      campus: '五台山校区',
-      firstLessonDate: '2025-09-01',
-      totalWaitlistCount: 5,
-      waitlistTime: '2025-06-15 14:30',
-      status: '候补中',
-    },
-    {
-      id: '2',
-      className: 'K3编程进阶班',
-      classStatus: '招生中',
-      campus: '仙林校区',
-      firstLessonDate: '2025-09-15',
-      totalWaitlistCount: 2,
-      waitlistTime: '2025-07-20 10:15',
-      status: '已录取',
-    }
-  ];
 
-  // Mock data for attendance records
-  const mockAttendanceRecords: AttendanceRecord[] = [
+
+    // Mock data for behavior trajectory records
+    const mockBehaviorTrajectoryRecords: BehaviorTrajectoryRecord[] = [
+      {
+        id: '1',
+        type: 'referral',
+        date: '2025-02-06',
+        description: '介绍新生张三',
+        targetStudentId: '11950153',
+        targetStudentName: '王子萱'
+      },
+      {
+        id: '2',
+        type: 'referral',
+        date: '2025-03-08',
+        description: '介绍新生李四',
+        targetStudentId: '11950153',
+        targetStudentName: '王子萱'
+      },
+      {
+        id: '3',
+        type: 'referral',
+        date: '2025-04-10',
+        description: '介绍新生王五',
+        targetStudentId: '11950153',
+        targetStudentName: '王子萱'
+      },
+      {
+        id: '4',
+        type: 'enrollment-unpaid',
+        date: '2025-01-15',
+        description: '报名未缴费',
+        className: '25暑-K3-进阶-1班',
+        classId: '546'
+      },
+      {
+        id: '8',
+        type: 'pre-order',
+        date: '2025-05-20',
+        description: '预购记录',
+        className: '25暑-K3-进阶-1班',
+        classId: '546'
+      }
+    ];
+
+    // Mock data for follow-up records
+    const mockFollowUpRecords: FollowUpRecord[] = [
+      {
+        id: '1',
+        operator: '系统自动添加',
+        content: '家长通过网站咨询课程详情，表示对英语课程有兴趣，希望了解课程安排和费用',
+        detailImages: [],
+        nextFollowUpTime: '2025-02-10',
+        createdAt: '2025-02-06 14:30:22'
+      },
+      {
+        id: '2',
+        operator: '张老师',
+        content: '已发送课程资料和试听安排，家长表示会考虑并回复',
+        detailImages: ['course_material.jpg', 'trial_schedule.pdf'],
+        nextFollowUpTime: '2025-02-15',
+        createdAt: '2025-02-08 10:15:45'
+      },
+      {
+        id: '3',
+        operator: '李老师',
+        content: '家长带学生参观校区，对教学环境和师资表示满意，询问班级名额情况',
+        detailImages: ['campus_tour1.jpg', 'campus_tour2.jpg', 'classroom.jpg'],
+        nextFollowUpTime: '2025-02-20',
+        createdAt: '2025-02-12 16:20:33'
+      },
+      {
+        id: '4',
+        operator: '王老师',
+        content: '电话跟进，家长确认报名意向，需要与家人商量后决定',
+        detailImages: [],
+        nextFollowUpTime: '2025-02-25',
+        createdAt: '2025-02-18 11:05:18'
+      },
+      {
+        id: '5',
+        operator: '系统自动添加',
+        content: '家长完成在线测评，系统自动生成测评报告',
+        detailImages: ['assessment_report.pdf'],
+        nextFollowUpTime: '2025-03-01',
+        createdAt: '2025-02-22 09:45:33'
+      }
+    ];
+
+   // Mock data for operation records
+   const mockOperationRecords: OperationRecord[] = [
+     {
+       id: '1',
+       serialNumber: 1,
+       operationType: '录入学生',
+       operator: '张老师',
+       operationTime: '2025-01-15 10:30:22',
+       operationDetails: '录入学生'
+     },
+     {
+       id: '2',
+       serialNumber: 2,
+       operationType: '编辑学生',
+       operator: '李老师',
+       operationTime: '2025-02-10 14:20:15',
+       operationDetails: '性别从男更新为女'
+     },
+     {
+       id: '3',
+       serialNumber: 3,
+       operationType: '编辑学生',
+       operator: '王老师',
+       operationTime: '2025-03-05 09:45:33',
+       operationDetails: '性别更新为女'
+     },
+     {
+       id: '4',
+       serialNumber: 4,
+       operationType: '查看电话',
+       operator: '赵老师',
+       operationTime: '2025-03-12 16:10:05',
+       operationDetails: '查看电话'
+     }
+   ];
+
+   // Mock data for attendance records
+   const mockAttendanceRecords: AttendanceRecord[] = [
     {
       id: '1',
       lessonNumber: '第1讲',
@@ -1218,19 +1351,24 @@ const getStatusBadge = (status: string) => {
            {/* Tabs */}
            <div className="border-b border-gray-100">
              <div className="flex">
-                {[
-                  { id: 'orders', label: '学生订单' },
-                  { id: 'waitlist', label: '候补记录' },
-                  { id: 'coupons', label: '优惠券' },
-                  { id: 'evaluations', label: '评测记录' }
-                ].map(tab => (
-                 <div
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id as any)}
-                   className={`px-6 py-3 text-sm font-medium cursor-pointer relative ${
-                     activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
-                   }`}
-                 >
+                    {[
+                      { id: 'orders', label: '学生订单' },
+                      { id: 'evaluations', label: '评测记录' },
+                      { id: 'behavior-trajectory', label: '行为轨迹' },
+                      { id: 'follow-up-records', label: '跟进记录' },
+                      { id: 'operation-records', label: '操作记录' }
+                    ].map(tab => (
+                   <div
+                     key={tab.id}
+                     onClick={() => {
+                         if (tab.id === 'orders' || tab.id === 'evaluations' || tab.id === 'behavior-trajectory' || tab.id === 'follow-up-records' || tab.id === 'operation-records') {
+                          setActiveTab(tab.id);
+                        }
+                     }}
+                    className={`px-6 py-3 text-sm font-medium cursor-pointer relative ${
+                      activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
                    {tab.label}
                    {activeTab === tab.id && (
                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></div>
@@ -1337,63 +1475,218 @@ const getStatusBadge = (status: string) => {
                </div>
              )}
 
-             {/* Waitlist Records Tab */}
-             {activeTab === 'waitlist' && (
-               <div>
-                 <div className="mb-4">
-                   <h3 className="text-lg font-medium text-gray-800 mb-4">候补记录</h3>
-                   {mockWaitlistRecords.length === 0 ? (
-                     <div className="text-center py-8 text-gray-400">暂无候补记录</div>
-                   ) : (
-                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                       <table className="w-full text-sm text-left">
-                         <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
-                           <tr>
-                             <th className="p-4">班级名称</th>
-                             <th className="p-4">班级状态</th>
-                             <th className="p-4">校区</th>
-                             <th className="p-4">首课日期</th>
-                             <th className="p-4">候补总人数</th>
-                             <th className="p-4">候补时间</th>
-                             <th className="p-4">状态</th>
-                           </tr>
-                         </thead>
-                         <tbody className="divide-y divide-gray-100">
-                           {mockWaitlistRecords.map(record => (
-                             <tr key={record.id} className="hover:bg-gray-50">
-                               <td className="p-4">
-                                 <span className="bg-blue-50 text-blue-500 border border-blue-200 px-2 py-0.5 rounded text-xs">
-                                   {record.className}
-                                 </span>
-                               </td>
-                               <td className="p-4">{getStatusBadge(record.classStatus)}</td>
-                               <td className="p-4 text-gray-600">{record.campus}</td>
-                               <td className="p-4 text-gray-600">{record.firstLessonDate}</td>
-                               <td className="p-4 text-gray-600">{record.totalWaitlistCount}人</td>
-                               <td className="p-4 text-gray-600">{record.waitlistTime}</td>
-                               <td className="p-4">{getStatusBadge(record.status)}</td>
-                             </tr>
-                           ))}
-                         </tbody>
-                       </table>
-                     </div>
-                   )}
-                 </div>
-               </div>
-             )}
 
-              {/* Coupons Tab */}
-              {activeTab === 'coupons' && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">优惠券</h3>
-                  <div className="text-center py-12 text-gray-400">
-                    <div className="mb-4">🎫</div>
-                    <p>优惠券功能开发中...</p>
-                  </div>
+
+              {/* Behavior Trajectory Tab */}
+              {activeTab === 'behavior-trajectory' && (
+                <div className="space-y-6">
+                  
+                  {/* Group records by type */}
+                   {['referral', 'enrollment-unpaid', 'pre-order'].map((type) => {
+                    const typeRecords = mockBehaviorTrajectoryRecords.filter(record => record.type === type);
+                    if (typeRecords.length === 0) return null;
+                    
+                     const typeLabels = {
+                       'referral': '老带新',
+                       'enrollment-unpaid': '报名未缴费',
+                       'pre-order': '预购记录'
+                     };
+                     
+                     const typeColors = {
+                       'referral': 'bg-blue-50 text-blue-600 border-blue-200',
+                       'enrollment-unpaid': 'bg-orange-50 text-orange-600 border-orange-200',
+                       'pre-order': 'bg-green-50 text-green-600 border-green-200'
+                     };
+                    
+                    return (
+                      <div key={type} className="bg-white border border-gray-200 rounded-lg p-6">
+                        <div className="flex items-center mb-4">
+                          <span className={`px-3 py-1 rounded text-sm font-medium border ${typeColors[type as keyof typeof typeColors]}`}>
+                            {typeLabels[type as keyof typeof typeLabels]}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {typeRecords.map((record) => (
+                            <div key={record.id} className="flex items-center text-sm">
+                              <span className="text-gray-500 w-24">{record.date}</span>
+                              <span className="text-gray-700 flex-1">
+                                {record.type === 'referral' ? (
+                                  <>
+                                    {record.description}
+                                    {record.targetStudentName && (
+                                      <button 
+                                        className="ml-2 text-blue-500 hover:text-blue-600 hover:underline"
+                                        onClick={() => {
+                                          // Navigate to student detail page for 王子萱
+                                          const event = new CustomEvent('navigate-to-student-detail', {
+                                            detail: { studentId: '11950153' }
+                                          });
+                                          window.dispatchEvent(event);
+                                        }}
+                                      >
+                                        {record.targetStudentName}
+                                      </button>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {record.description}
+                                    {record.className && (
+                                      <button 
+                                        className="ml-2 text-blue-500 hover:text-blue-600 hover:underline"
+                                        onClick={() => {
+                                          // Navigate to class detail page for 25暑-K3-进阶-1班
+                                          const event = new CustomEvent('navigate-to-class-detail', {
+                                            detail: { classId: '546' }
+                                          });
+                                          window.dispatchEvent(event);
+                                        }}
+                                      >
+                                        {record.className}
+                                      </button>
+                                    )}
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {mockBehaviorTrajectoryRecords.length === 0 && (
+                    <div className="text-center py-12 text-gray-400">
+                      <div className="mb-4">📊</div>
+                      <p>暂无行为轨迹记录</p>
+                    </div>
+                  )}
                 </div>
               )}
 
-               {/* Evaluations Tab */}
+              {/* Follow-up Records Tab */}
+              {activeTab === 'follow-up-records' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <button 
+                      onClick={() => setShowFollowUpModal(true)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
+                    >
+                      添加跟进信息
+                    </button>
+                  </div>
+                  
+                   {(() => {
+                     const filteredRecords = mockFollowUpRecords.filter(record => record.operator !== '系统自动添加');
+                     return filteredRecords.length === 0 ? (
+                       <div className="text-center py-12 text-gray-400">
+                         <div className="mb-4">📋</div>
+                         <p>暂无跟进记录</p>
+                         <p className="text-sm mt-2">点击"添加跟进信息"按钮开始记录</p>
+                       </div>
+                     ) : (
+                       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                         <table className="w-full text-sm text-left">
+                           <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+                             <tr>
+                               <th className="p-4">操作人</th>
+                               <th className="p-4">跟进信息</th>
+                               <th className="p-4">详情图片</th>
+                               <th className="p-4">下次跟进时间</th>
+                               <th className="p-4">创建时间</th>
+                             </tr>
+                           </thead>
+                           <tbody className="divide-y divide-gray-100">
+                             {filteredRecords.map((record) => (
+                               <tr key={record.id} className="hover:bg-gray-50">
+                                 <td className="p-4">
+                                   <span className="font-medium text-gray-800">{record.operator}</span>
+                                 </td>
+                                 <td className="p-4">
+                                   <div className="text-gray-700">{record.content}</div>
+                                 </td>
+                                 <td className="p-4">
+                                   {record.detailImages && record.detailImages.length > 0 ? (
+                                     <div className="flex flex-wrap gap-1">
+                                       {record.detailImages.map((image, index) => (
+                                         <div 
+                                           key={index}
+                                           className="w-8 h-8 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-500"
+                                           title={image}
+                                         >
+                                           📷
+                                         </div>
+                                       ))}
+                                     </div>
+                                   ) : (
+                                     <span className="text-gray-400 text-xs">无图片</span>
+                                   )}
+                                 </td>
+                                 <td className="p-4">
+                                   {record.nextFollowUpTime ? (
+                                     <span className="text-gray-600">{record.nextFollowUpTime}</span>
+                                   ) : (
+                                     <span className="text-gray-400 text-xs">未设置</span>
+                                   )}
+                                 </td>
+                                 <td className="p-4 text-gray-600">{record.createdAt}</td>
+                               </tr>
+                             ))}
+                           </tbody>
+                         </table>
+                       </div>
+                     );
+                   })()}
+                </div>
+               )}
+
+               {/* Operation Records Tab */}
+               {activeTab === 'operation-records' && (
+                 <div className="space-y-6">
+                   <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                     <table className="w-full text-sm text-left">
+                       <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+                         <tr>
+                           <th className="p-4">序号</th>
+                           <th className="p-4">操作类型</th>
+                           <th className="p-4">操作人</th>
+                           <th className="p-4">操作时间</th>
+                           <th className="p-4">操作详情</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-gray-100">
+                         {mockOperationRecords.map((record) => (
+                           <tr key={record.id} className="hover:bg-gray-50">
+                             <td className="p-4 text-gray-600">{record.serialNumber}</td>
+                             <td className="p-4">
+                               <span className={`px-2 py-0.5 rounded text-xs ${
+                                 record.operationType === '录入学生' ? 'bg-green-50 text-green-600 border border-green-200' :
+                                 record.operationType === '编辑学生' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
+                                 'bg-purple-50 text-purple-600 border border-purple-200'
+                               }`}>
+                                 {record.operationType}
+                               </span>
+                             </td>
+                             <td className="p-4 text-gray-600">{record.operator}</td>
+                             <td className="p-4 text-gray-600">{record.operationTime}</td>
+                             <td className="p-4 text-gray-700">{record.operationDetails}</td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                   
+                   {mockOperationRecords.length === 0 && (
+                     <div className="text-center py-12 text-gray-400">
+                       <div className="mb-4">📝</div>
+                       <p>暂无操作记录</p>
+                     </div>
+                   )}
+                 </div>
+               )}
+
+                {/* Evaluations Tab */}
                {activeTab === 'evaluations' && (
                  <div className="space-y-6">
                    {/* Learning Situation Section */}
@@ -1759,9 +2052,163 @@ const getStatusBadge = (status: string) => {
             </div>
           </div>
          </div>
-        )}
-      </>
-   );
- };
+         )}
+
+      {/* Add Follow-up Record Modal */}
+      {showFollowUpModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-medium text-gray-800">添加跟进信息</h2>
+                <button 
+                  onClick={() => {
+                    setShowFollowUpModal(false);
+                    setFollowUpForm({
+                      content: '',
+                      detailImages: [],
+                      nextFollowUpTime: ''
+                    });
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Follow-up Content */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    跟进内容 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={followUpForm.content}
+                    onChange={(e) => setFollowUpForm({...followUpForm, content: e.target.value})}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="请输入跟进内容"
+                    required
+                  />
+                </div>
+
+                {/* Detail Images */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    详情图片 <span className="text-gray-500">(非必填)</span>
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <div className="mb-4">
+                      <div className="text-4xl mb-2">🖼️</div>
+                      <p className="text-gray-600">支持上传图片格式</p>
+                      <p className="text-sm text-gray-400 mt-1">点击或拖拽图片到此处上传</p>
+                    </div>
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      id="image-upload"
+                       onChange={(e) => {
+                         const files = e.target.files;
+                         if (files) {
+                           const fileNames = Array.from(files).map((file: File) => file.name);
+                           setFollowUpForm({
+                             ...followUpForm,
+                             detailImages: [...followUpForm.detailImages, ...fileNames]
+                           });
+                         }
+                       }}
+                    />
+                    <label 
+                      htmlFor="image-upload"
+                      className="inline-block px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors cursor-pointer"
+                    >
+                      选择图片
+                    </label>
+                    
+                    {/* Preview uploaded images */}
+                    {followUpForm.detailImages.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-600 mb-2">已上传图片:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {followUpForm.detailImages.map((image, index) => (
+                            <div key={index} className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">
+                              📷 {image}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newImages = [...followUpForm.detailImages];
+                                  newImages.splice(index, 1);
+                                  setFollowUpForm({...followUpForm, detailImages: newImages});
+                                }}
+                                className="ml-1 text-red-500 hover:text-red-700"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Next Follow-up Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    下次跟进时间 <span className="text-gray-500">(非必填)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={followUpForm.nextFollowUpTime}
+                    onChange={(e) => setFollowUpForm({...followUpForm, nextFollowUpTime: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-4 pt-6 border-t">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShowFollowUpModal(false);
+                      setFollowUpForm({
+                        content: '',
+                        detailImages: [],
+                        nextFollowUpTime: ''
+                      });
+                    }}
+                    className="px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      // In a real app, this would save to backend
+                      // For now, just close the modal and reset form
+                      alert('跟进信息已保存 (模拟)');
+                      setShowFollowUpModal(false);
+                      setFollowUpForm({
+                        content: '',
+                        detailImages: [],
+                        nextFollowUpTime: ''
+                      });
+                    }}
+                    className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    disabled={!followUpForm.content.trim()}
+                  >
+                    保存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+       </>
+    );
+  };
 
 export default StudentDetailPage;

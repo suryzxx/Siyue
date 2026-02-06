@@ -16,11 +16,9 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
   const [filterStudentStatus, setFilterStudentStatus] = useState<string[]>([]);
   const [filterFollowUpStatus, setFilterFollowUpStatus] = useState<string[]>([]);
 
-  // 模态框状态
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showTransferModal, setShowTransferModal] = useState(false);
-  const [showOperationLogModal, setShowOperationLogModal] = useState(false);
-  const [showNewStudentModal, setShowNewStudentModal] = useState(false);
+   // 模态框状态
+   const [showEditModal, setShowEditModal] = useState(false);
+   const [showNewStudentModal, setShowNewStudentModal] = useState(false);
   
    // 编辑表单数据
    const [editFormData, setEditFormData] = useState({
@@ -37,14 +35,6 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
      grade: '',
      school: '',
    });
-
-  // 转班表单数据
-  const [transferFormData, setTransferFormData] = useState({
-    currentClass: '',
-    targetClass: '',
-    transferDate: new Date().toISOString().split('T')[0],
-    reason: '',
-  });
 
    // 新生录入表单数据
    const [newStudentFormData, setNewStudentFormData] = useState({
@@ -66,16 +56,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
      emergencyPhone: '',
    });
 
-  // 操作记录数据
-  const [operationLogs, setOperationLogs] = useState<Array<{
-    id: number;
-    action: string;
-    operator: string;
-    timestamp: string;
-    details: string;
-  }>>([]);
-
-  // 学生状态选项
+   // 学生状态选项
   const studentStatusOptions: StudentStatus[] = ['在读学生', '潜在学生', '历史学生'];
   const followUpStatusOptions: FollowUpStatus[] = ['待跟进', '跟进中', '已邀约', '已签约', '退费&流失'];
 
@@ -154,26 +135,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
      setShowEditModal(true);
    };
 
-  const handleTransferClass = (student: StudentProfile) => {
-    setTransferFormData({
-      currentClass: student.className || '',
-      targetClass: '',
-      transferDate: new Date().toISOString().split('T')[0],
-      reason: '',
-    });
-    setShowTransferModal(true);
-  };
 
-  const handleViewOperationLog = (student: StudentProfile) => {
-    // 模拟操作记录数据
-    setOperationLogs([
-      { id: 1, action: '创建学生档案', operator: '管理员A', timestamp: '2025-01-15 10:30:00', details: '创建学生基本信息' },
-      { id: 2, action: '更新评测等级', operator: '老师B', timestamp: '2025-01-20 14:15:00', details: '评测等级从B+更新为A-' },
-      { id: 3, action: '修改校区信息', operator: '管理员A', timestamp: '2025-01-25 09:45:00', details: '校区从龙江校区变更为奥南校区' },
-      { id: 4, action: '更新跟进状态', operator: '教务C', timestamp: '2025-01-28 16:20:00', details: '跟进状态从待跟进变更为跟进中' },
-    ]);
-    setShowOperationLogModal(true);
-  };
 
   const handleGetTempCode = (student: StudentProfile) => {
     const tempCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -222,19 +184,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
     setShowEditModal(false);
   };
 
-  // 保存转班
-  const handleSaveTransfer = () => {
-    if (!transferFormData.targetClass) {
-      alert('请选择目标班级');
-      return;
-    }
-    
-    // 实际应用中这里会调用API处理转班
-    alert(`学生已成功从 ${transferFormData.currentClass} 转班到 ${transferFormData.targetClass}`);
-    setShowTransferModal(false);
-  };
-
-  // 保存新生录入
+   // 保存新生录入
   const handleSaveNewStudent = () => {
     if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.parentPhone) {
       alert('请填写必填信息（学生姓名、联系电话、家长电话）');
@@ -432,34 +382,22 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.createdTime}</td>
                   <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.updatedTime}</td>
                   <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
-                    <div className="flex flex-col gap-1.5 text-xs whitespace-nowrap">
-                      <div className="flex gap-3">
-                        <span 
-                          className="text-primary cursor-pointer hover:opacity-80"
-                          onClick={() => handleEdit(student)}
-                        >
-                          编辑
-                        </span>
-                        <span 
-                          className="text-blue-500 cursor-pointer hover:opacity-80"
-                          onClick={() => handleTransferClass(student)}
-                        >
-                          转班
-                        </span>
-                        <span 
-                          className="text-purple-600 cursor-pointer hover:opacity-80"
-                          onClick={() => handleViewOperationLog(student)}
-                        >
-                          操作记录
-                        </span>
-                      </div>
-                      <div 
-                        className="text-orange-400 cursor-pointer hover:opacity-80"
-                        onClick={() => handleGetTempCode(student)}
-                      >
-                        获取临时验证码
-                      </div>
-                    </div>
+                     <div className="flex flex-col gap-1.5 text-xs whitespace-nowrap">
+                       <div className="flex gap-3">
+                         <span 
+                           className="text-primary cursor-pointer hover:opacity-80"
+                           onClick={() => handleEdit(student)}
+                         >
+                           编辑
+                         </span>
+                       </div>
+                       <div 
+                         className="text-orange-400 cursor-pointer hover:opacity-80"
+                         onClick={() => handleGetTempCode(student)}
+                       >
+                         获取临时验证码
+                       </div>
+                     </div>
                   </td>
                 </tr>
               ))}
@@ -656,123 +594,9 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
           </div>
         )}
 
-       {/* 转班模态框 */}
-       {showTransferModal && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-           <div className="bg-white rounded-xl shadow-xl w-[500px] flex flex-col overflow-hidden">
-             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-               <h3 className="text-lg font-bold text-gray-800">学生转班</h3>
-               <button onClick={() => setShowTransferModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-             </div>
-             
-             <div className="p-6 space-y-4">
-                <div className="flex items-center">
-                  <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">学生姓名</label>
-                  <span className="text-gray-800 font-medium">{transferFormData.currentClass ? '已选中学生' : '未选择'}</span>
-                </div>
 
-               <div className="flex items-center">
-                 <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">当前班级</label>
-                 <span className="text-gray-600">{transferFormData.currentClass || '未分配班级'}</span>
-               </div>
 
-               <div className="flex items-center">
-                 <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>目标班级</label>
-                 <input 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={transferFormData.targetClass}
-                   onChange={e => setTransferFormData({...transferFormData, targetClass: e.target.value})}
-                   placeholder="请输入目标班级名称"
-                 />
-               </div>
 
-               <div className="flex items-center">
-                 <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">转班日期</label>
-                 <input 
-                   type="date"
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                   value={transferFormData.transferDate}
-                   onChange={e => setTransferFormData({...transferFormData, transferDate: e.target.value})}
-                 />
-               </div>
-
-               <div className="flex items-center">
-                 <label className="w-32 text-sm font-medium text-gray-600 text-right mr-4">转班原因</label>
-                 <textarea 
-                   className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none h-20"
-                   value={transferFormData.reason}
-                   onChange={e => setTransferFormData({...transferFormData, reason: e.target.value})}
-                   placeholder="请输入转班原因"
-                 />
-               </div>
-             </div>
-
-             <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-               <button 
-                 onClick={() => setShowTransferModal(false)}
-                 className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-               >
-                 取消
-               </button>
-               <button 
-                 onClick={handleSaveTransfer}
-                 className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
-               >
-                 确认转班
-               </button>
-             </div>
-           </div>
-         </div>
-        )}
-
-        {/* 操作记录模态框 */}
-        {showOperationLogModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-xl w-[800px] h-[600px] flex flex-col overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 className="text-lg font-bold text-gray-800">操作记录</h3>
-                <button onClick={() => setShowOperationLogModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-              </div>
-              
-              <div className="flex-1 overflow-auto p-6">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 font-medium">
-                    <tr>
-                      <th className="p-3">序号</th>
-                      <th className="p-3">操作类型</th>
-                      <th className="p-3">操作人</th>
-                      <th className="p-3">操作时间</th>
-                      <th className="p-3">操作详情</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {operationLogs.map(log => (
-                      <tr key={log.id} className="hover:bg-gray-50">
-                        <td className="p-3 text-gray-600">{log.id}</td>
-                        <td className="p-3 text-gray-800">{log.action}</td>
-                        <td className="p-3 text-gray-600">{log.operator}</td>
-                        <td className="p-3 text-gray-600">{log.timestamp}</td>
-                        <td className="p-3 text-gray-600">{log.details}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {operationLogs.length === 0 && (
-                  <div className="text-center py-8 text-gray-400">暂无操作记录</div>
-                )}
-              </div>
-
-              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                <button 
-                  onClick={() => setShowOperationLogModal(false)}
-                  className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-                >
-                  关闭
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 新生录入模态框 */}
         {showNewStudentModal && (
