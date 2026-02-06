@@ -254,33 +254,68 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
       ? `${placeholder} (${selected.length})` 
       : placeholder;
 
-    const availableClassTypes = selectedGrade ? GRADE_CLASS_TYPES[selectedGrade] || [] : [];
+     const availableClassTypes = selectedGrade ? GRADE_CLASS_TYPES[selectedGrade] || [] : [];
 
-    return (
+     const getConsolidatedTags = () => {
+       const tags: Array<{grade: string, classType?: string, isFullGrade: boolean}> = [];
+       const gradeGroups: Record<string, Array<{grade: string, classType: string}>> = {};
+       
+       selected.forEach(item => {
+         if (!gradeGroups[item.grade]) {
+           gradeGroups[item.grade] = [];
+         }
+         gradeGroups[item.grade].push(item);
+       });
+       
+       Object.entries(gradeGroups).forEach(([grade, selections]) => {
+         const allClassTypes = GRADE_CLASS_TYPES[grade] || [];
+         const hasAllClassTypes = allClassTypes.every(classType => 
+           selections.some(item => item.classType === classType)
+         );
+         
+         if (hasAllClassTypes && allClassTypes.length > 0) {
+           tags.push({ grade, isFullGrade: true });
+         } else {
+           selections.forEach(item => {
+             tags.push({ grade: item.grade, classType: item.classType, isFullGrade: false });
+           });
+         }
+       });
+       
+       return tags;
+     };
+
+     const consolidatedTags = getConsolidatedTags();
+
+     return (
       <div className={`relative ${width} flex-shrink-0`} ref={dropdownRef}>
-        {/* Selected Tags Display */}
-        {selected.length > 0 && (
-          <div className="absolute -top-7 left-0 right-0 flex flex-wrap gap-1 mb-1">
-            {selected.map((item, index) => (
-              <div 
-                key={`${item.grade}-${item.classType}-${index}`}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs"
-              >
-                <span>{item.grade} {item.classType}</span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeSelection(item.grade, item.classType);
-                  }}
-                  className="text-blue-400 hover:text-blue-700 text-xs"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+         {/* Selected Tags Display */}
+         {consolidatedTags.length > 0 && (
+           <div className="absolute -top-7 left-0 right-0 flex flex-wrap gap-1 mb-1">
+             {consolidatedTags.map((tag, index) => (
+               <div 
+                 key={`${tag.grade}-${tag.classType || 'full'}-${index}`}
+                 className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs"
+               >
+                 <span>{tag.isFullGrade ? tag.grade : `${tag.grade} ${tag.classType}`}</span>
+                 <button
+                   type="button"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if (tag.isFullGrade) {
+                       onChange(selected.filter(item => item.grade !== tag.grade));
+                     } else {
+                       removeSelection(tag.grade, tag.classType!);
+                     }
+                   }}
+                   className="text-blue-400 hover:text-blue-700 text-xs"
+                 >
+                   ×
+                 </button>
+               </div>
+             ))}
+           </div>
+         )}
 
         <button
           className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
@@ -322,30 +357,68 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
                 </div>
               </div>
 
-              {/* Right Side: Class Type List */}
-              <div className="w-1/2 flex flex-col">
-                <div className="flex-1 overflow-y-auto">
-                  {selectedGrade ? (
-                    availableClassTypes.map(classType => {
-                      const isSelected = selected.some(item => item.grade === selectedGrade && item.classType === classType);
-                      return (
-                        <button
-                          key={classType}
-                          type="button"
-                          onClick={() => toggleSelection(selectedGrade, classType)}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${isSelected ? 'bg-green-50 text-green-600' : 'text-gray-700'}`}
-                        >
-                          {classType}
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="h-full flex items-center justify-center text-gray-300 text-sm">
-                      —
-                    </div>
-                  )}
-                </div>
-              </div>
+               {/* Right Side: Class Type List */}
+               <div className="w-1/2 flex flex-col">
+                 {selectedGrade && (
+                   <div className="border-b border-gray-200 p-2">
+                     <button
+                       type="button"
+                       onClick={() => {
+                         const allClassTypes = GRADE_CLASS_TYPES[selectedGrade] || [];
+                         const currentGradeSelections = selected.filter(item => item.grade === selectedGrade);
+                         const allClassTypesSelected = allClassTypes.every(classType => 
+                           currentGradeSelections.some(item => item.classType === classType)
+                         );
+                         
+                         if (allClassTypesSelected) {
+                           onChange(selected.filter(item => item.grade !== selectedGrade));
+                         } else {
+                           const newSelections = allClassTypes.map(classType => ({
+                             grade: selectedGrade,
+                             classType: classType
+                           }));
+                           const otherSelections = selected.filter(item => item.grade !== selectedGrade);
+                           onChange([...otherSelections, ...newSelections]);
+                         }
+                       }}
+                       className="w-full text-left px-3 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded border border-blue-200 flex items-center justify-between"
+                     >
+                       <span>全选</span>
+                       <span className="text-xs">
+                         {(() => {
+                           const currentGradeSelections = selected.filter(item => item.grade === selectedGrade);
+                           const allClassTypes = GRADE_CLASS_TYPES[selectedGrade] || [];
+                           const selectedCount = currentGradeSelections.length;
+                           const totalCount = allClassTypes.length;
+                           return `${selectedCount}/${totalCount}`;
+                         })()}
+                       </span>
+                     </button>
+                   </div>
+                 )}
+                 
+                 <div className="flex-1 overflow-y-auto">
+                   {selectedGrade ? (
+                     availableClassTypes.map(classType => {
+                       const isSelected = selected.some(item => item.grade === selectedGrade && item.classType === classType);
+                       return (
+                         <button
+                           key={classType}
+                           type="button"
+                           onClick={() => toggleSelection(selectedGrade, classType)}
+                           className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${isSelected ? 'bg-green-50 text-green-600' : 'text-gray-700'}`}
+                         >
+                           {classType}
+                         </button>
+                       );
+                     })
+                   ) : (
+                     <div className="h-full flex items-center justify-center text-gray-300 text-sm">
+                       —
+                     </div>
+                   )}
+                 </div>
+               </div>
             </div>
           </div>
         )}
