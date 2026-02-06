@@ -22,20 +22,28 @@ const YEARS = ['2024', '2025', '2026'];
 const SUBJECTS = ['英语', '数学', '编程', '美术'];
 const SEMESTERS = ['春季', '暑假', '秋季', '寒假'];
 
-// Cascading Data Structures
+// Combined Course Class Hierarchy - For Class Management filtering
+// Includes both System Courses (体系课) and Special Courses (专项课)
 const GRADE_CLASS_TYPES: Record<string, string[]> = {
-  'K1': ['K1启蒙'],
-  'K2': ['K2启蒙', 'K2进阶'],
-  'K3': ['K3启蒙', 'K3进阶', 'K3飞跃'],
-  'G1': ['1A', '1A+', '1S', '1S+', '1R', '1R预备'],
-  'G2': ['2A', '2A+', '2S', '2S+', '2R', '2R预备'],
-  'G3': ['3A', '3A+', '3S', '3S+', '3R'],
-  'G4': ['4A', '4A+', '4S', '4S+', '4R'],
-  'G5': ['5A', '5A+', '5S', '5S+', '5R'],
-  'G6': ['6A', '6A+', '6S', '6S+', '6R'],
-  'G7': ['G7国际托管班', 'G7国际菁英班', 'G7国际英才'],
-  'G8': ['G8国际托管班', 'G8国际菁英班', 'G8国际英才'],
-  'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
+  // System Courses (体系课)
+  'K2': ['启蒙', '启蒙衔接', '进阶'],
+  'K3': ['启蒙', '进阶', '进阶衔接', '飞跃'],
+  'G1': ['A', 'A+', 'S', 'R'],
+  'G2': ['A', 'A+', 'S', 'R'],
+  'G3': ['A', 'A+', 'S', 'S+', 'R'],
+  'G4': ['A', 'A+', 'S', 'S+', 'R'],
+  'G5': ['A', 'A+', 'S', 'S+', 'R'],
+  'G6': ['A', 'A+', 'S', 'S+', 'R'],
+  'G7': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G8': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G9': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  
+  // Special Courses (专项课)
+  '剑少考辅': ['剑少一级', '剑少二级', '剑少三级'],
+  'MSE考辅': ['KET综合冲刺', 'KET口语写作专项', 'PET综合冲刺', 'PET口语写作专项', 'FCE综合冲刺', 'FCE口语写作专项'],
+  '自然拼读': ['自拼一级', '自拼二级', '自拼三级'],
+  '语法专项': ['KET核心语法', 'PET核心语法'],
+  '阅读专项': ['神奇树屋', '神奇校', '苍蝇小子', '夏洛的网', '国家探索', '国家地理足迹-KET', '国家地理足迹-PET'],
 };
 
 const LOCATION_DATA: Record<string, Record<string, string[]>> = {
@@ -192,9 +200,160 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
         )}
       </div>
     );
-  };
+   };
 
- // --- Classroom Schedule Modal Component ---
+  // Combined Grade-Class Type Select Component with Tags
+  interface GradeClassTypeSelectProps {
+    selected: Array<{grade: string, classType: string}>;
+    onChange: (selected: Array<{grade: string, classType: string}>) => void;
+    placeholder: string;
+    width?: string;
+  }
+
+  const GradeClassTypeSelect: React.FC<GradeClassTypeSelectProps> = ({ selected, onChange, placeholder, width = 'w-[180px]' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedGrade, setSelectedGrade] = useState<string>('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // 点击外部关闭下拉框
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+          setSelectedGrade('');
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+
+    const toggleSelection = (grade: string, classType: string) => {
+      const key = `${grade} ${classType}`;
+      const exists = selected.some(item => item.grade === grade && item.classType === classType);
+      
+      if (exists) {
+        onChange(selected.filter(item => !(item.grade === grade && item.classType === classType)));
+      } else {
+        onChange([...selected, { grade, classType }]);
+      }
+    };
+
+    const removeSelection = (grade: string, classType: string) => {
+      onChange(selected.filter(item => !(item.grade === grade && item.classType === classType)));
+    };
+
+    const clearAll = () => {
+      onChange([]);
+      setSelectedGrade('');
+    };
+
+    const displayText = selected.length > 0 
+      ? `${placeholder} (${selected.length})` 
+      : placeholder;
+
+    const availableClassTypes = selectedGrade ? GRADE_CLASS_TYPES[selectedGrade] || [] : [];
+
+    return (
+      <div className={`relative ${width} flex-shrink-0`} ref={dropdownRef}>
+        {/* Selected Tags Display */}
+        {selected.length > 0 && (
+          <div className="absolute -top-7 left-0 right-0 flex flex-wrap gap-1 mb-1">
+            {selected.map((item, index) => (
+              <div 
+                key={`${item.grade}-${item.classType}-${index}`}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs"
+              >
+                <span>{item.grade} {item.classType}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeSelection(item.grade, item.classType);
+                  }}
+                  className="text-blue-400 hover:text-blue-700 text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="truncate">{displayText}</span>
+          <span className="ml-1 text-xs">{isOpen ? '▲' : '▼'}</span>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-50 mt-1 w-[360px] bg-white border border-gray-300 rounded shadow-lg">
+            {/* Header with clear button */}
+            <div className="p-2 border-b border-gray-200 flex justify-end items-center">
+              {selected.length > 0 && (
+                <button
+                  onClick={clearAll}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  清空
+                </button>
+              )}
+            </div>
+
+            {/* Left-Right Layout Container */}
+            <div className="flex" style={{ height: '240px' }}>
+              {/* Left Side: Grade/Special Type List */}
+              <div className="w-1/2 border-r border-gray-200 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  {Object.keys(GRADE_CLASS_TYPES).map(grade => (
+                    <button
+                      key={grade}
+                      type="button"
+                      onClick={() => setSelectedGrade(selectedGrade === grade ? '' : grade)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${selectedGrade === grade ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-500' : 'text-gray-700'}`}
+                    >
+                      {grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side: Class Type List */}
+              <div className="w-1/2 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  {selectedGrade ? (
+                    availableClassTypes.map(classType => {
+                      const isSelected = selected.some(item => item.grade === selectedGrade && item.classType === classType);
+                      return (
+                        <button
+                          key={classType}
+                          type="button"
+                          onClick={() => toggleSelection(selectedGrade, classType)}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${isSelected ? 'bg-green-50 text-green-600' : 'text-gray-700'}`}
+                        >
+                          {classType}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-300 text-sm">
+                      —
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+ 
+  // --- Classroom Schedule Modal Component ---
 const ClassroomScheduleModal: React.FC<{ 
   campus: string, 
   onClose: () => void 
@@ -547,9 +706,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [filterSemester, setFilterSemester] = useState<string[]>([]);
   const [filterSubject, setFilterSubject] = useState<string[]>([]);
   
-  // Class Level Filter
-  const [filterGrade, setFilterGrade] = useState<string[]>([]);
-  const [filterClassType, setFilterClassType] = useState<string[]>([]);
+  // Class Level Filter - Combined grade and class type
+  const [filterGradeClassType, setFilterGradeClassType] = useState<Array<{grade: string, classType: string}>>([]);
 
   // Address Filter
   const [filterCity, setFilterCity] = useState<string[]>([]);
@@ -572,8 +730,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
   // Dynamic Options
   const allClassTypes = Array.from(new Set(Object.values(GRADE_CLASS_TYPES).flat()));
-  const availableClassTypes = filterGrade.length > 0 
-    ? Array.from(new Set(filterGrade.flatMap(grade => GRADE_CLASS_TYPES[grade] || [])))
+  // Extract unique grades from filterGradeClassType for dynamic class type filtering
+  const selectedGrades = Array.from(new Set(filterGradeClassType.map(item => item.grade)));
+  const availableClassTypes = selectedGrades.length > 0 
+    ? Array.from(new Set(selectedGrades.flatMap(grade => GRADE_CLASS_TYPES[grade as keyof typeof GRADE_CLASS_TYPES] || [])))
     : allClassTypes;
 
   const allDistricts = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.keys(city))));
@@ -1805,9 +1965,17 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     // 4. Teacher Filter
     const matchTeacher = filterTeacher.length === 0 || filterTeacher.includes(cls.teacherId);
 
-    // 5. Other multi-select filters
-    const matchGrade = filterGrade.length === 0 || filterGrade.includes(cls.grade) || (course?.grade && filterGrade.includes(course.grade));
-    const matchClassType = filterClassType.length === 0 || filterClassType.includes(cls.studentTag);
+    // 5. Combined Grade & Class Type Filter
+    const matchGradeClassType = filterGradeClassType.length === 0 || 
+      filterGradeClassType.some(({ grade, classType }) => {
+        // Check if class matches either the class grade or course grade
+        const gradeMatch = cls.grade === grade || (course?.grade && course.grade === grade);
+        // Also check course tags for system course grades (e.g., "G1", "G2")
+        const tagMatch = course?.tags?.includes(grade) || false;
+        // Check if class type matches
+        const classTypeMatch = cls.studentTag === classType;
+        return (gradeMatch || tagMatch) && classTypeMatch;
+      });
     const matchCity = filterCity.length === 0 || filterCity.includes(cls.city);
     const matchDistrict = filterDistrict.length === 0 || filterDistrict.includes(cls.district);
     const matchCampus = filterCampus.length === 0 || filterCampus.includes(cls.campus);
@@ -1841,7 +2009,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         matchCheckbox = ['pending', 'active', 'full'].includes(cls.status || 'pending');
     }
 
-    return matchName && matchMode && matchYear && matchSubject && matchGrade && matchClassType && 
+    return matchName && matchMode && matchYear && matchSubject && matchGradeClassType && 
            matchSemester && matchTeacher && matchCity && matchDistrict && matchCampus && 
            matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus;
   });
@@ -2185,25 +2353,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                width="w-[90px]"
              />
             
-             {/* Grade & Class Type - Separated */}
-             <MultiSelect
-               options={Object.keys(GRADE_CLASS_TYPES)}
-               selected={filterGrade}
-               onChange={(selected) => { 
-                 setFilterGrade(selected);
-                 // 如果选择的年级发生变化，清空班型筛选
-                 setFilterClassType([]);
-               }}
-               placeholder="年级"
-               width="w-[80px]"
-             />
-             <MultiSelect
-               options={availableClassTypes}
-               selected={filterClassType}
-               onChange={setFilterClassType}
-               placeholder="班型"
-               width="w-[100px]"
-             />
+              {/* Combined Grade & Class Type Filter */}
+              <GradeClassTypeSelect
+                selected={filterGradeClassType}
+                onChange={setFilterGradeClassType}
+                placeholder="班层筛选"
+                width="w-[180px]"
+              />
 
                {/* Teacher Select - 支持搜索和多选 */}
                <SearchableMultiSelect
@@ -2375,8 +2531,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                    setFilterMode(''); 
                    setFilterYear([]); 
                    setFilterSubject([]); 
-                   setFilterGrade([]); 
-                   setFilterClassType([]); 
+                    setFilterGradeClassType([]);
                    setFilterSemester([]); 
                    setFilterTeacher([]); 
                    setStudentSearch(''); 

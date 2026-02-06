@@ -755,27 +755,32 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
     }
   ];
 
-  // Grade options from provided list
-  const gradeOptions = [
-    'K1启蒙', 'K2启蒙', 'K2进阶', 'K3启蒙', 'K3进阶', 'K3飞跃', 
-    '1A', '1A+', '1S', '1S+', '1R', '1R预备', 
-    '2A', 'K1', 'K2', 'K3', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9',
-    '3A', '3A+', '3S', '3S+', '3R', 
-    '4A', '4A+', '4S', '4S+', '4R', 
-    '5A', '5A+', '5S', '5S+', '5R', 
-    '6A', '6A+', '6S', '6S+', '6R', 
-    'G7国际托管班', 'G7国际菁英班', 'G7国际英才', 
-    'G8国际托管班', 'G8国际菁英班', 'G8国际英才', 
-    'G9国际托管班', 'G9国际菁英班', 'G9国际英才'
-  ];
+  // System Course (体系课) Class Hierarchy - For student evaluation
+  const SYSTEM_COURSE_HIERARCHY: Record<string, string[]> = {
+    'K2': ['启蒙', '启蒙衔接', '进阶'],
+    'K3': ['启蒙', '进阶', '进阶衔接', '飞跃'],
+    'G1': ['A', 'A+', 'S', 'R'],
+    'G2': ['A', 'A+', 'S', 'R'],
+    'G3': ['A', 'A+', 'S', 'S+', 'R'],
+    'G4': ['A', 'A+', 'S', 'S+', 'R'],
+    'G5': ['A', 'A+', 'S', 'S+', 'R'],
+    'G6': ['A', 'A+', 'S', 'S+', 'R'],
+    'G7': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+    'G8': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+    'G9': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  };
 
-  // Class type options (need to be determined from grade list or provided separately)
-  // Based on the grade list, we can infer some class types
-  const classTypeOptions = [
-    'A', 'A+', 'S', 'S+', 'R', 'R预备',
-    '启蒙', '进阶', '飞跃',
-    '国际托管班', '国际菁英班', '国际英才'
-  ];
+  // Grade options from system course hierarchy
+  const gradeOptions = Object.keys(SYSTEM_COURSE_HIERARCHY);
+
+  // Handle grade change to reset class type
+  const handleGradeChange = (grade: string) => {
+    setEvaluationForm({
+      ...evaluationForm,
+      grade,
+      classType: '' // reset class type when grade changes
+    });
+  };
 
   const getClassChangeTag = (record: AttendanceRecord) => {
   if (!record.hasClassChange) return null;
@@ -1668,39 +1673,45 @@ const getStatusBadge = (status: string) => {
                         </select>
                       </div>
                       
-                      {/* Grade */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          评测等级（年级） <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.grade}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, grade: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">选择年级</option>
-                          {gradeOptions.map((grade, index) => (
-                            <option key={index} value={grade}>{grade}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      {/* Class Type */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          评测等级（班型） <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.classType}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, classType: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">选择班型</option>
-                          {classTypeOptions.map((classType, index) => (
-                            <option key={index} value={classType}>{classType}</option>
-                          ))}
-                        </select>
-                      </div>
+                       {/* Grade */}
+                       <div>
+                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                           评测等级（年级） <span className="text-red-500">*</span>
+                         </label>
+                         <select 
+                           value={evaluationForm.grade}
+                           onChange={(e) => handleGradeChange(e.target.value)}
+                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         >
+                           <option value="">选择年级</option>
+                           {gradeOptions.map((grade, index) => (
+                             <option key={index} value={grade}>{grade}</option>
+                           ))}
+                         </select>
+                       </div>
+                       
+                       {/* Class Type */}
+                       <div>
+                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                           评测等级（班型） <span className="text-red-500">*</span>
+                         </label>
+                         <select 
+                           value={evaluationForm.classType}
+                           onChange={(e) => setEvaluationForm({...evaluationForm, classType: e.target.value})}
+                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           disabled={!evaluationForm.grade}
+                         >
+                           <option value="">选择班型</option>
+                           {evaluationForm.grade && SYSTEM_COURSE_HIERARCHY[evaluationForm.grade]?.map((classType, index) => (
+                             <option key={index} value={classType}>{classType}</option>
+                           ))}
+                         </select>
+                         {evaluationForm.grade && (
+                           <p className="text-xs text-gray-500 mt-1">
+                             可选项: {SYSTEM_COURSE_HIERARCHY[evaluationForm.grade]?.join(', ')}
+                           </p>
+                         )}
+                       </div>
                     </div>
                   </div>
 

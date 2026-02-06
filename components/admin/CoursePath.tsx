@@ -9,19 +9,33 @@ interface CoursePathProps {
   onDeleteCourse?: (courseId: string) => void;
 }
 
-const GRADE_CLASS_TYPES: Record<string, string[]> = {
-  'K1': ['K1启蒙'],
-  'K2': ['K2启蒙', 'K2进阶'],
-  'K3': ['K3启蒙', 'K3进阶', 'K3飞跃'],
-  'G1': ['1A', '1A+', '1S', '1S+', '1R', '1R预备'],
-  'G2': ['2A', '2A+', '2S', '2S+', '2R', '2R预备'],
-  'G3': ['3A', '3A+', '3S', '3S+', '3R'],
-  'G4': ['4A', '4A+', '4S', '4S+', '4R'],
-  'G5': ['5A', '5A+', '5S', '5S+', '5R'],
-  'G6': ['6A', '6A+', '6S', '6S+', '6R'],
-  'G7': ['G7国际托管班', 'G7国际菁英班', 'G7国际英才'],
-  'G8': ['G8国际托管班', 'G8国际菁英班', 'G8国际英才'],
-  'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
+// System Course (体系课) Class Hierarchy
+const SYSTEM_COURSE_HIERARCHY: Record<string, string[]> = {
+  'K2': ['启蒙', '启蒙衔接', '进阶'],
+  'K3': ['启蒙', '进阶', '进阶衔接', '飞跃'],
+  'G1': ['A', 'A+', 'S', 'R'],
+  'G2': ['A', 'A+', 'S', 'R'],
+  'G3': ['A', 'A+', 'S', 'S+', 'R'],
+  'G4': ['A', 'A+', 'S', 'S+', 'R'],
+  'G5': ['A', 'A+', 'S', 'S+', 'R'],
+  'G6': ['A', 'A+', 'S', 'S+', 'R'],
+  'G7': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G8': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G9': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+};
+
+// Special Course (专项课) Class Hierarchy
+const SPECIAL_COURSE_HIERARCHY: Record<string, string[]> = {
+  '剑少考辅': ['剑少一级', '剑少二级', '剑少三级'],
+  'MSE考辅': ['KET综合冲刺', 'KET口语写作专项', 'PET综合冲刺', 'PET口语写作专项', 'FCE综合冲刺', 'FCE口语写作专项'],
+  '自然拼读': ['自拼一级', '自拼二级', '自拼三级'],
+  '语法专项': ['KET核心语法', 'PET核心语法'],
+  '阅读专项': ['神奇树屋', '神奇校', '苍蝇小子', '夏洛的网', '国家探索', '国家地理足迹-KET', '国家地理足迹-PET'],
+};
+
+// Get appropriate hierarchy based on course type
+const getClassHierarchy = (courseType: CourseType) => {
+  return courseType === 'long-term' ? SYSTEM_COURSE_HIERARCHY : SPECIAL_COURSE_HIERARCHY;
 };
 
 const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateCourse }) => {
@@ -153,6 +167,15 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
           grade,
           classType: '' // reset class type when grade changes
       });
+  };
+
+  const handleCourseTypeChange = (type: CourseType) => {
+    setFormData({
+      ...formData,
+      type,
+      grade: '', // reset grade when course type changes
+      classType: '' // reset class type when course type changes
+    });
   };
 
   // Close dropdown when clicking outside
@@ -461,14 +484,14 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>产品类型 :</label>
-                      <select 
-                        value={formData.type}
-                        onChange={e => setFormData({...formData, type: e.target.value as CourseType})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                      >
-                        <option value="long-term">体系课</option>
-                        <option value="short-term">专项课</option>
-                      </select>
+                       <select 
+                         value={formData.type}
+                         onChange={e => handleCourseTypeChange(e.target.value as CourseType)}
+                         className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                       >
+                         <option value="long-term">体系课</option>
+                         <option value="short-term">专项课</option>
+                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>讲次数量 :</label>
@@ -512,28 +535,33 @@ const CoursePath: React.FC<CoursePathProps> = ({ courses, onAddCourse, onUpdateC
                    </div>
                </div>
 
-               <div>
-                 <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>班层 :</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1.5"><span className="text-red-500 mr-1">*</span>班层 :</label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    {formData.type === 'long-term' 
+                      ? '体系课班层：先选择年级，再选择对应的班型' 
+                      : '专项课班层：先选择专项类型，再选择对应的班型'}
+                  </p>
                  <div className="grid grid-cols-2 gap-4">
-                     <select 
-                       value={formData.grade}
-                       onChange={e => handleGradeChange(e.target.value)}
-                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                     >
-                       <option value="">请选择年级</option>
-                       {Object.keys(GRADE_CLASS_TYPES).map(g => <option key={g} value={g}>{g}</option>)}
-                     </select>
-                     <select 
-                       value={formData.classType}
-                       onChange={e => setFormData({...formData, classType: e.target.value})}
-                       className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                       disabled={!formData.grade}
-                     >
-                       <option value="">请选择班型</option>
-                       {formData.grade && GRADE_CLASS_TYPES[formData.grade]?.map(t => (
-                           <option key={t} value={t}>{t}</option>
-                       ))}
-                     </select>
+                      <select 
+                        value={formData.grade}
+                        onChange={e => handleGradeChange(e.target.value)}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                      >
+                        <option value="">请选择{formData.type === 'long-term' ? '年级' : '专项类型'}</option>
+                        {Object.keys(getClassHierarchy(formData.type)).map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                      <select 
+                        value={formData.classType}
+                        onChange={e => setFormData({...formData, classType: e.target.value})}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                        disabled={!formData.grade}
+                      >
+                        <option value="">请选择班型</option>
+                        {formData.grade && getClassHierarchy(formData.type)[formData.grade]?.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
                  </div>
                </div>
 
