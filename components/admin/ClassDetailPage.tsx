@@ -8,6 +8,7 @@ interface ClassDetailPageProps {
   lessons: Lesson[];
   onBack: () => void;
   onEdit?: (classInfo: ClassInfo) => void;
+  onNavigateToStudent?: (studentId: string) => void;
 }
 
 const ClassDetailPage: React.FC<ClassDetailPageProps> = ({ 
@@ -15,9 +16,11 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
   classes, 
   lessons, 
   onBack,
-  onEdit 
+  onEdit,
+  onNavigateToStudent
 }) => {
-  const [activeDetailTab, setActiveDetailTab] = useState<'basic' | 'course' | 'sales' | 'changes' | 'students'>('basic');
+  const [activeDetailTab, setActiveDetailTab] = useState<'basic' | 'course' | 'sales' | 'students' | 'changes'>('basic');
+  const [studentTab, setStudentTab] = useState<'current' | 'history'>('current');
   
   const selectedClass = classes.find(c => c.id === classId);
   
@@ -47,13 +50,20 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
   const course = COURSES.find(c => c.id === selectedClass.courseId);
   const teacher = TEACHERS.find(t => t.id === selectedClass.teacherId);
   const classLessons = lessons.filter(l => l.classId === selectedClass.id).sort((a, b) => a.date.localeCompare(b.date));
-  
+
+  // Calculate start and end dates
+  const startDate = classLessons.length > 0 ? classLessons[0].date : selectedClass.startDate || '-';
+  const endDate = classLessons.length > 0 ? classLessons[classLessons.length - 1].date : '-';
+
   const mockChanges = [
     { id: 1, info: '修改了上课时间', time: '2025-06-20 10:00:00', operator: '管理员A' },
     { id: 2, info: '创建班级', time: '2025-06-15 09:30:00', operator: '管理员B' },
   ];
 
-  const enrolledStudents = ADMIN_STUDENTS.slice(0, selectedClass.studentCount || 3);
+  // Mock current and history students
+  const currentStudents = ADMIN_STUDENTS.slice(0, selectedClass.studentCount || 3);
+  const historyStudents = ADMIN_STUDENTS.slice(3, 6); // Mock history students
+  const enrolledStudents = studentTab === 'current' ? currentStudents : historyStudents;
 
   return (
     <div className="flex-1 bg-gray-50 flex flex-col h-full overflow-hidden">
@@ -87,8 +97,8 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
           </div>
           
           <div className="flex border-b border-gray-100">
-            {['basic', 'course', 'sales', 'changes', 'students'].map(tab => (
-              <div 
+            {['basic', 'course', 'sales', 'students', 'changes'].map(tab => (
+              <div
                 key={tab}
                 onClick={() => setActiveDetailTab(tab as any)}
                 className={`px-6 py-3 text-sm font-medium cursor-pointer relative ${
@@ -96,10 +106,10 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                 }`}
               >
                 {tab === 'basic' && '基本信息'}
-                {tab === 'course' && '产品信息'}
+                {tab === 'course' && '讲次信息'}
                 {tab === 'sales' && '售卖信息'}
-                {tab === 'changes' && '变动信息'}
                 {tab === 'students' && '班级学员'}
+                {tab === 'changes' && '变动信息'}
                 {activeDetailTab === tab && (
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></div>
                 )}
@@ -109,18 +119,85 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
 
           <div className="pt-6">
             {activeDetailTab === 'basic' && (
-              <div className="grid grid-cols-2 gap-y-6 text-sm text-gray-600">
-                <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">产品名称：</span><span className="text-gray-900">{course?.name}</span></div>
-                <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">班级名称：</span><span className="text-gray-900">{selectedClass.name}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">年份：</span><span className="text-gray-900">{selectedClass.year || course?.year}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">学期：</span><span className="text-gray-900">{selectedClass.semester || '-'}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">面授老师：</span><span className="text-gray-900">{teacher?.name}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">校区：</span><span className="text-gray-900">{selectedClass.campus}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">预招人数：</span><span className="text-gray-900">{selectedClass.capacity}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">调课位：</span><span className="text-gray-900">{selectedClass.virtualSeats || 0}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">教室：</span><span className="text-gray-900">{selectedClass.classroom || '-'}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">助教：</span><span className="text-gray-900">{selectedClass.assistant || '0'}</span></div>
-                <div><span className="text-gray-400 w-24 inline-block">年级：</span><span className="text-gray-900">{selectedClass.grade || '-'}</span></div>
+              <div className="space-y-3 text-sm text-gray-600">
+                {/* Row 1: 产品名称 */}
+                <div className="flex items-center">
+                  <span className="text-gray-400 w-20 inline-block">产品名称：</span>
+                  <span className="text-gray-900">{course?.name}</span>
+                </div>
+                {/* Row 2: 班级名称 */}
+                <div className="flex items-center">
+                  <span className="text-gray-400 w-20 inline-block">班级名称：</span>
+                  <span className="text-gray-900">{selectedClass.name}</span>
+                </div>
+                {/* Row 3: 年份、学期、年级、班型 */}
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">年份：</span>
+                    <span className="text-gray-900">{selectedClass.year || course?.year || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">学期：</span>
+                    <span className="text-gray-900">{selectedClass.semester || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">年级：</span>
+                    <span className="text-gray-900">{selectedClass.grade || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">班型：</span>
+                    <span className="text-gray-900">{selectedClass.studentTag || course?.classType || '-'}</span>
+                  </div>
+                </div>
+                {/* Row 4: 主讲老师、助教、开课时间、结课时间 */}
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">主讲老师：</span>
+                    <span className="text-gray-900">{teacher?.name || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">助教：</span>
+                    <span className="text-gray-900">{selectedClass.assistant || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">开课时间：</span>
+                    <span className="text-gray-900">{startDate}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">结课时间：</span>
+                    <span className="text-gray-900">{endDate}</span>
+                  </div>
+                </div>
+                {/* Row 5: 校区、教室、预招人数、调课位 */}
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">校区：</span>
+                    <span className="text-gray-900">{selectedClass.campus || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">教室：</span>
+                    <span className="text-gray-900">{selectedClass.classroom || '-'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">预招人数：</span>
+                    <span className="text-gray-900">{selectedClass.capacity || 0}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-20 inline-block">调课位：</span>
+                    <span className="text-gray-900">{selectedClass.virtualSeats || 0}</span>
+                  </div>
+                </div>
+                {/* Row 6: 是否需要入学资格、允许老师、教室时间冲突 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-32 inline-block">是否需要入学资格：</span>
+                    <span className="text-gray-900">{selectedClass.needQualification ? '是' : '否'}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-400 w-36 inline-block">允许老师、教室冲突：</span>
+                    <span className="text-gray-900">{selectedClass.allowConflict ? '是' : '否'}</span>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -133,6 +210,7 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                       <th className="p-3">课节名称</th>
                       <th className="p-3">上课日期</th>
                       <th className="p-3">上课时间</th>
+                      <th className="p-3">讲次学生数</th>
                       <th className="p-3">状态</th>
                     </tr>
                   </thead>
@@ -143,13 +221,14 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                         <td className="p-3 text-gray-800">{l.name}</td>
                         <td className="p-3 text-gray-600">{l.date}</td>
                         <td className="p-3 text-gray-600">{l.startTime} - {l.endTime}</td>
+                        <td className="p-3 text-gray-600">{selectedClass.studentCount || 0}</td>
                         <td className="p-3">
                           {l.status === 'completed' && <span className="text-green-500">已完成</span>}
                           {l.status === 'pending' && <span className="text-orange-500">未开始</span>}
                         </td>
                       </tr>
                     ))}
-                    {classLessons.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-400">暂无课节信息</td></tr>}
+                    {classLessons.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-gray-400">暂无课节信息</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -190,9 +269,39 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
 
             {activeDetailTab === 'students' && (
               <div>
+                {/* Student Tab Switcher */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex border border-gray-200 rounded overflow-hidden">
+                    <button
+                      onClick={() => setStudentTab('current')}
+                      className={`px-4 py-2 text-sm font-medium ${
+                        studentTab === 'current'
+                          ? 'bg-primary text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      在班学生
+                    </button>
+                    <button
+                      onClick={() => setStudentTab('history')}
+                      className={`px-4 py-2 text-sm font-medium border-l border-gray-200 ${
+                        studentTab === 'history'
+                          ? 'bg-primary text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      历史在班学生
+                    </button>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    共计{enrolledStudents.length}人
+                  </span>
+                </div>
+
                 <table className="w-full text-sm text-left border border-gray-100 rounded-lg overflow-hidden">
                   <thead className="bg-gray-50 text-gray-500 font-medium">
                     <tr>
+                      <th className="p-3">学员ID</th>
                       <th className="p-3">学员姓名</th>
                       <th className="p-3">性别</th>
                       <th className="p-3">登录账号</th>
@@ -203,14 +312,34 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                   <tbody className="divide-y divide-gray-100">
                     {enrolledStudents.map((s) => (
                       <tr key={s.id}>
-                        <td className="p-3 text-gray-800 font-medium">{s.name}</td>
+                        <td className="p-3 text-gray-600">{s.id}</td>
+                        <td className="p-3">
+                          <span
+                            className="text-gray-800 font-medium cursor-pointer hover:text-primary hover:underline"
+                            onClick={() => {
+                              if (onNavigateToStudent) {
+                                onNavigateToStudent(s.id);
+                              }
+                            }}
+                          >
+                            {s.name}
+                          </span>
+                        </td>
                         <td className="p-3 text-gray-600">{s.gender}</td>
                         <td className="p-3 text-gray-600">{s.account}</td>
                         <td className="p-3 text-gray-600">2025-07-01 10:00</td>
-                        <td className="p-3"><span className="bg-green-50 text-green-600 px-2 py-0.5 rounded text-xs">在读</span></td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            studentTab === 'current'
+                              ? 'bg-green-50 text-green-600'
+                              : 'bg-gray-50 text-gray-600'
+                          }`}>
+                            {studentTab === 'current' ? '在读' : '已退出'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
-                    {enrolledStudents.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-400">暂无学员</td></tr>}
+                    {enrolledStudents.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-gray-400">暂无学员</td></tr>}
                   </tbody>
                 </table>
               </div>

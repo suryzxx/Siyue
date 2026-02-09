@@ -142,6 +142,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             lessons={lessons} 
             onAddClass={handleAddClass}
             onUpdateLessons={handleUpdateLessons}
+            onNavigateToClassDetail={(classId) => {
+              setSelectedClassId(classId);
+              setActivePanel('class-detail');
+            }}
           />
         )}
         {activePanel === 'course' && (
@@ -185,13 +189,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
            />
          )}
         {activePanel === 'class-detail' && selectedClassId && (
-          <ClassDetailPage 
+          <ClassDetailPage
             classId={selectedClassId}
             classes={classes}
             lessons={lessons}
             onBack={() => {
               setSelectedClassId(null);
               setActivePanel('class');
+            }}
+            onNavigateToStudent={(studentId) => {
+              const student = ADMIN_STUDENTS.find(s => s.id === studentId);
+              if (student) {
+                setSelectedStudent(student);
+                setActivePanel('student-detail');
+              }
             }}
           />
         )}
