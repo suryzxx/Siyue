@@ -796,9 +796,12 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [filterSaleStatus, setFilterSaleStatus] = useState('');
   const [filterStartDate, setFilterStartDate] = useState('');
   
-  const [showActiveOnly, setShowActiveOnly] = useState(true);
+   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
-  // Dynamic Options
+   // Batch Selection State
+   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+
+   // Dynamic Options
   const allClassTypes = Array.from(new Set(Object.values(GRADE_CLASS_TYPES).flat()));
   // Extract unique grades from filterGradeClassType for dynamic class type filtering
   const selectedGrades = Array.from(new Set(filterGradeClassType.map(item => item.grade)));
@@ -2004,6 +2007,44 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       onAddClass(updatedClass, classLessons);
   };
 
+  // Batch toggle sale status
+  const handleBatchToggleSaleStatus = (status: 'on_sale' | 'off_sale') => {
+    if (selectedClasses.length === 0) {
+      alert('请先选择班级');
+      return;
+    }
+
+    selectedClasses.forEach(classId => {
+      const cls = classes.find(c => c.id === classId);
+      if (cls && cls.saleStatus !== status) {
+        const updatedClass = { ...cls, saleStatus: status };
+        const classLessons = lessons.filter(l => l.classId === cls.id);
+        onAddClass(updatedClass, classLessons);
+      }
+    });
+
+    // Clear selection after batch operation
+    setSelectedClasses([]);
+  };
+
+  // Handle select all classes
+  const handleSelectAll = () => {
+    if (selectedClasses.length === filteredClasses.length) {
+      setSelectedClasses([]);
+    } else {
+      setSelectedClasses(filteredClasses.map(cls => cls.id));
+    }
+  };
+
+  // Handle individual class selection
+  const handleSelectClass = (classId: string) => {
+    if (selectedClasses.includes(classId)) {
+      setSelectedClasses(selectedClasses.filter(id => id !== classId));
+    } else {
+      setSelectedClasses([...selectedClasses, classId]);
+    }
+  };
+
   // Push Queue Logic
   const classLessons = showQueueModal ? lessons.filter(l => l.classId === showQueueModal) : [];
   const selectedClassForQueue = classes.find(c => c.id === showQueueModal);
@@ -2468,12 +2509,45 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           </div>
       </div>
 
+      {/* Batch Operations Bar */}
+      {selectedClasses.length > 0 && (
+        <div className="mx-4 mt-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">已选择</span>
+            <span className="text-sm font-bold text-primary">{selectedClasses.length}</span>
+            <span className="text-sm text-gray-600">个班级</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBatchToggleSaleStatus('on_sale')}
+              className="px-3 py-1.5 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
+            >
+              批量上架
+            </button>
+            <button
+              onClick={() => handleBatchToggleSaleStatus('off_sale')}
+              className="px-3 py-1.5 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors"
+            >
+              批量下架
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table - 优化边距和操作栏固定 */}
       <div className="flex-1 overflow-hidden bg-white flex flex-col">
         <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
           <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
             <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               <tr>
+                <th className="p-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedClasses.length > 0 && selectedClasses.length === filteredClasses.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                </th>
                 {DISPLAY_COLUMNS.map(col => (<th key={col.id} className="p-4">{col.label}</th>))}
                 <th className="p-4 text-center sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
               </tr>
@@ -2481,11 +2555,19 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             <tbody className="divide-y divide-gray-100">
               {filteredClasses.map(cls => (
                   <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedClasses.includes(cls.id)}
+                        onChange={() => handleSelectClass(cls.id)}
+                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                    </td>
                     {DISPLAY_COLUMNS.map(col => (<td key={col.id} className="p-4">{getCellContent(col.id, cls)}</td>))}
                     <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                       <div className="flex gap-2 justify-center text-primary text-sm whitespace-nowrap">
-                        <button 
-                            className="hover:opacity-80" 
+                        <button
+                            className="hover:opacity-80"
                             onClick={() => handleToggleSaleStatus(cls)}
                         >
                             {cls.saleStatus === 'on_sale' ? '下架' : '上架'}
