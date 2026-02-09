@@ -332,17 +332,17 @@ interface LearningSituation {
    uploadedAt: string;
  }
 
- // Behavior Trajectory Interfaces
- interface BehaviorTrajectoryRecord {
-   id: string;
-    type: 'referral' | 'enrollment-unpaid' | 'pre-order';
-   date: string;
-   description: string;
-   targetStudentId?: string; // For referral type
-   targetStudentName?: string; // For referral type
-    className?: string; // For enrollment-unpaid, pre-order types
-    classId?: string; // For enrollment-unpaid, pre-order types
- }
+  // Behavior Trajectory Interfaces
+  interface BehaviorTrajectoryRecord {
+    id: string;
+     type: 'referral' | 'enrollment-unpaid' | 'pre-order' | 'waitlist' | 'current-classes';
+    date: string;
+    description: string;
+    targetStudentId?: string; // For referral type
+    targetStudentName?: string; // For referral type
+     className?: string; // For enrollment-unpaid, pre-order, waitlist, current-classes types
+     classId?: string; // For enrollment-unpaid, pre-order, waitlist, current-classes types
+  }
 
   // Follow-up Records Interfaces
   interface FollowUpRecord {
@@ -547,12 +547,44 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
         classId: '546'
       },
       {
+        id: '5',
+        type: 'current-classes',
+        date: '2026-02-02',
+        description: '在读班级',
+        className: '寒G5-A | Yves二期12:00',
+        classId: '789'
+      },
+      {
+        id: '6',
+        type: 'current-classes',
+        date: '2026-03-07',
+        description: '在读班级',
+        className: '春G5-A | Yves周六14:50',
+        classId: '790'
+      },
+      {
+        id: '7',
+        type: 'waitlist',
+        date: '2025-06-15',
+        description: '候补记录',
+        className: '25秋-K3-进阶-2班',
+        classId: '547'
+      },
+      {
         id: '8',
         type: 'pre-order',
         date: '2025-05-20',
         description: '预购记录',
         className: '25暑-K3-进阶-1班',
         classId: '546'
+      },
+      {
+        id: '9',
+        type: 'waitlist',
+        date: '2025-07-10',
+        description: '候补记录',
+        className: '25冬-K3-飞跃-1班',
+        classId: '548'
       }
     ];
 
@@ -1290,61 +1322,83 @@ const getStatusBadge = (status: string) => {
          <span className="text-gray-800">学生详情 - {student.name}</span>
        </div>
 
-       <div className="flex-1 overflow-y-auto">
-         {/* Student Info Card */}
-         <div className="bg-white p-6 m-6 rounded-xl shadow-sm">
-           <div className="flex justify-between items-start mb-6">
-             <div>
-               <h2 className="text-xl font-bold text-gray-800 mb-2">{student.name}</h2>
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <span>ID: {student.id}</span>
-                  <span>登录账号: {student.account}</span>
-                  <span>性别: {student.gender}</span>
-                   {student.birthDate && <span>出生年月: {student.birthDate}</span>}
-                   {student.englishName && <span>英文名: {student.englishName}</span>}
-                </div>
-             </div>
-           </div>
-           
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-             <div>
-               <span className="text-gray-400">所属校区:</span>
-               <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
-             </div>
-              <div>
-                <span className="text-gray-400">在读年级:</span>
-                <span className="text-gray-900 ml-2">{student.grade || '-'}</span>
+        <div className="flex-1 overflow-y-auto">
+          {/* Student Info Card */}
+          <div className="bg-white p-6 m-6 rounded-xl shadow-sm">
+            {/* Grid layout for vertical alignment - 6 columns */}
+            <div className="grid grid-cols-6 gap-x-6 gap-y-4 text-sm">
+              {/* Row 1 */}
+              <div className="flex items-center">
+                <span className="text-gray-400">学生ID:</span>
+                <span className="text-gray-900 ml-2">{student.id}</span>
               </div>
-             <div>
-               <span className="text-gray-400">学生状态:</span>
-               <span className="ml-2">
-                 {getStatusBadge(student.studentStatus || '潜在学生')}
-               </span>
-             </div>
-             <div>
-               <span className="text-gray-400">跟进状态:</span>
-               <span className="ml-2">
-                 {getStatusBadge(student.followUpStatus || '待跟进')}
-               </span>
-             </div>
-              <div>
-                <span className="text-gray-400">在读学校:</span>
-                <span className="text-gray-900 ml-2">{student.school || '-'}</span>
+              <div className="flex items-center">
+                <span className="text-gray-400">学生姓名:</span>
+                <span className="text-gray-900 ml-2 font-medium">{student.name}</span>
               </div>
-              <div>
+              <div className="flex items-center">
+                <span className="text-gray-400">联系电话:</span>
+                <span className="text-gray-900 ml-2">{(student as any).phone || '-'}</span>
+              </div>
+              <div className="col-span-3"></div>
+
+              {/* Row 2 */}
+              <div className="flex items-center">
                 <span className="text-gray-400">评测等级:</span>
                 <span className="text-gray-900 ml-2">{student.evaluationLevel || '-'}</span>
               </div>
-              <div>
+              <div className="flex items-center">
+                <span className="text-gray-400">在读年级:</span>
+                <span className="text-gray-900 ml-2">{student.grade || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">性别:</span>
+                <span className="text-gray-900 ml-2">{student.gender}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">英文名:</span>
+                <span className="text-gray-900 ml-2">{student.englishName || '-'}</span>
+              </div>
+              <div className="flex items-center col-span-2">
+                <span className="text-gray-400">学生状态:</span>
+                <span className="ml-2">
+                  {getStatusBadge(student.studentStatus || '潜在学生')}
+                </span>
+              </div>
+
+              {/* Row 3 */}
+              <div className="flex items-center">
+                <span className="text-gray-400">在读学校:</span>
+                <span className="text-gray-900 ml-2">{student.school || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">就读城市:</span>
+                <span className="text-gray-900 ml-2">{student.studyCity || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">所属校区:</span>
+                <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
+              </div>
+              <div className="flex items-center">
                 <span className="text-gray-400">注册时间:</span>
                 <span className="text-gray-900 ml-2">{student.createdTime}</span>
               </div>
-             <div>
-               <span className="text-gray-400">更新时间:</span>
-               <span className="text-gray-900 ml-2">{student.updatedTime}</span>
-             </div>
-           </div>
-         </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">注册渠道:</span>
+                <span className="text-gray-900 ml-2">{student.registrationChannel || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">获客渠道:</span>
+                {student.acquisitionChannel ? (
+                  <span className="ml-2 px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 border border-blue-200">
+                    {student.acquisitionChannel}
+                  </span>
+                ) : (
+                  <span className="text-gray-900 ml-2">-</span>
+                )}
+              </div>
+            </div>
+          </div>
 
          {/* Tabs Container */}
          <div className="bg-white m-6 rounded-xl shadow-sm">
@@ -1481,22 +1535,26 @@ const getStatusBadge = (status: string) => {
               {activeTab === 'behavior-trajectory' && (
                 <div className="space-y-6">
                   
-                  {/* Group records by type */}
-                   {['referral', 'enrollment-unpaid', 'pre-order'].map((type) => {
-                    const typeRecords = mockBehaviorTrajectoryRecords.filter(record => record.type === type);
-                    if (typeRecords.length === 0) return null;
-                    
-                     const typeLabels = {
-                       'referral': '老带新',
-                       'enrollment-unpaid': '报名未缴费',
-                       'pre-order': '预购记录'
-                     };
+                   {/* Group records by type in correct order: 所在班级, 报名未缴费, 预购记录, 候补记录, 老带新 */}
+                    {['current-classes', 'enrollment-unpaid', 'pre-order', 'waitlist', 'referral'].map((type) => {
+                     const typeRecords = mockBehaviorTrajectoryRecords.filter(record => record.type === type);
+                     if (typeRecords.length === 0) return null;
                      
-                     const typeColors = {
-                       'referral': 'bg-blue-50 text-blue-600 border-blue-200',
-                       'enrollment-unpaid': 'bg-orange-50 text-orange-600 border-orange-200',
-                       'pre-order': 'bg-green-50 text-green-600 border-green-200'
-                     };
+                      const typeLabels = {
+                        'current-classes': '所在班级',
+                        'enrollment-unpaid': '报名未缴费',
+                        'pre-order': '预购记录',
+                        'waitlist': '候补记录',
+                        'referral': '老带新'
+                      };
+                      
+                      const typeColors = {
+                        'current-classes': 'bg-purple-50 text-purple-600 border-purple-200',
+                        'enrollment-unpaid': 'bg-orange-50 text-orange-600 border-orange-200',
+                        'pre-order': 'bg-green-50 text-green-600 border-green-200',
+                        'waitlist': 'bg-yellow-50 text-yellow-600 border-yellow-200',
+                        'referral': 'bg-blue-50 text-blue-600 border-blue-200'
+                      };
                     
                     return (
                       <div key={type} className="bg-white border border-gray-200 rounded-lg p-6">
@@ -1533,16 +1591,16 @@ const getStatusBadge = (status: string) => {
                                   <>
                                     {record.description}
                                     {record.className && (
-                                      <button 
-                                        className="ml-2 text-blue-500 hover:text-blue-600 hover:underline"
-                                        onClick={() => {
-                                          // Navigate to class detail page for 25暑-K3-进阶-1班
-                                          const event = new CustomEvent('navigate-to-class-detail', {
-                                            detail: { classId: '546' }
-                                          });
-                                          window.dispatchEvent(event);
-                                        }}
-                                      >
+                                       <button 
+                                         className="ml-2 text-blue-500 hover:text-blue-600 hover:underline"
+                                         onClick={() => {
+                                           // Navigate to class detail page
+                                           const event = new CustomEvent('navigate-to-class-detail', {
+                                             detail: { classId: record.classId || '546' }
+                                           });
+                                           window.dispatchEvent(event);
+                                         }}
+                                       >
                                         {record.className}
                                       </button>
                                     )}
@@ -1866,19 +1924,21 @@ const getStatusBadge = (status: string) => {
                   <div>
                     <h3 className="text-lg font-medium text-gray-800 mb-4">成绩标签</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* City */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          城市 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={evaluationForm.city}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, city: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="请输入城市"
-                        />
-                      </div>
+                       {/* City */}
+                       <div>
+                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                           城市 <span className="text-red-500">*</span>
+                         </label>
+                         <select 
+                           value={evaluationForm.city}
+                           onChange={(e) => setEvaluationForm({...evaluationForm, city: e.target.value})}
+                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         >
+                           <option value="">选择城市</option>
+                           <option value="南京">南京</option>
+                           <option value="深圳">深圳</option>
+                         </select>
+                       </div>
                       
                       {/* Year */}
                       <div>
