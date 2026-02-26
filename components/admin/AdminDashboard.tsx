@@ -6,11 +6,15 @@ import ClassManagement from './ClassManagement';
 import ClassDetailPage from './ClassDetailPage';
 import CoursePath from './CoursePath';
 import TeacherManagement from './TeacherManagement';
+import Schedule from './Schedule';
+import Attendance from './Attendance';
 import AddressManagement from './AddressManagement';
 import SystemSettings from './SystemSettings';
 import StudentManagement from './StudentManagement';
 import StudentDetailPage from './StudentDetailPage';
 import OrderManagement from './OrderManagement';
+import TransferRefundRecords from './TransferRefundRecords';
+import ManualOrderPage from './ManualOrderPage';
 
 interface AdminDashboardProps {
   classes: ClassInfo[];
@@ -111,11 +115,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
            <NavItem id="course" label="产品" />
            <NavItem id="class" label="班级管理" />
+           <NavItem id="schedule" label="课表" />
+           <NavItem id="attendance" label="考勤" />
            
            <NavItem id="student" label="学生管理" />
           <NavItem id="order" label="订单管理" />
-          
-          {/* Basic Settings Group */}
+          <NavItem id="transfer-refund" label="调转退" />
+           
+           {/* Basic Settings Group */}
           <div 
             onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
             className="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between text-sm font-medium text-gray-600 hover:bg-gray-50 select-none"
@@ -136,7 +143,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Admin Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg-gray relative">
-        {activePanel === 'class' && (
+         {activePanel === 'class' && (
           <ClassManagement 
             classes={classes} 
             lessons={lessons} 
@@ -148,6 +155,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
           />
         )}
+         {activePanel === 'schedule' && (
+          <Schedule 
+            classes={classes}
+            lessons={lessons}
+            onNavigateToClassDetail={(classId) => {
+              setSelectedClassId(classId);
+              setActivePanel('class-detail');
+            }}
+          />
+        )}
+        {activePanel === 'attendance' && <Attendance />}
         {activePanel === 'course' && (
           <CoursePath 
             courses={courses}
@@ -170,7 +188,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             setActivePanel('student-detail');
           }} />
         )}
-        {activePanel === 'student-detail' && selectedStudent && (
+         {activePanel === 'student-detail' && selectedStudent && (
           <StudentDetailPage student={selectedStudent} onBack={() => setActivePanel('student')} />
         )}
          {activePanel === 'order' && (
@@ -185,6 +203,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                  setSelectedStudent(student);
                  setActivePanel('student-detail');
                }
+             }}
+             onNavigateToManualOrder={() => setActivePanel('manual-order')}
+           />
+         )}
+         {activePanel === 'manual-order' && (
+           <ManualOrderPage 
+             onBack={() => setActivePanel('order')}
+             onNavigateToClass={(classId) => {
+               setSelectedClassId(classId);
+               setActivePanel('class-detail');
+             }}
+           />
+         )}
+         {activePanel === 'transfer-refund' && (
+           <TransferRefundRecords
+             onNavigateToClass={(classId) => {
+               setSelectedClassId(classId);
+               setActivePanel('class-detail');
              }}
            />
          )}
@@ -206,7 +242,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
           />
         )}
-        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order', 'class-detail' ].includes(activePanel) && (
+        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order', 'manual-order', 'class-detail', 'schedule', 'attendance', 'transfer-refund' ].includes(activePanel) && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>

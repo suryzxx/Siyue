@@ -79,7 +79,7 @@ const MOCK_ORDERS: OrderData[] = [
     totalAmount: 5475.00,
     subOrders: [
       {
-        id: '',
+        id: 'MS116000852666290179',
         realPay: 5475.00,
         paymentMethod: '现金',
         studentId: '4993',
@@ -100,7 +100,7 @@ const MOCK_ORDERS: OrderData[] = [
     totalAmount: 2555.00,
     subOrders: [
       {
-        id: '',
+        id: 'MS116000848622129155',
         realPay: 2555.00,
         paymentMethod: '现金',
         studentId: '4992',
@@ -152,96 +152,81 @@ const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-interface OrderCardProps {
-  order: OrderData;
+interface OrderRowProps {
+  subOrder: SubOrder;
+  courseItem?: { name: string; price: number; classId: string };
+  materialItem?: { name: string; price: number };
+  orderTime: string;
+  paymentTime: string;
+  totalAmount: number;
   onClassClick: (classId: string) => void;
   onStudentClick: (studentId: string) => void;
+  onCopyId: (id: string) => void;
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onClassClick, onStudentClick }) => {
+const OrderRow: React.FC<OrderRowProps> = ({ subOrder, courseItem, materialItem, orderTime, paymentTime, totalAmount, onClassClick, onStudentClick, onCopyId }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg mb-4 text-sm shadow-sm">
-      <div className="bg-[#F9FBFA] px-4 py-3 border-b border-gray-200 text-gray-600 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
-        <span>订单编号：<span className="text-gray-800 font-medium">{order.id}</span></span>
-        <span>下单时间：<span className="text-gray-800">{order.orderTime}</span></span>
-        <span>支付时间：<span className="text-gray-800">{order.paymentTime}</span></span>
-        <span>订单金额：<span className="text-gray-800 font-medium">{formatCurrency(order.totalAmount)}</span></span>
-      </div>
-
-      <div className="divide-y divide-gray-200">
-        {order.subOrders.map((subOrder, subIndex) => (
-          <div key={subOrder.id || subIndex} className="flex flex-col hover:bg-gray-50 transition-colors">
-            {subOrder.id && (
-              <div className="px-4 py-2 text-gray-500 text-xs bg-gray-50 border-b border-gray-100">
-                子订单号：<span className="text-gray-700">{subOrder.id}</span>
-              </div>
-            )}
-
-            <div className="flex w-full">
-              <div className="flex-grow flex flex-col border-r border-gray-100">
-                {subOrder.items.map((item) => (
-                  <div key={item.id} className="flex border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors">
-                    <div className="flex-1 p-4 flex gap-3 items-center">
-                      <div className="flex flex-col justify-center gap-1">
-                        <div className="flex items-center gap-2">
-                          {item.type === 'course' && item.classId ? (
-                            <button 
-                              onClick={() => onClassClick(item.classId)}
-                              className="text-primary hover:underline font-medium text-sm leading-tight line-clamp-2 text-left hover:text-teal-600 transition-colors"
-                            >
-                              {item.name}
-                            </button>
-                          ) : (
-                            <span className="text-gray-500 text-xs">
-                              {item.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="w-32 p-4 text-center flex items-center justify-center text-gray-800 font-medium">
-                      {formatCurrency(item.price)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex w-[45%]">
-                <div className="flex-1 p-4 border-r border-gray-100 flex flex-col items-center justify-center text-center">
-                  <span className="font-semibold text-gray-900 text-sm">{formatCurrency(subOrder.realPay)}</span>
-                  <span className="text-gray-500 text-xs mt-1">{subOrder.paymentMethod}</span>
-                </div>
-
-                <div className="flex-1 p-4 border-r border-gray-100 flex flex-col items-center justify-center text-center">
-                  <button 
-                    onClick={() => onStudentClick(subOrder.studentId)}
-                    className="text-primary hover:underline mb-1 hover:text-teal-600 transition-colors text-sm font-medium"
-                  >
-                    {subOrder.studentName}
-                  </button>
-                  <span className="text-gray-500 text-xs">{subOrder.studentPhone}</span>
-                </div>
-
-                <div className="flex-1 p-4 flex items-center justify-center text-center">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    subOrder.status === OrderStatusEnum.SUCCESS 
-                      ? 'bg-green-50 text-green-600 border border-green-100' 
-                      : subOrder.status === OrderStatusEnum.PENDING
-                      ? 'bg-orange-50 text-orange-600 border border-orange-100'
-                      : subOrder.status === OrderStatusEnum.CANCELLED
-                      ? 'bg-red-50 text-red-600 border border-red-100'
-                      : 'bg-gray-50 text-gray-600 border border-gray-200'
-                  }`}>
-                    {subOrder.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <tr className="border-b border-gray-100 hover:bg-gray-50 text-sm">
+      <td className="px-3 py-3">
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-gray-600">{subOrder.id}</span>
+          <button 
+            onClick={() => onCopyId(subOrder.id)}
+            className="text-gray-400 hover:text-gray-600 p-0.5"
+            title="复制订单号"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+      </td>
+      <td className="px-3 py-3">
+        {courseItem?.classId ? (
+          <button 
+            onClick={() => onClassClick(courseItem.classId)}
+            className="text-primary hover:underline text-left hover:text-teal-600 transition-colors"
+          >
+            {courseItem.name}
+          </button>
+        ) : (
+          <span className="text-gray-800">{courseItem?.name || '-'}</span>
+        )}
+      </td>
+      <td className="px-3 py-3">
+        <button
+          onClick={() => onStudentClick(subOrder.studentId)}
+          className="text-primary hover:underline hover:text-teal-600 transition-colors"
+        >
+          {subOrder.studentName}
+        </button>
+      </td>
+      <td className="px-3 py-3 text-gray-800">{courseItem ? formatCurrency(courseItem.price) : '-'}</td>
+      <td className="px-3 py-3 text-gray-500">共15讲/剩余15讲</td>
+      <td className="px-3 py-3 text-gray-800">{materialItem ? formatCurrency(materialItem.price) : '¥0.00'}</td>
+      <td className="px-3 py-3 text-gray-800 font-medium">{formatCurrency(totalAmount)}</td>
+      <td className="px-3 py-3">
+        <div>
+          <span className="text-gray-900 font-medium">{formatCurrency(subOrder.realPay)}</span>
+          <span className="text-gray-400 text-xs ml-1">{subOrder.paymentMethod}</span>
+        </div>
+      </td>
+      <td className="px-3 py-3 text-gray-600 text-xs">{orderTime}</td>
+      <td className="px-3 py-3 text-gray-600 text-xs">{paymentTime}</td>
+      <td className="px-3 py-3">
+        <span className={`text-xs ${
+          subOrder.status === OrderStatusEnum.SUCCESS
+            ? 'text-green-600'
+            : subOrder.status === OrderStatusEnum.PENDING
+            ? 'text-orange-600'
+            : subOrder.status === OrderStatusEnum.CANCELLED
+            ? 'text-red-600'
+            : 'text-gray-600'
+        }`}>
+          {subOrder.status}
+        </span>
+      </td>
+    </tr>
   );
 };
 
@@ -366,40 +351,116 @@ interface ManualOrderClass {
 interface OrderManagementProps {
   onNavigateToClass?: (classId: string) => void;
   onNavigateToStudent?: (studentId: string) => void;
+  onNavigateToManualOrder?: () => void;
 }
 
-const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, onNavigateToStudent }) => {
+const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, onNavigateToStudent, onNavigateToManualOrder }) => {
   const [productName, setProductName] = useState('');
   const [studentInfo, setStudentInfo] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
 
-  const [showManualOrder, setShowManualOrder] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<ManualOrderStudent | null>(null);
-  const [selectedClasses, setSelectedClasses] = useState<ManualOrderClass[]>([]);
-  const [showStudentSelectModal, setShowStudentSelectModal] = useState(false);
-  const [showNewStudentModal, setShowNewStudentModal] = useState(false);
-  const [showClassSelectModal, setShowClassSelectModal] = useState(false);
+  // New filters
+  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [selectedSemesters, setSelectedSemesters] = useState<string[]>([]);
+  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
 
-  const filteredOrders = MOCK_ORDERS.filter(order => {
-    const matchProductName = !productName || order.subOrders.some(sub => 
-      sub.items.some(item => item.name.toLowerCase().includes(productName.toLowerCase()))
-    );
-    
-    const matchStudentInfo = !studentInfo || order.subOrders.some(sub => 
-      sub.studentName.includes(studentInfo) || sub.studentPhone.includes(studentInfo)
-    );
-    
-    // Status filter
-    const matchStatus = selectedStatuses.length === 0 || 
-      order.subOrders.some(sub => selectedStatuses.includes(sub.status));
-    
-    // Payment method filter
-    const matchPaymentMethod = selectedPaymentMethods.length === 0 ||
-      order.subOrders.some(sub => selectedPaymentMethods.includes(sub.paymentMethod));
-    
-    return matchProductName && matchStudentInfo && matchStatus && matchPaymentMethod;
-  });
+  // Quick link filter
+  const [quickFilter, setQuickFilter] = useState<string>('');
+
+  // Sorting
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Filter and sort orders
+  const filteredOrders = React.useMemo(() => {
+    let orders = MOCK_ORDERS.filter(order => {
+      const matchProductName = !productName || order.subOrders.some(sub =>
+        sub.items.some(item => item.name.toLowerCase().includes(productName.toLowerCase()))
+      );
+
+      const matchStudentInfo = !studentInfo || order.subOrders.some(sub =>
+        sub.studentName.includes(studentInfo) || sub.studentPhone.includes(studentInfo)
+      );
+
+      // Status filter
+      const matchStatus = selectedStatuses.length === 0 ||
+        order.subOrders.some(sub => selectedStatuses.includes(sub.status));
+
+      // Payment method filter
+      const matchPaymentMethod = selectedPaymentMethods.length === 0 ||
+        order.subOrders.some(sub => selectedPaymentMethods.includes(sub.paymentMethod));
+
+      // Year filter - extracted from orderTime
+      const matchYear = selectedYears.length === 0 ||
+        selectedYears.some(year => order.orderTime.includes(year));
+
+      // Semester filter - extracted from product name
+      const matchSemester = selectedSemesters.length === 0 ||
+        order.subOrders.some(sub =>
+          sub.items.some(item =>
+            selectedSemesters.some(semester => item.name.includes(semester))
+          )
+        );
+
+      // Product type filter
+      const matchProductType = selectedProductTypes.length === 0 ||
+        order.subOrders.some(sub =>
+          sub.items.some(item =>
+            selectedProductTypes.some(type =>
+              (type === '课程' && item.type === 'course') ||
+              (type === '教辅' && item.type === 'material')
+            )
+          )
+        );
+
+      // Quick link filter
+      let matchQuickFilter = true;
+      if (quickFilter) {
+        switch (quickFilter) {
+          case 'current':
+            matchQuickFilter = order.subOrders.some(sub =>
+              sub.items.some(item => item.name.includes('在读') || item.name.includes('在读班级'))
+            );
+            break;
+          case 'unpaid':
+            matchQuickFilter = order.subOrders.some(sub => sub.status === OrderStatusEnum.PENDING);
+            break;
+          case 'completed':
+            matchQuickFilter = order.subOrders.some(sub =>
+              sub.items.some(item => item.name.includes('已结课') || item.name.includes('结课'))
+            );
+            break;
+          case 'transferred':
+            matchQuickFilter = order.subOrders.some(sub =>
+              sub.items.some(item => item.name.includes('转班'))
+            );
+            break;
+          case 'rescheduled':
+            matchQuickFilter = order.subOrders.some(sub =>
+              sub.items.some(item => item.name.includes('调课'))
+            );
+            break;
+          case 'refunded':
+            matchQuickFilter = order.subOrders.some(sub => sub.status === OrderStatusEnum.REFUNDED);
+            break;
+          default:
+            matchQuickFilter = true;
+        }
+      }
+
+      return matchProductName && matchStudentInfo && matchStatus && matchPaymentMethod &&
+             matchYear && matchSemester && matchProductType && matchQuickFilter;
+    });
+
+    // Sort by orderTime
+    orders.sort((a, b) => {
+      const dateA = new Date(a.orderTime).getTime();
+      const dateB = new Date(b.orderTime).getTime();
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
+    return orders;
+  }, [productName, studentInfo, selectedStatuses, selectedPaymentMethods, selectedYears, selectedSemesters, selectedProductTypes, quickFilter, sortOrder]);
 
   const handleClassClick = (classId: string) => {
     if (onNavigateToClass) {
@@ -544,8 +605,76 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
             placeholder="支付方式"
             width="w-[100px]"
           />
+
+          {/* 年份筛选 */}
+          <MultiSelect
+            options={['2024', '2025', '2026']}
+            selected={selectedYears}
+            onChange={setSelectedYears}
+            placeholder="年份"
+            width="w-[90px]"
+          />
+
+          {/* 学期筛选 */}
+          <MultiSelect
+            options={['寒假', '春季', '暑假', '秋季']}
+            selected={selectedSemesters}
+            onChange={setSelectedSemesters}
+            placeholder="学期"
+            width="w-[90px]"
+          />
+
+          {/* 产品类型筛选 */}
+          <MultiSelect
+            options={['课程', '教辅']}
+            selected={selectedProductTypes}
+            onChange={setSelectedProductTypes}
+            placeholder="产品类型"
+            width="w-[100px]"
+          />
+
+          {/* 排序按钮 */}
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm h-[34px] flex items-center gap-1 hover:bg-gray-50 transition-colors"
+          >
+            <span>报名时间</span>
+            <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+          </button>
         </div>
 
+        {/* 快速链接栏 */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+          <span className="text-sm text-gray-500 mr-2">快速筛选:</span>
+          {[
+            { id: 'current', label: '在读班级' },
+            { id: 'unpaid', label: '未缴费班级' },
+            { id: 'completed', label: '已结课班级' },
+            { id: 'transferred', label: '转班班级' },
+            { id: 'rescheduled', label: '调课班级' },
+            { id: 'refunded', label: '退费班级' },
+          ].map(link => (
+            <button
+              key={link.id}
+              onClick={() => setQuickFilter(quickFilter === link.id ? '' : link.id)}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                quickFilter === link.id
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+          {quickFilter && (
+            <button
+              onClick={() => setQuickFilter('')}
+              className="text-sm text-gray-400 hover:text-gray-600 ml-2"
+            >
+              清除筛选
+            </button>
+          )}
+        </div>
 
       </div>
 
@@ -553,10 +682,10 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
       <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setShowManualOrder(true)}
+            onClick={() => onNavigateToManualOrder?.()}
             className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
           >
-            手动录单
+            报名
           </button>
           <button 
             onClick={exportOrderList}
@@ -582,27 +711,48 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
 
       {/* 第三栏：表格区域 */}
       <div className="flex-1 overflow-hidden bg-white flex flex-col">
-        <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
-          {/* 表格表头 */}
-          <div className="hidden md:flex bg-[#F9FBFA] px-4 py-3 text-sm text-gray-600 font-medium border-b border-gray-200">
-            <div className="flex-grow pl-4">产品名称</div>
-            <div className="w-32 text-center">价格</div>
-            <div className="w-[15%] text-center">实收</div>
-            <div className="w-[15%] text-center">学生信息</div>
-            <div className="w-[15%] text-center">交易状态</div>
-          </div>
-
-          {/* 表格内容 */}
-          <div className="mt-2">
-            {filteredOrders.map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                onClassClick={handleClassClick}
-                onStudentClick={handleStudentClick}
-              />
-            ))}
-          </div>
+        <div className="flex-1 overflow-auto mx-6 my-4">
+          <table className="w-full">
+            <thead className="bg-[#F9FBFA] text-sm text-gray-600 font-medium sticky top-0 z-10">
+              <tr>
+                <th className="px-3 py-3 text-left font-medium">订单编号</th>
+                <th className="px-3 py-3 text-left font-medium">班级名称</th>
+                <th className="px-3 py-3 text-left font-medium">学生信息</th>
+                <th className="px-3 py-3 text-left font-medium">课程费用</th>
+                <th className="px-3 py-3 text-left font-medium">讲次信息</th>
+                <th className="px-3 py-3 text-left font-medium">教辅费</th>
+                <th className="px-3 py-3 text-left font-medium">订单金额</th>
+                <th className="px-3 py-3 text-left font-medium">实收金额</th>
+                <th className="px-3 py-3 text-left font-medium">下单时间</th>
+                <th className="px-3 py-3 text-left font-medium">支付时间</th>
+                <th className="px-3 py-3 text-left font-medium">交易状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.flatMap((order) =>
+                order.subOrders.map((subOrder) => {
+                  const courseItem = subOrder.items.find(item => item.type === 'course');
+                  const materialItem = subOrder.items.find(item => item.type === 'material');
+                  return (
+                    <OrderRow
+                      key={subOrder.id}
+                      subOrder={subOrder}
+                      courseItem={courseItem}
+                      materialItem={materialItem}
+                      orderTime={order.orderTime}
+                      paymentTime={order.paymentTime}
+                      totalAmount={order.totalAmount}
+                      onClassClick={handleClassClick}
+                      onStudentClick={handleStudentClick}
+                      onCopyId={(id) => {
+                        navigator.clipboard.writeText(id);
+                      }}
+                    />
+                  );
+                })
+              )}
+            </tbody>
+          </table>
 
           {filteredOrders.length === 0 && (
             <div className="text-center py-20 text-gray-400">
@@ -624,548 +774,6 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
           <option>50 条/页</option>
         </select>
       </div>
-
-
-      {showManualOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-[1200px] max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-800">手动录单</h3>
-              <button onClick={() => setShowManualOrder(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div className="flex-1 overflow-auto p-6 space-y-6">
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-md font-semibold text-gray-800">选择学生</h4>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setShowStudentSelectModal(true)}
-                      className="px-4 py-1.5 border border-primary text-primary rounded text-sm hover:bg-primary-light"
-                    >
-                      选择学生
-                    </button>
-                    <button 
-                      onClick={() => setShowNewStudentModal(true)}
-                      className="px-4 py-1.5 bg-primary text-white rounded text-sm hover:bg-teal-600"
-                    >
-                      新生录入
-                    </button>
-                  </div>
-                </div>
-                
-                {selectedStudent ? (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 text-gray-600 font-medium">
-                        <tr>
-                          <th className="px-4 py-3 text-left">学生姓名</th>
-                          <th className="px-4 py-3 text-left">联系电话</th>
-                          <th className="px-4 py-3 text-left">校区</th>
-                          <th className="px-4 py-3 text-left">性别</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3">{selectedStudent.name}</td>
-                          <td className="px-4 py-3">{selectedStudent.phone}</td>
-                          <td className="px-4 py-3">{selectedStudent.campus}</td>
-                          <td className="px-4 py-3">{selectedStudent.gender}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400">
-                    请选择学生或录入新生
-                  </div>
-                )}
-              </div>
-
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-md font-semibold text-gray-800">选择班级</h4>
-                  <button 
-                    onClick={() => setShowClassSelectModal(true)}
-                    className="px-4 py-1.5 border border-primary text-primary rounded text-sm hover:bg-primary-light"
-                  >
-                    选择班级
-                  </button>
-                </div>
-                
-                {selectedClasses.length > 0 ? (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 text-gray-600 font-medium">
-                        <tr>
-                          <th className="px-4 py-3 text-left">业务</th>
-                          <th className="px-4 py-3 text-left">班级名称</th>
-                          <th className="px-4 py-3 text-left">支付选项</th>
-                          <th className="px-4 py-3 text-left">应收金额</th>
-                          <th className="px-4 py-3 text-left">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {selectedClasses.map((cls, index) => (
-                          <tr key={cls.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3">
-                              <select 
-                                value={cls.businessType}
-                                onChange={(e) => {
-                                  const updated = [...selectedClasses];
-                                  updated[index].businessType = e.target.value as '新签' | '续报' | '预售';
-                                  setSelectedClasses(updated);
-                                }}
-                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-                              >
-                                <option value="新签">新签</option>
-                                <option value="续报">续报</option>
-                                <option value="预售">预售</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3">
-                              <button 
-                                onClick={() => onNavigateToClass?.(cls.classId)}
-                                className="text-primary hover:underline"
-                              >
-                                {cls.name}
-                              </button>
-                            </td>
-                            <td className="px-4 py-3">
-                              <select 
-                                value={cls.paymentOption}
-                                onChange={(e) => {
-                                  const updated = [...selectedClasses];
-                                  updated[index].paymentOption = e.target.value as '整期' | '分期';
-                                  if (e.target.value === '分期') {
-                                    updated[index].amount = Math.round(cls.fee * 0.5);
-                                  } else {
-                                    updated[index].amount = cls.fee;
-                                  }
-                                  setSelectedClasses(updated);
-                                }}
-                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-                              >
-                                <option value="整期">整期</option>
-                                <option value="分期">分期</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 font-medium">{formatCurrency(cls.amount)}</td>
-                            <td className="px-4 py-3">
-                              <button 
-                                onClick={() => {
-                                  setSelectedClasses(prev => prev.filter(c => c.id !== cls.id));
-                                }}
-                                className="text-red-500 hover:text-red-700 text-sm"
-                              >
-                                删除
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400">
-                    请选择班级
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-              <button 
-                onClick={() => {
-                  setShowManualOrder(false);
-                  setSelectedStudent(null);
-                  setSelectedClasses([]);
-                }}
-                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-              >
-                取消
-              </button>
-              <button 
-                onClick={() => {
-                  alert('订单提交成功！');
-                  setShowManualOrder(false);
-                  setSelectedStudent(null);
-                  setSelectedClasses([]);
-                }}
-                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
-                disabled={!selectedStudent || selectedClasses.length === 0}
-              >
-                立即报名
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showStudentSelectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-[900px] max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-800">选择学生</h3>
-              <button onClick={() => setShowStudentSelectModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div className="p-6 border-b border-gray-100 space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="输入学生姓名、联系电话搜索"
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary pl-9"
-                  />
-                  <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
-                </div>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">校区</option>
-                  {CAMPUSES.map(campus => (
-                    <option key={campus} value={campus}>{campus}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50 text-gray-600 font-medium">
-                  <tr>
-                    <th className="px-6 py-3 w-12">选择</th>
-                    <th className="px-6 py-3">学生ID</th>
-                    <th className="px-6 py-3">学生姓名</th>
-                    <th className="px-6 py-3">联系电话</th>
-                    <th className="px-6 py-3">校区</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {ADMIN_STUDENTS.map(student => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-3">
-                        <input
-                          type="radio"
-                          name="studentSelect"
-                          className="text-primary"
-                          onChange={() => {
-                            setSelectedStudent({
-                              id: student.id,
-                              name: student.name,
-                              phone: student.account,
-                              campus: student.campus || '',
-                              gender: student.gender
-                            });
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-3">{student.id}</td>
-                      <td className="px-6 py-3 font-medium">{student.name}</td>
-                      <td className="px-6 py-3">{student.account}</td>
-                      <td className="px-6 py-3">{student.campus || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-6 border-t border-gray-100 flex items-center justify-between bg-gray-50">
-              <div className="text-sm text-gray-600">
-                共 {ADMIN_STUDENTS.length} 条记录
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&lt;</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">2</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">3</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&gt;</button>
-                  <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary">
-                    <option>20 条/页</option>
-                    <option>50 条/页</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-              <button 
-                onClick={() => setShowStudentSelectModal(false)}
-                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-              >
-                取消
-              </button>
-              <button 
-                onClick={() => {
-                  if (selectedStudent) {
-                    setShowStudentSelectModal(false);
-                  }
-                }}
-                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
-                disabled={!selectedStudent}
-              >
-                确定
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showNewStudentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-[700px] max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-800">新生录入</h3>
-              <button onClick={() => setShowNewStudentModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div className="flex-1 overflow-auto p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>姓名</label>
-                  <input 
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                    placeholder="请输入学生姓名"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-600"><span className="text-red-500 mr-1">*</span>联系电话</label>
-                  <input 
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                    placeholder="请输入联系电话"
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-600">校区</label>
-                  <select 
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                  >
-                    <option value="">请选择校区</option>
-                    {CAMPUSES.map(campus => <option key={campus} value={campus}>{campus}</option>)}
-                  </select>
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-600">性别</label>
-                  <select 
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                  >
-                    <option value="男">男</option>
-                    <option value="女">女</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-              <button 
-                onClick={() => setShowNewStudentModal(false)}
-                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-              >
-                取消
-              </button>
-              <button 
-                onClick={() => {
-                  setShowNewStudentModal(false);
-                }}
-                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
-              >
-                保存
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showClassSelectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-[1200px] max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-800">选择班级</h3>
-              <button onClick={() => setShowClassSelectModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div className="p-6 border-b border-gray-100 space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="relative min-w-[180px]">
-                  <input
-                    type="text"
-                    placeholder="班级名称"
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                  />
-                </div>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">产品类型</option>
-                  <option value="course">课程</option>
-                  <option value="material">教辅</option>
-                </select>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">年级</option>
-                  <option value="K3">K3</option>
-                  <option value="G1">G1</option>
-                  <option value="G2">G2</option>
-                  <option value="G3">G3</option>
-                  <option value="G4">G4</option>
-                  <option value="G5">G5</option>
-                </select>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">班型</option>
-                  <option value="进阶">进阶</option>
-                  <option value="飞跃">飞跃</option>
-                  <option value="A+">A+</option>
-                  <option value="S+">S+</option>
-                </select>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">校区</option>
-                  {CAMPUSES.map(campus => (
-                    <option key={campus} value={campus}>{campus}</option>
-                  ))}
-                </select>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">学期</option>
-                  <option value="寒假">寒假</option>
-                  <option value="暑假">暑假</option>
-                  <option value="春季">春季</option>
-                  <option value="秋季">秋季</option>
-                </select>
-                
-                <select className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary w-40">
-                  <option value="">主讲老师</option>
-                  {TEACHERS.map(teacher => (
-                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50 text-gray-600 font-medium">
-                  <tr>
-                    <th className="px-6 py-3 w-12">选择</th>
-                    <th className="px-6 py-3">班级ID</th>
-                    <th className="px-6 py-3">班级名称</th>
-                    <th className="px-6 py-3">产品名称</th>
-                    <th className="px-6 py-3">已报/预招人数</th>
-                    <th className="px-6 py-3">课程类型</th>
-                    <th className="px-6 py-3">班层（年级、班型）</th>
-                    <th className="px-6 py-3">学期</th>
-                    <th className="px-6 py-3">主讲老师</th>
-                    <th className="px-6 py-3">已开/总讲次</th>
-                    <th className="px-6 py-3">开课时间</th>
-                    <th className="px-6 py-3">校区</th>
-                    <th className="px-6 py-3">收费</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {CLASSES.map(cls => {
-                    const course = COURSES.find(c => c.id === cls.courseId);
-                    const teacher = TEACHERS.find(t => t.id === cls.teacherId);
-                    const enrolledCount = cls.studentCount || 0;
-                    const capacity = cls.capacity || 0;
-                    
-                    return (
-                      <tr key={cls.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-3">
-                          <input
-                            type="checkbox"
-                            className="text-primary"
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedClasses(prev => [...prev, {
-                                  id: cls.id,
-                                  name: cls.name,
-                                  businessType: '新签',
-                                  paymentOption: '整期',
-                                  amount: cls.price || 0,
-                                  classId: cls.id,
-                                  productName: course?.name || cls.name,
-                                  enrolledCount,
-                                  capacity,
-                                  courseType: cls.subject || '',
-                                  gradeLevel: cls.grade || '',
-                                  classType: cls.studentTag || '',
-                                  campus: cls.campus || '',
-                                  semester: cls.semester || '',
-                                  teacher: teacher?.name || '',
-                                  startedLessons: 0,
-                                  totalLessons: course?.lessonCount || 0,
-                                  startTime: cls.startDate || '',
-                                  fee: cls.price || 0
-                                }]);
-                              } else {
-                                setSelectedClasses(prev => prev.filter(c => c.id !== cls.id));
-                              }
-                            }}
-                          />
-                        </td>
-                        <td className="px-6 py-3">{cls.id}</td>
-                        <td className="px-6 py-3 font-medium">{cls.name}</td>
-                        <td className="px-6 py-3">{course?.name || '-'}</td>
-                        <td className="px-6 py-3">{enrolledCount}/{capacity}</td>
-                        <td className="px-6 py-3">{cls.subject || '-'}</td>
-                        <td className="px-6 py-3">{cls.grade || ''} {cls.studentTag || ''}</td>
-                        <td className="px-6 py-3">{cls.semester || '-'}</td>
-                        <td className="px-6 py-3">{teacher?.name || '-'}</td>
-                        <td className="px-6 py-3">0/{course?.lessonCount || 0}</td>
-                        <td className="px-6 py-3">{cls.startDate || '-'}</td>
-                        <td className="px-6 py-3">{cls.campus || '-'}</td>
-                        <td className="px-6 py-3">{formatCurrency(cls.price || 0)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="p-6 border-t border-gray-100 flex items-center justify-between bg-gray-50">
-              <div className="text-sm text-gray-600">
-                共 {CLASSES.length} 条记录
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&lt;</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">2</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">3</button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors">&gt;</button>
-                  <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-primary">
-                    <option>20 条/页</option>
-                    <option>50 条/页</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-              <button 
-                onClick={() => setShowClassSelectModal(false)}
-                className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
-              >
-                取消
-              </button>
-              <button 
-                onClick={() => {
-                  setShowClassSelectModal(false);
-                }}
-                className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
-              >
-                确定
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

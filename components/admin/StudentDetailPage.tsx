@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StudentProfile } from '../../types';
+import { GRADE_OPTIONS, ACQUISITION_CHANNEL_OPTIONS } from '../../constants';
 
 const orderCardStyles = `
   /* --- 全局重置 --- */
@@ -391,12 +392,31 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
      nextFollowUpTime: ''
    });
 
+   // Order filter states
+   const [orderFilterYear, setOrderFilterYear] = useState<string>('');
+   const [orderFilterSemester, setOrderFilterSemester] = useState<string>('');
+   const [orderFilterProductType, setOrderFilterProductType] = useState<string>('');
+   const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'current' | 'pending' | 'completed'>('all');
+
+   // Edit modal state
+   const [showEditModal, setShowEditModal] = useState(false);
+   const [editFormData, setEditFormData] = useState({
+     name: '',
+     account: '',
+     gender: '男' as '男' | '女',
+     englishName: '',
+     grade: '',
+     school: '',
+     studyCity: '',
+     acquisitionChannel: '' as '' | '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号',
+   });
+
   // Mock data for student orders
   const mockOrders: Order[] = [
     {
       id: '1',
       orderNumber: 'MS114380689820356610',
-      courseType: '寒春联报班',
+      courseType: '专项课',
       enrollmentDate: '2026-01-15 10:30:22',
     },
     {
@@ -892,7 +912,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       subject: '英语',
       city: '南京',
       grade: 'G5',
-      classType: 'A',
+      classType: 'A+',
       createdAt: '2025-01-15 10:30:22',
       updatedAt: '2025-01-15 10:30:22',
       attachments: [
@@ -912,10 +932,49 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       paperType: '跳级测',
       subject: '英语',
       city: '上海',
-      grade: 'G4',
-      classType: 'B',
+      grade: 'G3',
+      classType: 'S',
       createdAt: '2024-09-10 14:20:15',
       updatedAt: '2024-09-10 14:20:15',
+      attachments: []
+    },
+    {
+      id: '3',
+      year: '2024',
+      semester: '春季',
+      paperType: '领航A卷',
+      subject: '英语',
+      city: '南京',
+      grade: 'G1',
+      classType: 'A',
+      createdAt: '2024-03-20 09:15:30',
+      updatedAt: '2024-03-20 09:15:30',
+      attachments: []
+    },
+    {
+      id: '4',
+      year: '2023',
+      semester: '暑假',
+      paperType: '跳级测',
+      subject: '英语',
+      city: '南京',
+      grade: 'G1',
+      classType: 'S',
+      createdAt: '2023-07-15 11:00:00',
+      updatedAt: '2023-07-15 11:00:00',
+      attachments: []
+    },
+    {
+      id: '5',
+      year: '2023',
+      semester: '秋季',
+      paperType: '领航A卷',
+      subject: '英语',
+      city: '深圳',
+      grade: 'G3',
+      classType: 'A+',
+      createdAt: '2023-09-25 14:30:00',
+      updatedAt: '2023-09-25 14:30:00',
       attachments: []
     }
   ];
@@ -982,6 +1041,29 @@ const getStatusBadge = (status: string) => {
         {config.text}
       </span>
     );
+  };
+
+  const handleEdit = () => {
+    setEditFormData({
+      name: student.name,
+      account: student.account,
+      gender: student.gender,
+      englishName: student.englishName || '',
+      grade: student.grade || '',
+      school: student.school || '',
+      studyCity: student.studyCity || '',
+      acquisitionChannel: student.acquisitionChannel || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editFormData.name || !editFormData.account || !editFormData.grade) {
+      alert('请填写必填信息（学生姓名、联系电话、在读年级）');
+      return;
+    }
+    alert(`学生 ${editFormData.name} 的信息已更新`);
+    setShowEditModal(false);
   };
 
   const handleClassDetailClick = (lessonNumber: string) => {
@@ -1322,25 +1404,33 @@ const getStatusBadge = (status: string) => {
          <span className="text-gray-800">学生详情 - {student.name}</span>
        </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {/* Student Info Card */}
-          <div className="bg-white p-6 m-6 rounded-xl shadow-sm">
-            {/* Grid layout for vertical alignment - 6 columns */}
-            <div className="grid grid-cols-6 gap-x-6 gap-y-4 text-sm">
-              {/* Row 1 */}
-              <div className="flex items-center">
-                <span className="text-gray-400">学生ID:</span>
-                <span className="text-gray-900 ml-2">{student.id}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">学生姓名:</span>
-                <span className="text-gray-900 ml-2 font-medium">{student.name}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">联系电话:</span>
-                <span className="text-gray-900 ml-2">{(student as any).phone || '-'}</span>
-              </div>
-              <div className="col-span-3"></div>
+         <div className="flex-1 overflow-y-auto">
+           {/* Student Info Card */}
+           <div className="bg-white p-6 m-6 rounded-xl shadow-sm relative">
+             {/* Edit Button - Top Right */}
+             <button
+               onClick={handleEdit}
+               className="absolute top-4 right-4 px-4 py-1.5 bg-primary text-white text-sm rounded hover:bg-teal-600 transition-colors"
+             >
+               编辑
+             </button>
+
+             {/* Grid layout for vertical alignment - 6 columns */}
+             <div className="grid grid-cols-6 gap-x-6 gap-y-4 text-sm">
+               {/* Row 1 */}
+               <div className="flex items-center">
+                 <span className="text-gray-400">学生ID:</span>
+                 <span className="text-gray-900 ml-2">{student.id}</span>
+               </div>
+               <div className="flex items-center">
+                 <span className="text-gray-400">学生姓名:</span>
+                 <span className="text-gray-900 ml-2 font-medium">{student.name}</span>
+               </div>
+               <div className="flex items-center">
+                 <span className="text-gray-400">联系电话:</span>
+                 <span className="text-gray-900 ml-2">{(student as any).phone || '-'}</span>
+               </div>
+               <div className="col-span-3"></div>
 
               {/* Row 2 */}
               <div className="flex items-center">
@@ -1434,13 +1524,99 @@ const getStatusBadge = (status: string) => {
 
            {/* Tab Content */}
            <div className="p-6">
-             {/* Student Orders Tab */}
-             {activeTab === 'orders' && (
-               <div>
-                 {mockOrders.length === 0 ? (
-                   <div className="text-center py-8 text-gray-400">暂无订单记录</div>
-                 ) : (
-                   mockOrders.map((order, orderIndex) => {
+              {/* Student Orders Tab */}
+              {activeTab === 'orders' && (
+                <div>
+                  {/* Order Filters */}
+                  <div className="mb-6 space-y-4">
+                    {/* Filter Row 1: Dropdowns */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <select
+                        value={orderFilterYear}
+                        onChange={(e) => setOrderFilterYear(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                      >
+                        <option value="">年份</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                      </select>
+
+                      <select
+                        value={orderFilterSemester}
+                        onChange={(e) => setOrderFilterSemester(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                      >
+                        <option value="">学期</option>
+                        <option value="寒假">寒假</option>
+                        <option value="春季">春季</option>
+                        <option value="暑假">暑假</option>
+                        <option value="秋季">秋季</option>
+                      </select>
+
+                      <select
+                        value={orderFilterProductType}
+                        onChange={(e) => setOrderFilterProductType(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                      >
+                        <option value="">产品类型</option>
+                        <option value="体系课">体系课</option>
+                        <option value="专项课">专项课</option>
+                      </select>
+                    </div>
+
+                    {/* Filter Row 2: Status Buttons */}
+                    <div className="flex items-center gap-2">
+                      {[
+                        { id: 'all', label: '全部订单' },
+                        { id: 'current', label: '在班订单' },
+                        { id: 'pending', label: '待支付订单' },
+                        { id: 'completed', label: '已结课' },
+                      ].map((btn) => (
+                        <button
+                          key={btn.id}
+                          onClick={() => setOrderStatusFilter(btn.id as any)}
+                          className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                            orderStatusFilter === btn.id
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {btn.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(() => {
+                    // Filter orders based on selected filters
+                    const filteredOrders = mockOrders.filter(order => {
+                      const matchYear = !orderFilterYear || order.enrollmentDate.includes(orderFilterYear);
+                      const matchSemester = !orderFilterSemester || order.courseType.includes(orderFilterSemester);
+                      const matchProductType = !orderFilterProductType || order.courseType === orderFilterProductType;
+
+                      let matchStatus = true;
+                      if (orderStatusFilter === 'current') {
+                        matchStatus = mockOrderClasses.some(cls =>
+                          cls.orderNumber === order.orderNumber && cls.status === '在读'
+                        );
+                      } else if (orderStatusFilter === 'pending') {
+                        matchStatus = mockOrderClasses.some(cls =>
+                          cls.orderNumber === order.orderNumber && cls.status === '未在谈'
+                        );
+                      } else if (orderStatusFilter === 'completed') {
+                        matchStatus = mockOrderClasses.some(cls =>
+                          cls.orderNumber === order.orderNumber && cls.status === '结课'
+                        );
+                      }
+
+                      return matchYear && matchSemester && matchProductType && matchStatus;
+                    });
+
+                    return filteredOrders.length === 0 ? (
+                      <div className="text-center py-8 text-gray-400">暂无订单记录</div>
+                    ) : (
+                      filteredOrders.map((order, orderIndex) => {
                      const orderClasses = mockOrderClasses.filter(cls => cls.orderNumber === order.orderNumber);
                      
                      return (
@@ -1524,8 +1700,9 @@ const getStatusBadge = (status: string) => {
 
                        </div>
                      );
-                   })
-                 )}
+                     })
+                   )
+                 })()}
                </div>
              )}
 
@@ -2264,11 +2441,139 @@ const getStatusBadge = (status: string) => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+         </div>
+       </div>
       )}
-       </>
-    );
-  };
 
-export default StudentDetailPage;
+       {/* Edit Student Modal */}
+       {showEditModal && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+           <div className="bg-white rounded-xl shadow-xl w-[600px] flex flex-col overflow-hidden">
+             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+               <h3 className="text-lg font-bold text-gray-800">编辑学生信息</h3>
+               <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+             </div>
+             
+              <div className="p-6 space-y-4">
+                {/* 1. 学生姓名（必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>学生姓名</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.name}
+                    onChange={e => setEditFormData({...editFormData, name: e.target.value})}
+                    placeholder="请输入学生姓名"
+                  />
+                </div>
+
+                {/* 2. 联系电话（必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>联系电话</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.account}
+                    onChange={e => setEditFormData({...editFormData, account: e.target.value})}
+                    placeholder="请输入联系电话"
+                  />
+                </div>
+
+                {/* 3. 在读年级（必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>在读年级</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.grade}
+                    onChange={e => setEditFormData({...editFormData, grade: e.target.value})}
+                  >
+                    <option value="">请选择在读年级</option>
+                    {GRADE_OPTIONS.map(grade => <option key={grade} value={grade}>{grade}</option>)}
+                  </select>
+                </div>
+
+                {/* 4. 性别（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">性别</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.gender}
+                    onChange={e => setEditFormData({...editFormData, gender: e.target.value as '男' | '女'})}
+                  >
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                  </select>
+                </div>
+
+                {/* 5. 英文名（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">英文名</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.englishName}
+                    onChange={e => setEditFormData({...editFormData, englishName: e.target.value})}
+                    placeholder="请输入英文名"
+                  />
+                </div>
+
+                {/* 6. 在读学校（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">在读学校</label>
+                  <input 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                    value={editFormData.school}
+                    onChange={e => setEditFormData({...editFormData, school: e.target.value})}
+                    placeholder="请输入在读学校"
+                  />
+                </div>
+
+                {/* 7. 就读城市（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">就读城市</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.studyCity}
+                    onChange={e => setEditFormData({...editFormData, studyCity: e.target.value})}
+                  >
+                    <option value="">请选择就读城市</option>
+                    <option value="南京">南京</option>
+                    <option value="深圳">深圳</option>
+                  </select>
+                </div>
+
+                {/* 8. 获客渠道（非必填） */}
+                <div className="flex items-center">
+                  <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4">获客渠道</label>
+                  <select 
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
+                    value={editFormData.acquisitionChannel}
+                    onChange={e => setEditFormData({...editFormData, acquisitionChannel: e.target.value as any})}
+                  >
+                    <option value="">请选择获客渠道</option>
+                    {ACQUISITION_CHANNEL_OPTIONS.map(channel => (
+                      <option key={channel} value={channel}>{channel}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+               <button 
+                 onClick={() => setShowEditModal(false)}
+                 className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+               >
+                 取消
+               </button>
+               <button 
+                 onClick={handleSaveEdit}
+                 className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+               >
+                 保存
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+       </>
+     );
+   };
+ 
+ export default StudentDetailPage;

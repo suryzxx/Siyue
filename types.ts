@@ -96,6 +96,9 @@ export interface ClassInfo {
   allowConflict?: boolean; // 是否允许冲突
   virtualSeats?: number; // 调课虚位
   
+  // Schedule frequency
+  scheduleFrequency?: string[]; // 上课频率，如 ['周六'] 或 ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  
   // Pricing
   chargeMode?: 'whole' | 'installment'; // 收费模式
   price?: number; // 课程费
@@ -134,6 +137,7 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | 'none
 export interface AttendanceRecord {
   studentId: string;
   status: AttendanceStatus;
+  remark?: string;
 }
 
 export type CourseType = 'long-term' | 'short-term' | 'experience';

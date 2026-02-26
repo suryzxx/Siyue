@@ -747,9 +747,12 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
    const [showBatchImportModal, setShowBatchImportModal] = useState(false); // Batch Import Modal State
    const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
    const [showQueueModal, setShowQueueModal] = useState<string | null>(null); // holds class ID
-   const [editingId, setEditingId] = useState<string | null>(null); // New: Editing ID
+   const [editingId, setEditingId] = useState<string | null>(null);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const [selectedClassForDeletion, setSelectedClassForDeletion] = useState<ClassInfo | null>(null);
+   const [isAttendanceRecorded, setIsAttendanceRecorded] = useState(false);
    
-   // Batch Import State
+    // Batch Import State
    const [batchImportStep, setBatchImportStep] = useState<1 | 2>(1); // 1: 导入文件, 2: 查看导入情况
    const [importResults, setImportResults] = useState<{
      success: Array<{row: number, className: string, message: string}>;
@@ -1849,7 +1852,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         startTime: start,
         endTime: end,
         skipHolidays: true,
-        frequency: [], 
+        frequency: cls.scheduleFrequency || [], 
         
         chargeMode: (cls.chargeMode as 'whole' | 'installment') || 'whole',
         price: cls.price?.toString() || '',
@@ -2573,9 +2576,19 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                             {cls.saleStatus === 'on_sale' ? '下架' : '上架'}
                         </button>
                         <button className="hover:opacity-80" onClick={() => handleEditClass(cls)}>编辑</button>
-                        <button className="hover:opacity-80" onClick={() => handleOpenStudentManage(cls)}>班级学员</button>
+                        {/* <button className="hover:opacity-80" onClick={() => handleOpenStudentManage(cls)}>班级学员</button> */}
                         <button className="hover:opacity-80" onClick={() => setShowQueueModal(cls.id)}>推送</button>
-                        <button className="text-red-500 hover:opacity-80">删除</button>
+                        <button 
+                          className="text-red-500 hover:opacity-80"
+                          onClick={() => {
+                            setSelectedClassForDeletion(cls);
+                            // 随机决定是否有考勤数据
+                            setIsAttendanceRecorded(Math.random() > 0.5);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          删除
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -3099,6 +3112,81 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       {/* TEACHER SCHEDULE MODAL */}
       {showTeacherScheduleModal && (
         <TeacherScheduleModal teacherId={formData.teacherId} onClose={() => setShowTeacherScheduleModal(false)} />
+      )}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      {isDeleteDialogOpen && selectedClassForDeletion && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[400px] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-800">
+                {isAttendanceRecorded ? '无法删除' : '确认删除'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setSelectedClassForDeletion(null);
+                }} 
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-6">
+              {isAttendanceRecorded ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-orange-500 text-2xl">!</span>
+                  </div>
+                  <p className="text-gray-700 mb-2">该班级已产生考勤数据</p>
+                  <p className="text-gray-500 text-sm">无法删除此班级，请先处理相关考勤记录</p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-red-500 text-2xl">?</span>
+                  </div>
+                  <p className="text-gray-700 mb-2">确定要删除班级「{selectedClassForDeletion.name}」吗？</p>
+                  <p className="text-gray-500 text-sm">删除后将无法恢复</p>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-center gap-3">
+              {isAttendanceRecorded ? (
+                <button 
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setSelectedClassForDeletion(null);
+                  }}
+                  className="px-8 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+                >
+                  我知道了
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setSelectedClassForDeletion(null);
+                    }}
+                    className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setSelectedClassForDeletion(null);
+                    }}
+                    className="px-6 py-2 bg-red-500 text-white rounded shadow-sm hover:bg-red-600 text-sm"
+                  >
+                    确认删除
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* QUEUE MODAL (Mock) */}

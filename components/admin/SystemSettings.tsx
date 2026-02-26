@@ -137,7 +137,8 @@ const SystemSettings: React.FC = () => {
     { id: 'attendance', label: '考勤配置' },
     { id: 'student_info', label: '学生信息' },
     { id: 'holidays', label: '停课日' },
-    { id: 'reschedule_transfer', label: '调课/转班配置' },
+    { id: 'reschedule', label: '调课配置' },
+    { id: 'transfer', label: '转班配置' },
     { id: 'settlement', label: '结算配置' },
   ];
 
@@ -388,14 +389,140 @@ const SystemSettings: React.FC = () => {
 
 
 
-  const renderRescheduleTransfer = () => (
+  const renderReschedule = () => (
     <div className="max-w-4xl space-y-12 text-sm text-gray-600">
         <div className="space-y-8">
             <div className="space-y-3">
-                <div className="text-gray-800 font-medium">学生端自动转班/调课设置</div>
+                <div className="text-gray-800 font-medium">学生端自动调课设置</div>
                 <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
                     <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
-                    允许后，学生/家长可自行在学生端网校、APP、小程序内进行转班/调课操作，且无需审核，符合条件可直接调课成功
+                    允许后，学生/家长可自行在学生端网校、APP、小程序内进行调课操作，且无需审核，符合条件可直接调课成功
+                </div>
+                <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={rescheduleConfig.autoStudent} onChange={() => setRescheduleConfig({...rescheduleConfig, autoStudent: true})} className="text-primary focus:ring-primary"/> 允许</label>
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={!rescheduleConfig.autoStudent} onChange={() => setRescheduleConfig({...rescheduleConfig, autoStudent: false})} className="text-primary focus:ring-primary"/> 不允许</label>
+                </div>
+            </div>
+
+            {rescheduleConfig.autoStudent && (
+              <div className="space-y-6">
+                {/* 寒假续报期 */}
+                <div className="space-y-2">
+                  <div className="text-gray-800 font-medium">寒假续报期</div>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.winterRenewal.startDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        winterRenewal: { ...rescheduleConfig.winterRenewal, startDate: e.target.value }
+                      })}
+                    />
+                    <span className="text-gray-500 text-sm font-medium">至</span>
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.winterRenewal.endDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        winterRenewal: { ...rescheduleConfig.winterRenewal, endDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                {/* 春季续报期 */}
+                <div className="space-y-2">
+                  <div className="text-gray-800 font-medium">春季续报期</div>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.springRenewal.startDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        springRenewal: { ...rescheduleConfig.springRenewal, startDate: e.target.value }
+                      })}
+                    />
+                    <span className="text-gray-500 text-sm font-medium">至</span>
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.springRenewal.endDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        springRenewal: { ...rescheduleConfig.springRenewal, endDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                {/* 暑期续报期 */}
+                <div className="space-y-2">
+                  <div className="text-gray-800 font-medium">暑期续报期</div>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.summerRenewal.startDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        summerRenewal: { ...rescheduleConfig.summerRenewal, startDate: e.target.value }
+                      })}
+                    />
+                    <span className="text-gray-500 text-sm font-medium">至</span>
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.summerRenewal.endDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        summerRenewal: { ...rescheduleConfig.summerRenewal, endDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                {/* 秋季续报期 */}
+                <div className="space-y-2">
+                  <div className="text-gray-800 font-medium">秋季续报期</div>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.autumnRenewal.startDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        autumnRenewal: { ...rescheduleConfig.autumnRenewal, startDate: e.target.value }
+                      })}
+                    />
+                    <span className="text-gray-500 text-sm font-medium">至</span>
+                    <input 
+                      type="date" 
+                      className="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary text-gray-600"
+                      value={rescheduleConfig.autumnRenewal.endDate}
+                      onChange={e => setRescheduleConfig({
+                        ...rescheduleConfig,
+                        autumnRenewal: { ...rescheduleConfig.autumnRenewal, endDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+        </div>
+    </div>
+  );
+
+  const renderTransfer = () => (
+    <div className="max-w-4xl space-y-12 text-sm text-gray-600">
+        <div className="space-y-8">
+            <div className="space-y-3">
+                <div className="text-gray-800 font-medium">学生端自动转班设置</div>
+                <div className="bg-gray-50 p-3 rounded text-xs text-gray-400 flex items-center gap-2">
+                    <span className="bg-gray-200 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">!</span>
+                    允许后，学生/家长可自行在学生端网校、APP、小程序内进行转班操作，且无需审核，符合条件可直接转班成功
                 </div>
                 <div className="flex gap-6">
                     <label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={rescheduleConfig.autoStudent} onChange={() => setRescheduleConfig({...rescheduleConfig, autoStudent: true})} className="text-primary focus:ring-primary"/> 允许</label>
@@ -651,11 +778,12 @@ const SystemSettings: React.FC = () => {
              {activeTab === 'attendance' && renderAttendance()}
              {activeTab === 'student_info' && renderStudentInfo()}
              {activeTab === 'holidays' && renderHolidays()}
-             {activeTab === 'reschedule_transfer' && renderRescheduleTransfer()}
+             {activeTab === 'reschedule' && renderReschedule()}
+             {activeTab === 'transfer' && renderTransfer()}
              {activeTab === 'settlement' && renderSettlement()}
 
              {/* Placeholders for other tabs */}
-             {!['org_info', 'attendance', 'student_info', 'holidays', 'reschedule_transfer', 'settlement'].includes(activeTab) && (
+             {!['org_info', 'attendance', 'student_info', 'holidays', 'reschedule', 'transfer', 'settlement'].includes(activeTab) && (
               <div className="flex flex-col items-center justify-center h-96 text-gray-300">
                  <div className="text-6xl mb-6 opacity-50">🛠️</div>
                  <div className="text-lg font-medium">{strictTabs.find(t => t.id === activeTab)?.label} 功能模块开发中...</div>

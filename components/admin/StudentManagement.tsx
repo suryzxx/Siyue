@@ -330,18 +330,8 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.account}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.gender}</td>
                     <td className="p-4 text-gray-600 whitespace-nowrap">{student.birthDate || '-'}</td>
-                    <td className="p-4 whitespace-nowrap">
-                     {student.evaluationLevel ? (
-                       <span className={`px-2 py-0.5 rounded text-xs ${
-                         student.evaluationLevel.includes('A+') ? 'bg-red-50 text-red-600 border border-red-200' :
-                         student.evaluationLevel.includes('A') ? 'bg-orange-50 text-orange-600 border border-orange-200' :
-                         student.evaluationLevel.includes('B+') ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
-                         student.evaluationLevel.includes('B') ? 'bg-green-50 text-green-600 border border-green-200' :
-                         'bg-gray-50 text-gray-600 border border-gray-200'
-                       }`}>
-                         {student.evaluationLevel}
-                       </span>
-                     ) : '-'}
+                    <td className="p-4 text-gray-600 whitespace-nowrap">
+                     {student.evaluationLevel || '-'}
                    </td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.campus || '-'}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.grade || '-'}</td>

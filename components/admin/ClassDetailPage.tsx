@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ClassInfo, Lesson } from '../../types';
 import { COURSES, TEACHERS, ADMIN_STUDENTS } from '../../constants';
+import AttendanceModal from '../AttendanceModal';
 
 interface ClassDetailPageProps {
   classId: string;
@@ -21,6 +22,8 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
 }) => {
   const [activeDetailTab, setActiveDetailTab] = useState<'basic' | 'course' | 'sales' | 'students' | 'changes'>('basic');
   const [studentTab, setStudentTab] = useState<'current' | 'history'>('current');
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   
   const selectedClass = classes.find(c => c.id === classId);
   
@@ -188,13 +191,13 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                   </div>
                 </div>
                 {/* Row 6: 是否需要入学资格、允许老师、教室时间冲突 */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="flex items-center">
-                    <span className="text-gray-400 w-32 inline-block">是否需要入学资格：</span>
+                    <span className="text-gray-400 w-26 inline-block">是否需要入学资格：</span>
                     <span className="text-gray-900">{selectedClass.needQualification ? '是' : '否'}</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-gray-400 w-36 inline-block">允许老师、教室冲突：</span>
+                    <span className="text-gray-400 w-26 inline-block">允许老师、教室冲突：</span>
                     <span className="text-gray-900">{selectedClass.allowConflict ? '是' : '否'}</span>
                   </div>
                 </div>
@@ -212,6 +215,7 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                       <th className="p-3">上课时间</th>
                       <th className="p-3">讲次学生数</th>
                       <th className="p-3">状态</th>
+                      <th className="p-3">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -226,9 +230,20 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                           {l.status === 'completed' && <span className="text-green-500">已完成</span>}
                           {l.status === 'pending' && <span className="text-orange-500">未开始</span>}
                         </td>
+                        <td className="p-3">
+                          <button
+                            onClick={() => {
+                              setSelectedLesson(l);
+                              setShowAttendanceModal(true);
+                            }}
+                            className="text-primary hover:text-teal-600 text-sm font-medium"
+                          >
+                            考勤
+                          </button>
+                        </td>
                       </tr>
                     ))}
-                    {classLessons.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-gray-400">暂无课节信息</td></tr>}
+                    {classLessons.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-gray-400">暂无课节信息</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -306,7 +321,6 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                       <th className="p-3">性别</th>
                       <th className="p-3">登录账号</th>
                       <th className="p-3">入班时间</th>
-                      <th className="p-3">状态</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -328,18 +342,9 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
                         <td className="p-3 text-gray-600">{s.gender}</td>
                         <td className="p-3 text-gray-600">{s.account}</td>
                         <td className="p-3 text-gray-600">2025-07-01 10:00</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-xs ${
-                            studentTab === 'current'
-                              ? 'bg-green-50 text-green-600'
-                              : 'bg-gray-50 text-gray-600'
-                          }`}>
-                            {studentTab === 'current' ? '在读' : '已退出'}
-                          </span>
-                        </td>
                       </tr>
                     ))}
-                    {enrolledStudents.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-gray-400">暂无学员</td></tr>}
+                    {enrolledStudents.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-400">暂无学员</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -347,6 +352,12 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
           </div>
         </div>
       </div>
+
+      <AttendanceModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        lesson={selectedLesson}
+      />
     </div>
   );
 };
