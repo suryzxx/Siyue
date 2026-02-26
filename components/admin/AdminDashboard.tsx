@@ -38,6 +38,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
+  const [isClassCourseExpanded, setIsClassCourseExpanded] = useState(true);
+  const [isStudentExpanded, setIsStudentExpanded] = useState(true);
 
   useEffect(() => {
     const handleNavigateToClassDetail = (event: CustomEvent<{ classId: string }>) => {
@@ -114,14 +116,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         
         <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
            <NavItem id="course" label="产品" />
-           <NavItem id="class" label="班级管理" />
-           <NavItem id="schedule" label="课表" />
-           <NavItem id="attendance" label="考勤" />
            
-           <NavItem id="student" label="学生管理" />
-          <NavItem id="order" label="订单管理" />
-          <NavItem id="transfer-refund" label="调转退" />
+           {/* 班课管理分组 */}
+           <div 
+             onClick={() => setIsClassCourseExpanded(!isClassCourseExpanded)}
+             className="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between text-sm font-medium text-gray-600 hover:bg-gray-50 select-none"
+           >
+             <span>班课管理</span>
+             <span className="text-[10px] text-gray-400">{isClassCourseExpanded ? '▼' : '▶'}</span>
+           </div>
+           {isClassCourseExpanded && (
+             <>
+               <NavItem id="class" label="班级管理" indent />
+               <NavItem id="schedule" label="课表" indent />
+               <NavItem id="attendance" label="考勤" indent />
+             </>
+           )}
            
+           {/* 学生管理分组 */}
+           <div 
+             onClick={() => setIsStudentExpanded(!isStudentExpanded)}
+             className="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between text-sm font-medium text-gray-600 hover:bg-gray-50 select-none"
+           >
+             <span>学生管理</span>
+             <span className="text-[10px] text-gray-400">{isStudentExpanded ? '▼' : '▶'}</span>
+           </div>
+           {isStudentExpanded && (
+             <>
+               <NavItem id="student" label="学生管理" indent />
+               <NavItem id="transfer-refund" label="调转退" indent />
+             </>
+           )}
+           
+           <NavItem id="order" label="订单管理" />
            {/* Basic Settings Group */}
           <div 
             onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
