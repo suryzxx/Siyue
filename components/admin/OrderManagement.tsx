@@ -724,6 +724,43 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
               重置
             </button>
           </div>
+          
+          {/* 快速筛选 */}
+          <div className="flex items-center gap-2 pt-2">
+            <span className="text-sm text-gray-500">快速筛选：</span>
+            <button 
+              onClick={() => setQuickFilter(quickFilter === '在读班级' ? '' : '在读班级')}
+              className={`px-3 py-1 text-xs rounded-full transition-colors ${quickFilter === '在读班级' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              在读班级
+            </button>
+            <button 
+              onClick={() => setQuickFilter(quickFilter === '已结课班级' ? '' : '已结课班级')}
+              className={`px-3 py-1 text-xs rounded-full transition-colors ${quickFilter === '已结课班级' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              已结课班级
+            </button>
+            <button 
+              onClick={() => setQuickFilter(quickFilter === '未缴费班级' ? '' : '未缴费班级')}
+              className={`px-3 py-1 text-xs rounded-full transition-colors ${quickFilter === '未缴费班级' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              未缴费班级
+            </button>
+            <button 
+              onClick={() => setQuickFilter(quickFilter === '退费班级' ? '' : '退费班级')}
+              className={`px-3 py-1 text-xs rounded-full transition-colors ${quickFilter === '退费班级' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              退费班级
+            </button>
+            {quickFilter && (
+              <button 
+                onClick={() => setQuickFilter('')}
+                className="text-xs text-gray-400 hover:text-gray-600 ml-2"
+              >
+                清除筛选
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 第二栏：操作栏 */}
