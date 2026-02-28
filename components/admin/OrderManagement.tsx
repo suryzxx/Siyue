@@ -6,10 +6,16 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { CLASSES, ADMIN_STUDENTS, CAMPUSES, TEACHERS, COURSES } from '../../constants';
 
 enum OrderStatusEnum {
-  SUCCESS = '交易成功',
   PENDING = '待支付',
+  SUCCESS = '已支付',
   CANCELLED = '已取消',
-  REFUNDED = '已退款'
+  REFUNDED = '已退款',
+  DEPOSIT_PENDING = '待付定金',
+  DEPOSIT_PAID = '已付定金',
+  BALANCE_PENDING = '待付尾款',
+  PRESALE_FAILED = '预售失败',
+  RENEWAL_PENDING = '待续费',
+  PARTIAL_PAID = '部分支付'
 }
 
 interface OrderItem {
@@ -18,6 +24,13 @@ interface OrderItem {
   classId: string;
   type: 'course' | 'material';
   price: number;
+}
+
+interface StatusHistoryItem {
+  status: string;
+  time: string;
+  operator?: string;
+  remark?: string;
 }
 
 interface SubOrder {
@@ -29,6 +42,23 @@ interface SubOrder {
   studentPhone: string;
   status: OrderStatusEnum;
   items: OrderItem[];
+  orderType: '正常报名' | '续报' | '预售' | '分期';
+  deposit?: number;
+  balance?: number;
+  firstPeriod?: number;
+  secondPeriod?: number;
+  isLocked?: boolean;
+  lockedBy?: string;
+  lockedAt?: string;
+  paymentDeadline?: string;
+  statusHistory: StatusHistoryItem[];
+  semester?: string;
+  classInfo?: {
+    className: string;
+    campus: string;
+    teacher: string;
+    schedule: string;
+  };
 }
 
 interface OrderData {
@@ -40,103 +70,39 @@ interface OrderData {
 }
 
 const MOCK_ORDERS: OrderData[] = [
-  {
-    id: 'COMB116001219952447490',
-    orderTime: '2026-02-02 21:15:45',
-    paymentTime: '2026-02-02 21:15:45',
-    totalAmount: 7665.00,
-    subOrders: [
-      {
-        id: 'MS116001219913125890',
-        realPay: 2190.00,
-        paymentMethod: '现金',
-        studentId: '4994',
-        studentName: '朱维茜',
-        studentPhone: '182****8828',
-        status: OrderStatusEnum.SUCCESS,
-        items: [
-          { id: 'p1-1', name: '25暑-K3-进阶-1班', classId: '546', type: 'course', price: 2190.00 },
-          { id: 'p1-2', name: '教辅费', classId: '', type: 'material', price: 0.00 }
-        ]
-      },
-      {
-        id: 'MS116001219949301762',
-        realPay: 5475.00,
-        paymentMethod: '现金',
-        studentId: '4994',
-        studentName: '朱维茜',
-        studentPhone: '182****8828',
-        status: OrderStatusEnum.SUCCESS,
-        items: [
-          { id: 'p2-1', name: '25寒-G5-A+--二期', classId: 'c_p2', type: 'course', price: 5475.00 },
-          { id: 'p2-2', name: '教辅费', classId: '', type: 'material', price: 0.00 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'COMB116000852666290178',
-    orderTime: '2026-02-02 19:42:21',
-    paymentTime: '2026-02-02 19:42:21',
-    totalAmount: 5475.00,
-    subOrders: [
-      {
-        id: 'MS116000852666290179',
-        realPay: 5475.00,
-        paymentMethod: '现金',
-        studentId: '4993',
-        studentName: 'Randi丁柔',
-        studentPhone: '139****7652',
-        status: OrderStatusEnum.SUCCESS,
-        items: [
-          { id: 'p3-1', name: '25暑-G1-A+--一期', classId: 'c_p3', type: 'course', price: 5475.00 },
-          { id: 'p3-2', name: '教辅费', classId: '', type: 'material', price: 0.00 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'COMB116000848622129154',
-    orderTime: '2026-02-02 19:41:20',
-    paymentTime: '2026-02-02 19:41:20',
-    totalAmount: 2555.00,
-    subOrders: [
-      {
-        id: 'MS116000848622129155',
-        realPay: 2555.00,
-        paymentMethod: '现金',
-        studentId: '4992',
-        studentName: 'Grace吴悦',
-        studentPhone: '182****0314',
-        status: OrderStatusEnum.SUCCESS,
-        items: [
-          { id: 'p4-1', name: '25暑-G2-A+--二期', classId: 'c_p4', type: 'course', price: 2555.00 },
-          { id: 'p4-2', name: '教辅费', classId: '', type: 'material', price: 0.00 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'COMB116000848622129155',
-    orderTime: '2026-02-01 15:30:10',
-    paymentTime: '2026-02-01 15:30:10',
-    totalAmount: 1899.00,
-    subOrders: [
-      {
-        id: 'MS116001219949301800',
-        realPay: 1899.00,
-        paymentMethod: '微信支付',
-        studentId: '11678463',
-        studentName: '殷煦纶',
-        studentPhone: '138****0455',
-        status: OrderStatusEnum.SUCCESS,
-        items: [
-          { id: 'p5-1', name: '25暑-K3-飞跃--三期', classId: 'c_p5', type: 'course', price: 1899.00 },
-          { id: 'p5-2', name: '教辅费', classId: '', type: 'material', price: 0.00 }
-        ]
-      }
-    ]
-  }
+  // === 正常报名-已支付 ===
+  { id: 'ORD-N001', orderTime: '2026-02-20 10:30:00', paymentTime: '2026-02-20 10:32:00', totalAmount: 2190, subOrders: [{ id: 'SUB-N001', realPay: 2190, paymentMethod: '微信支付', studentId: '4994', studentName: '朱维茜', studentPhone: '182****8828', status: OrderStatusEnum.SUCCESS, orderType: '正常报名', semester: '暑假', items: [{ id: 'i1', name: '25暑-K3-进阶-1班', classId: '546', type: 'course', price: 2190 }, { id: 'i2', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25暑-K3-进阶-1班', campus: '龙江校区', teacher: 'Melody', schedule: '周六 14:30-16:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-20 10:30:00', remark: '正常报名' }, { status: '已支付', time: '2026-02-20 10:32:00', remark: '微信支付' }] }] },
+  { id: 'ORD-N002', orderTime: '2026-02-19 14:20:00', paymentTime: '2026-02-19 14:22:00', totalAmount: 5475, subOrders: [{ id: 'SUB-N002', realPay: 5475, paymentMethod: '现金', studentId: '4993', studentName: 'Randi丁柔', studentPhone: '139****7652', status: OrderStatusEnum.SUCCESS, orderType: '正常报名', semester: '暑假', items: [{ id: 'i3', name: '25暑-G1-A+--一期', classId: 'c_p3', type: 'course', price: 5475 }, { id: 'i4', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25暑-G1-A+--一期', campus: '大行宫校区', teacher: 'Ruby张露', schedule: '周六 08:30-11:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-19 14:20:00' }, { status: '已支付', time: '2026-02-19 14:22:00', remark: '现金支付' }] }] },
+  { id: 'ORD-N003', orderTime: '2026-02-18 09:15:00', paymentTime: '2026-02-18 09:18:00', totalAmount: 2555, subOrders: [{ id: 'SUB-N003', realPay: 2555, paymentMethod: '微信支付', studentId: '4992', studentName: 'Grace吴悦', studentPhone: '182****0314', status: OrderStatusEnum.SUCCESS, orderType: '正常报名', semester: '暑假', items: [{ id: 'i5', name: '25暑-G2-A+--二期', classId: 'c_p4', type: 'course', price: 2555 }, { id: 'i6', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25暑-G2-A+--二期', campus: '仙林校区', teacher: 'Ace黄礼妍', schedule: '周六 10:30-12:30' }, statusHistory: [{ status: '创建订单', time: '2026-02-18 09:15:00' }, { status: '已支付', time: '2026-02-18 09:18:00', remark: '微信支付' }] }] },
+  // === 正常报名-待支付 ===
+  { id: 'ORD-N004', orderTime: '2026-02-28 16:00:00', paymentTime: '-', totalAmount: 1899, subOrders: [{ id: 'SUB-N004', realPay: 0, paymentMethod: '', studentId: '11678463', studentName: '殷煦纶', studentPhone: '138****0455', status: OrderStatusEnum.PENDING, orderType: '正常报名', semester: '暑假', paymentDeadline: '2026-02-28 16:30:00', items: [{ id: 'i7', name: '25暑-K3-飞跃--三期', classId: 'c_p5', type: 'course', price: 1899 }, { id: 'i8', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25暑-K3-飞跃--三期', campus: '五台山校区', teacher: 'Melody', schedule: '周六 16:00-18:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-28 16:00:00', remark: '等待支付，30分钟内有效' }] }] },
+  { id: 'ORD-N005', orderTime: '2026-02-28 15:45:00', paymentTime: '-', totalAmount: 3299, subOrders: [{ id: 'SUB-N005', realPay: 0, paymentMethod: '', studentId: '5001', studentName: '陈思远', studentPhone: '135****2233', status: OrderStatusEnum.PENDING, orderType: '正常报名', semester: '寒假', paymentDeadline: '2026-02-28 16:15:00', items: [{ id: 'i9', name: '25寒-G5-A+--二期', classId: 'c_p2', type: 'course', price: 3299 }, { id: 'i10', name: '教辅费', classId: '', type: 'material', price: 100 }], classInfo: { className: '25寒-G5-A+--二期', campus: '龙江校区', teacher: 'Sonya孙苏云', schedule: '周日 10:00-12:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-28 15:45:00', remark: '等待支付，30分钟内有效' }] }] },
+  // === 正常报名-已取消 ===
+  { id: 'ORD-N006', orderTime: '2026-02-15 11:00:00', paymentTime: '-', totalAmount: 4299, subOrders: [{ id: 'SUB-N006', realPay: 0, paymentMethod: '', studentId: '5002', studentName: '林子涵', studentPhone: '136****4455', status: OrderStatusEnum.CANCELLED, orderType: '正常报名', semester: '秋季', items: [{ id: 'i11', name: '24秋-G3-A+--周六上午', classId: '601', type: 'course', price: 4299 }, { id: 'i12', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '24秋-G3-A+--周六上午', campus: '深圳湾校区', teacher: 'Iris', schedule: '周六 08:30-11:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-15 11:00:00' }, { status: '已取消', time: '2026-02-15 11:30:00', remark: '超时未支付，系统自动取消' }] }] },
+  // === 正常报名-已退款 ===
+  { id: 'ORD-N007', orderTime: '2026-01-10 09:00:00', paymentTime: '2026-01-10 09:05:00', totalAmount: 2299, subOrders: [{ id: 'SUB-N007', realPay: 2299, paymentMethod: '微信支付', studentId: '5003', studentName: '王子轩', studentPhone: '137****6677', status: OrderStatusEnum.REFUNDED, orderType: '正常报名', semester: '寒假', items: [{ id: 'i13', name: '25寒-G4-S+--二期', classId: '602', type: 'course', price: 2299 }, { id: 'i14', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25寒-G4-S+--二期', campus: '宝安中心校区', teacher: 'Felicia', schedule: '周五 18:00-20:00' }, statusHistory: [{ status: '创建订单', time: '2026-01-10 09:00:00' }, { status: '已支付', time: '2026-01-10 09:05:00', remark: '微信支付' }, { status: '已退款', time: '2026-02-01 14:30:00', operator: '管理员张老师', remark: '学生因搬家申请退费，全额退款' }] }] },
+  // === 预售-待付定金 ===
+  { id: 'ORD-P001', orderTime: '2026-02-27 10:00:00', paymentTime: '-', totalAmount: 4999, subOrders: [{ id: 'SUB-P001', realPay: 0, paymentMethod: '', studentId: '5004', studentName: '赵雨萱', studentPhone: '138****8899', status: OrderStatusEnum.DEPOSIT_PENDING, orderType: '预售', semester: '春季', deposit: 1000, balance: 3999, paymentDeadline: '2026-02-27 10:30:00', items: [{ id: 'i15', name: '26春-G2-A+--预售班', classId: '701', type: 'course', price: 4999 }, { id: 'i16', name: '教辅费', classId: '', type: 'material', price: 200 }], classInfo: { className: '26春-G2-A+--预售班', campus: '龙江校区', teacher: 'Sonya孙苏云', schedule: '周六 10:00-12:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-27 10:00:00', remark: '预售班，等待付定金¥1000' }] }] },
+  // === 预售-已付定金 ===
+  { id: 'ORD-P002', orderTime: '2026-02-20 14:00:00', paymentTime: '2026-02-20 14:05:00', totalAmount: 3599, subOrders: [{ id: 'SUB-P002', realPay: 800, paymentMethod: '微信支付', studentId: '5005', studentName: '刘思琪', studentPhone: '139****1122', status: OrderStatusEnum.DEPOSIT_PAID, orderType: '预售', semester: '暑假', deposit: 800, balance: 2799, items: [{ id: 'i17', name: '26暑-K3-飞跃--预售班', classId: '702', type: 'course', price: 3599 }, { id: 'i18', name: '教辅费', classId: '', type: 'material', price: 150 }], classInfo: { className: '26暑-K3-飞跃--预售班', campus: '大行宫校区', teacher: 'Sonya孙苏云', schedule: '周六 14:00-16:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-20 14:00:00', remark: '预售班' }, { status: '已付定金', time: '2026-02-20 14:05:00', remark: '定金¥800已付，等待开班（需5人）' }] }] },
+  // === 预售-待付尾款 ===
+  { id: 'ORD-P003', orderTime: '2026-02-10 09:00:00', paymentTime: '2026-02-10 09:03:00', totalAmount: 4999, subOrders: [{ id: 'SUB-P003', realPay: 1000, paymentMethod: '微信支付', studentId: '5006', studentName: '张梓涵', studentPhone: '150****3344', status: OrderStatusEnum.BALANCE_PENDING, orderType: '预售', semester: '春季', deposit: 1000, balance: 3999, paymentDeadline: '2026-03-02 09:00:00', items: [{ id: 'i19', name: '26春-G2-A+--预售班', classId: '701', type: 'course', price: 4999 }, { id: 'i20', name: '教辅费', classId: '', type: 'material', price: 200 }], classInfo: { className: '26春-G2-A+--预售班', campus: '龙江校区', teacher: 'Sonya孙苏云', schedule: '周六 10:00-12:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-10 09:00:00', remark: '预售班' }, { status: '已付定金', time: '2026-02-10 09:03:00', remark: '定金¥1000' }, { status: '待付尾款', time: '2026-03-01 09:00:00', remark: '班级已达开班人数，请在24小时内支付尾款¥3999' }] }] },
+  // === 预售-已支付（定金+尾款） ===
+  { id: 'ORD-P004', orderTime: '2026-01-15 10:00:00', paymentTime: '2026-02-16 10:30:00', totalAmount: 4999, subOrders: [{ id: 'SUB-P004', realPay: 4999, paymentMethod: '微信支付', studentId: '5007', studentName: '孙浩然', studentPhone: '151****5566', status: OrderStatusEnum.SUCCESS, orderType: '预售', semester: '春季', deposit: 1000, balance: 3999, items: [{ id: 'i21', name: '26春-G2-A+--预售班', classId: '701', type: 'course', price: 4999 }, { id: 'i22', name: '教辅费', classId: '', type: 'material', price: 200 }], classInfo: { className: '26春-G2-A+--预售班', campus: '龙江校区', teacher: 'Sonya孙苏云', schedule: '周六 10:00-12:00' }, statusHistory: [{ status: '创建订单', time: '2026-01-15 10:00:00', remark: '预售班' }, { status: '已付定金', time: '2026-01-15 10:05:00', remark: '定金¥1000' }, { status: '待付尾款', time: '2026-02-15 10:00:00', remark: '班级开班成功' }, { status: '已支付', time: '2026-02-16 10:30:00', remark: '尾款¥3999已付，全额到账' }] }] },
+  // === 预售-预售失败 ===
+  { id: 'ORD-P005', orderTime: '2026-01-05 11:00:00', paymentTime: '2026-01-05 11:03:00', totalAmount: 3599, subOrders: [{ id: 'SUB-P005', realPay: 0, paymentMethod: '微信支付', studentId: '5008', studentName: '周雨桐', studentPhone: '152****7788', status: OrderStatusEnum.PRESALE_FAILED, orderType: '预售', semester: '暑假', deposit: 800, balance: 2799, items: [{ id: 'i23', name: '26暑-K3-飞跃--预售班B', classId: '702', type: 'course', price: 3599 }, { id: 'i24', name: '教辅费', classId: '', type: 'material', price: 150 }], classInfo: { className: '26暑-K3-飞跃--预售班B', campus: '奥南校区', teacher: 'Ruby张露', schedule: '周日 14:00-16:00' }, statusHistory: [{ status: '创建订单', time: '2026-01-05 11:00:00', remark: '预售班' }, { status: '已付定金', time: '2026-01-05 11:03:00', remark: '定金¥800' }, { status: '预售失败', time: '2026-02-05 00:00:00', remark: '截止时间到期，仅3人付定金，未达最低5人开班要求，定金已原路退回' }] }] },
+  // === 分期-已支付秋上 ===
+  { id: 'ORD-F001', orderTime: '2026-02-01 10:00:00', paymentTime: '2026-02-01 10:05:00', totalAmount: 5475, subOrders: [{ id: 'SUB-F001', realPay: 2500, paymentMethod: '微信支付', studentId: '5009', studentName: '吴佳怡', studentPhone: '153****9900', status: OrderStatusEnum.SUCCESS, orderType: '分期', semester: '秋季', firstPeriod: 2500, secondPeriod: 2975, items: [{ id: 'i25', name: '25秋-G1-A+--秋上', classId: 'c_p3', type: 'course', price: 2500 }, { id: 'i26', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25秋-G1-A+--一期', campus: '大行宫校区', teacher: 'Ruby张露', schedule: '周六 08:30-11:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-01 10:00:00', remark: '秋季分期，秋上¥2500 + 秋下¥2975' }, { status: '已支付', time: '2026-02-01 10:05:00', remark: '秋上¥2500已付' }] }] },
+  // === 分期-待续费 ===
+  { id: 'ORD-F002', orderTime: '2025-09-01 10:00:00', paymentTime: '2025-09-01 10:03:00', totalAmount: 4299, subOrders: [{ id: 'SUB-F002', realPay: 2000, paymentMethod: '现金', studentId: '5010', studentName: '郑宇航', studentPhone: '155****1122', status: OrderStatusEnum.RENEWAL_PENDING, orderType: '分期', semester: '秋季', firstPeriod: 2000, secondPeriod: 2299, paymentDeadline: '2026-03-01 10:00:00', items: [{ id: 'i27', name: '25秋-G3-A+--秋上', classId: '601', type: 'course', price: 2000 }, { id: 'i28', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25秋-G3-A+--一期', campus: '深圳湾校区', teacher: 'Iris', schedule: '周六 08:30-11:00' }, statusHistory: [{ status: '创建订单', time: '2025-09-01 10:00:00', remark: '秋季分期' }, { status: '已支付', time: '2025-09-01 10:03:00', remark: '秋上¥2000已付' }, { status: '待续费', time: '2026-02-27 10:00:00', remark: '秋上3讲已结束，请在24小时内支付秋下¥2299' }] }] },
+  // === 分期-部分支付 ===
+  { id: 'ORD-F003', orderTime: '2025-09-05 14:00:00', paymentTime: '2025-09-05 14:02:00', totalAmount: 4299, subOrders: [{ id: 'SUB-F003', realPay: 2000, paymentMethod: '微信支付', studentId: '5011', studentName: '黄诗涵', studentPhone: '156****3344', status: OrderStatusEnum.PARTIAL_PAID, orderType: '分期', semester: '秋季', firstPeriod: 2000, secondPeriod: 2299, items: [{ id: 'i29', name: '25秋-G3-A+--秋上', classId: '601', type: 'course', price: 2000 }, { id: 'i30', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25秋-G3-A+--一期', campus: '深圳湾校区', teacher: 'Iris', schedule: '周六 08:30-11:00' }, statusHistory: [{ status: '创建订单', time: '2025-09-05 14:00:00', remark: '秋季分期' }, { status: '已支付', time: '2025-09-05 14:02:00', remark: '秋上¥2000已付' }, { status: '待续费', time: '2026-02-20 10:00:00', remark: '秋上结束，提醒续费秋下' }, { status: '部分支付', time: '2026-02-21 10:00:00', remark: '超时未续费秋下，仅完成秋上部分，退出班级' }] }] },
+  // === 续报-已支付 ===
+  { id: 'ORD-R001', orderTime: '2026-02-25 11:00:00', paymentTime: '2026-02-25 11:05:00', totalAmount: 1899, subOrders: [{ id: 'SUB-R001', realPay: 1899, paymentMethod: '微信支付', studentId: '4994', studentName: '朱维茜', studentPhone: '182****8828', status: OrderStatusEnum.SUCCESS, orderType: '续报', semester: '暑假', items: [{ id: 'i31', name: '25暑-K3-飞跃--三期', classId: 'c_p5', type: 'course', price: 1899 }, { id: 'i32', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25暑-K3-飞跃--三期', campus: '五台山校区', teacher: 'Melody', schedule: '周六 16:00-18:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-25 11:00:00', remark: '续报（春报暑）' }, { status: '已支付', time: '2026-02-25 11:05:00', remark: '微信支付，暑假班全款' }] }] },
+  // === 锁单-待付尾款 ===
+  { id: 'ORD-L001', orderTime: '2026-02-05 09:00:00', paymentTime: '2026-02-05 09:03:00', totalAmount: 4999, subOrders: [{ id: 'SUB-L001', realPay: 1000, paymentMethod: '微信支付', studentId: '5012', studentName: '马晨曦', studentPhone: '157****5566', status: OrderStatusEnum.BALANCE_PENDING, orderType: '预售', semester: '春季', deposit: 1000, balance: 3999, isLocked: true, lockedBy: '管理员张老师', lockedAt: '2026-02-26 15:00:00', items: [{ id: 'i33', name: '26春-G2-A+--预售班', classId: '701', type: 'course', price: 4999 }, { id: 'i34', name: '教辅费', classId: '', type: 'material', price: 200 }], classInfo: { className: '26春-G2-A+--预售班', campus: '龙江校区', teacher: 'Sonya孙苏云', schedule: '周六 10:00-12:00' }, statusHistory: [{ status: '创建订单', time: '2026-02-05 09:00:00', remark: '预售班' }, { status: '已付定金', time: '2026-02-05 09:03:00', remark: '定金¥1000' }, { status: '待付尾款', time: '2026-02-25 09:00:00', remark: '班级开班成功' }, { status: '锁单', time: '2026-02-26 15:00:00', operator: '管理员张老师', remark: '家长沟通中，暂不自动取消' }] }] },
+  // === 锁单-待续费 ===
+  { id: 'ORD-L002', orderTime: '2025-09-10 10:00:00', paymentTime: '2025-09-10 10:02:00', totalAmount: 4299, subOrders: [{ id: 'SUB-L002', realPay: 2000, paymentMethod: '现金', studentId: '5013', studentName: '杨子墨', studentPhone: '158****7788', status: OrderStatusEnum.RENEWAL_PENDING, orderType: '分期', semester: '秋季', firstPeriod: 2000, secondPeriod: 2299, isLocked: true, lockedBy: '管理员李老师', lockedAt: '2026-02-27 11:00:00', items: [{ id: 'i35', name: '25秋-G4-S+--秋上', classId: '602', type: 'course', price: 2000 }, { id: 'i36', name: '教辅费', classId: '', type: 'material', price: 0 }], classInfo: { className: '25秋-G4-S+--一期', campus: '宝安中心校区', teacher: 'Felicia', schedule: '周五 18:00-20:00' }, statusHistory: [{ status: '创建订单', time: '2025-09-10 10:00:00', remark: '秋季分期' }, { status: '已支付', time: '2025-09-10 10:02:00', remark: '秋上¥2000已付' }, { status: '待续费', time: '2026-02-25 10:00:00', remark: '秋上结束，提醒续费秋下¥2299' }, { status: '锁单', time: '2026-02-27 11:00:00', operator: '管理员李老师', remark: '家长确认续费意向，延长支付期限' }] }] },
 ];
 
 
@@ -153,7 +119,31 @@ const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
-
+// Status color helper
+const getStatusStyle = (status: OrderStatusEnum): string => {
+  const map: Record<string, string> = {
+    [OrderStatusEnum.PENDING]: 'text-orange-600 bg-orange-50 border-orange-200',
+    [OrderStatusEnum.SUCCESS]: 'text-green-600 bg-green-50 border-green-200',
+    [OrderStatusEnum.CANCELLED]: 'text-gray-500 bg-gray-50 border-gray-200',
+    [OrderStatusEnum.REFUNDED]: 'text-red-600 bg-red-50 border-red-200',
+    [OrderStatusEnum.DEPOSIT_PENDING]: 'text-amber-600 bg-amber-50 border-amber-200',
+    [OrderStatusEnum.DEPOSIT_PAID]: 'text-blue-600 bg-blue-50 border-blue-200',
+    [OrderStatusEnum.BALANCE_PENDING]: 'text-purple-600 bg-purple-50 border-purple-200',
+    [OrderStatusEnum.PRESALE_FAILED]: 'text-red-500 bg-red-50 border-red-200',
+    [OrderStatusEnum.RENEWAL_PENDING]: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+    [OrderStatusEnum.PARTIAL_PAID]: 'text-yellow-700 bg-yellow-50 border-yellow-200',
+  };
+  return map[status] || 'text-gray-600 bg-gray-50 border-gray-200';
+};
+const getOrderTypeStyle = (type: string): string => {
+  const map: Record<string, string> = {
+    '正常报名': 'text-teal-700 bg-teal-50',
+    '续报': 'text-blue-700 bg-blue-50',
+    '预售': 'text-purple-700 bg-purple-50',
+    '分期': 'text-amber-700 bg-amber-50',
+  };
+  return map[type] || 'text-gray-600 bg-gray-50';
+};
 interface OrderRowProps {
   subOrder: SubOrder;
   courseItem?: { name: string; price: number; classId: string };
@@ -164,70 +154,31 @@ interface OrderRowProps {
   onClassClick: (classId: string) => void;
   onStudentClick: (studentId: string) => void;
   onCopyId: (id: string) => void;
+  onViewDetail: (orderId: string) => void;
 }
-
-const OrderRow: React.FC<OrderRowProps> = ({ subOrder, courseItem, materialItem, orderTime, paymentTime, totalAmount, onClassClick, onStudentClick, onCopyId }) => {
+const OrderRow: React.FC<OrderRowProps> = ({ subOrder, courseItem, orderTime, onClassClick, onStudentClick, onCopyId, onViewDetail }) => {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50 text-sm">
       <td className="px-3 py-3">
         <div className="flex items-center gap-1">
-          <span className="font-mono text-gray-600">{subOrder.id}</span>
-          <button 
-            onClick={() => onCopyId(subOrder.id)}
-            className="text-gray-400 hover:text-gray-600 p-0.5"
-            title="复制订单号"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
+          {subOrder.isLocked && <span title="已锁单">🔒</span>}
+          <button onClick={() => onViewDetail(subOrder.id)} className="font-mono text-primary hover:underline cursor-pointer">{subOrder.id}</button>
+          <button onClick={() => onCopyId(subOrder.id)} className="text-gray-400 hover:text-gray-600 p-0.5" title="复制订单号">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
           </button>
         </div>
       </td>
+      <td className="px-3 py-3"><span className={`px-1.5 py-0.5 text-xs rounded ${getOrderTypeStyle(subOrder.orderType)}`}>{subOrder.orderType}</span></td>
       <td className="px-3 py-3">
-        {courseItem?.classId ? (
-          <button 
-            onClick={() => onClassClick(courseItem.classId)}
-            className="text-primary hover:underline text-left hover:text-teal-600 transition-colors"
-          >
-            {courseItem.name}
-          </button>
-        ) : (
-          <span className="text-gray-800">{courseItem?.name || '-'}</span>
-        )}
+        {courseItem?.classId ? (<button onClick={() => onClassClick(courseItem.classId)} className="text-primary hover:underline text-left">{courseItem.name}</button>) : (<span className="text-gray-800">{courseItem?.name || '-'}</span>)}
       </td>
-      <td className="px-3 py-3">
-        <button
-          onClick={() => onStudentClick(subOrder.studentId)}
-          className="text-primary hover:underline hover:text-teal-600 transition-colors"
-        >
-          {subOrder.studentName}
-        </button>
-      </td>
+      <td className="px-3 py-3"><button onClick={() => onStudentClick(subOrder.studentId)} className="text-primary hover:underline">{subOrder.studentName}</button></td>
       <td className="px-3 py-3 text-gray-800">{courseItem ? formatCurrency(courseItem.price) : '-'}</td>
-      <td className="px-3 py-3 text-gray-500">共15讲/剩余15讲</td>
-      <td className="px-3 py-3 text-gray-800">{materialItem ? formatCurrency(materialItem.price) : '¥0.00'}</td>
-      <td className="px-3 py-3 text-gray-800 font-medium">{formatCurrency(totalAmount)}</td>
-      <td className="px-3 py-3">
-        <div>
-          <span className="text-gray-900 font-medium">{formatCurrency(subOrder.realPay)}</span>
-        </div>
-      </td>
-      <td className="px-3 py-3 text-gray-600 text-xs">{subOrder.paymentMethod}</td>
+      <td className="px-3 py-3 text-gray-800 font-medium">{formatCurrency(subOrder.realPay)}</td>
+      <td className="px-3 py-3 text-gray-600 text-xs">{subOrder.paymentMethod || '-'}</td>
       <td className="px-3 py-3 text-gray-600 text-xs">{orderTime}</td>
-      <td className="px-3 py-3 text-gray-600 text-xs">{paymentTime}</td>
-      <td className="px-3 py-3">
-        <span className={`text-xs ${
-          subOrder.status === OrderStatusEnum.SUCCESS
-            ? 'text-green-600'
-            : subOrder.status === OrderStatusEnum.PENDING
-            ? 'text-orange-600'
-            : subOrder.status === OrderStatusEnum.CANCELLED
-            ? 'text-red-600'
-            : 'text-gray-600'
-        }`}>
-          {subOrder.status}
-        </span>
-      </td>
+      <td className="px-3 py-3"><span className={`text-xs px-2 py-0.5 rounded border ${getStatusStyle(subOrder.status)}`}>{subOrder.status}</span></td>
+      <td className="px-3 py-3"><button onClick={() => onViewDetail(subOrder.id)} className="text-xs text-primary hover:underline">查看</button></td>
     </tr>
   );
 };
@@ -357,6 +308,7 @@ interface OrderManagementProps {
 }
 
 const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, onNavigateToStudent, onNavigateToManualOrder }) => {
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [productName, setProductName] = useState('');
   const [studentInfo, setStudentInfo] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -366,6 +318,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
   const [selectedSemesters, setSelectedSemesters] = useState<string[]>([]);
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
+  const [selectedOrderTypes, setSelectedOrderTypes] = useState<string[]>([]);
 
   // 批量报名状态
   const [showBatchEnrollmentModal, setShowBatchEnrollmentModal] = useState(false);
@@ -426,6 +379,10 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
           )
         );
 
+      // Order type filter
+      const matchOrderType = selectedOrderTypes.length === 0 ||
+        order.subOrders.some(sub => selectedOrderTypes.includes(sub.orderType));
+
       // Quick link filter
       let matchQuickFilter = true;
       if (quickFilter) {
@@ -462,7 +419,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
       }
 
       return matchProductName && matchStudentInfo && matchStatus && matchPaymentMethod &&
-             matchYear && matchSemester && matchProductType && matchQuickFilter;
+             matchYear && matchSemester && matchProductType && matchOrderType && matchQuickFilter;
     });
 
     // Sort by orderTime
@@ -473,7 +430,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
     });
 
     return orders;
-  }, [productName, studentInfo, selectedStatuses, selectedPaymentMethods, selectedYears, selectedSemesters, selectedProductTypes, quickFilter, sortOrder]);
+  }, [productName, studentInfo, selectedStatuses, selectedPaymentMethods, selectedYears, selectedSemesters, selectedProductTypes, selectedOrderTypes, quickFilter, sortOrder]);
 
   const handleClassClick = (classId: string) => {
     if (onNavigateToClass) {
@@ -502,6 +459,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
     setSelectedYears([]);
     setSelectedSemesters([]);
     setSelectedProductTypes([]);
+    setSelectedOrderTypes([]);
     setStartDate('');
     setEndDate('');
   };
@@ -647,8 +605,103 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
 
 
 
-  return (
-    <>
+  // 如果选中了订单，显示详情页
+  if (selectedOrderId) {
+    const order = MOCK_ORDERS.flatMap(o => o.subOrders).find(sub => sub.id === selectedOrderId);
+    if (!order) return <div>订单未找到</div>;
+    return (
+      <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-4">
+          <button onClick={() => setSelectedOrderId(null)} className="text-primary hover:underline flex items-center gap-1">
+            <span>←</span> 返回列表
+          </button>
+          <h2 className="text-xl font-bold text-gray-800">订单详情</h2>
+        </div>
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          {/* 基本信息和费用信息 - 左右布局 */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* 基本信息 */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <h3 className="text-base font-bold text-gray-800 mb-3">基本信息</h3>
+              <div className="grid grid-cols-1 gap-2 text-sm">
+                <div><span className="text-gray-500">订单编号：</span><span className="font-mono">{order.id}</span> {order.isLocked && <span className="ml-2 text-xs text-orange-600">🔒 已锁单</span>}</div>
+                <div><span className="text-gray-500">订单类型：</span><span className={`px-2 py-0.5 rounded text-xs ${getOrderTypeStyle(order.orderType)}`}>{order.orderType}</span></div>
+                <div><span className="text-gray-500">学生姓名：</span>{order.studentName}</div>
+                <div><span className="text-gray-500">联系电话：</span>{order.studentPhone}</div>
+                <div><span className="text-gray-500">班级名称：</span>{order.classInfo?.className || '-'}</div>
+                <div><span className="text-gray-500">校区：</span>{order.classInfo?.campus || '-'}</div>
+                {order.isLocked && <div><span className="text-gray-500">锁单信息：</span>{order.lockedBy} 于 {order.lockedAt} 锁单</div>}
+              </div>
+            </div>
+            {/* 费用信息 */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <h3 className="text-base font-bold text-gray-800 mb-3">费用信息</h3>
+              <div className="grid grid-cols-1 gap-2 text-sm">
+                <div><span className="text-gray-500">课程费用：</span>{formatCurrency(order.items.find(i => i.type === 'course')?.price || 0)}</div>
+                <div><span className="text-gray-500">教辅费：</span>{formatCurrency(order.items.find(i => i.type === 'material')?.price || 0)}</div>
+                <div><span className="text-gray-500">实收金额：</span><span className="font-bold text-lg">{formatCurrency(order.realPay)}</span></div>
+                <div><span className="text-gray-500">支付方式：</span>{order.paymentMethod || '-'}</div>
+                {order.orderType === '预售' && order.deposit && (
+                  <><div><span className="text-gray-500">定金：</span>{formatCurrency(order.deposit)}</div><div><span className="text-gray-500">尾款：</span>{formatCurrency(order.balance || 0)}</div></>
+                )}
+                {order.orderType === '分期' && order.firstPeriod && (
+                  <><div><span className="text-gray-500">秋上：</span>{formatCurrency(order.firstPeriod)}</div><div><span className="text-gray-500">秋下：</span>{formatCurrency(order.secondPeriod || 0)}</div></>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* 状态流转时间线 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">状态流转</h3>
+            <div className="space-y-4">
+              {order.statusHistory.map((h, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-primary"></div>
+                    {i < order.statusHistory.length - 1 && <div className="w-0.5 h-full bg-gray-200 mt-1"></div>}
+                  </div>
+                  <div className="flex-1 pb-4">
+                    <div className="font-medium text-gray-800">{h.status}</div>
+                    <div className="text-xs text-gray-500 mt-1">{h.time}</div>
+                    {h.operator && <div className="text-xs text-gray-600 mt-1">操作人：{h.operator}</div>}
+                    {h.remark && <div className="text-xs text-gray-600 mt-1">{h.remark}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* 操作区域 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">操作</h3>
+            <div className="flex gap-3 flex-wrap">
+              {order.status === OrderStatusEnum.PENDING && (
+                <><button onClick={() => alert('确认支付功能（模拟）')} className="px-4 py-2 bg-primary text-white rounded hover:bg-teal-600">确认支付</button><button onClick={() => alert('取消订单功能（模拟）')} className="px-4 py-2 border border-gray-300 text-gray-600 rounded hover:bg-gray-50">取消订单</button></>
+              )}
+              {order.status === OrderStatusEnum.SUCCESS && (
+                <button onClick={() => alert('申请退款功能（模拟）')} className="px-4 py-2 border border-red-300 text-red-600 rounded hover:bg-red-50">申请退款</button>
+              )}
+              {order.status === OrderStatusEnum.DEPOSIT_PENDING && (
+                <><button onClick={() => alert('确认付定金功能（模拟）')} className="px-4 py-2 bg-primary text-white rounded hover:bg-teal-600">确认付定金</button><button onClick={() => alert('取消订单功能（模拟）')} className="px-4 py-2 border border-gray-300 text-gray-600 rounded hover:bg-gray-50">取消订单</button></>
+              )}
+              {order.status === OrderStatusEnum.DEPOSIT_PAID && (
+                <button onClick={() => alert('标记预售失败功能（模拟）')} className="px-4 py-2 border border-gray-300 text-gray-600 rounded hover:bg-gray-50">标记预售失败</button>
+              )}
+              {order.status === OrderStatusEnum.BALANCE_PENDING && (
+                <><button onClick={() => alert('确认付尾款功能（模拟）')} className="px-4 py-2 bg-primary text-white rounded hover:bg-teal-600">确认付尾款</button>{!order.isLocked && <button onClick={() => alert('锁单功能（模拟）')} className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">锁单</button>}{order.isLocked && <button onClick={() => alert('解锁功能（模拟）')} className="px-4 py-2 border border-amber-500 text-amber-600 rounded hover:bg-amber-50">解锁</button>}<button onClick={() => alert('取消订单功能（模拟）')} className="px-4 py-2 border border-gray-300 text-gray-600 rounded hover:bg-gray-50">取消订单</button></>
+              )}
+              {order.status === OrderStatusEnum.RENEWAL_PENDING && (
+                <><button onClick={() => alert('确认续费功能（模拟）')} className="px-4 py-2 bg-primary text-white rounded hover:bg-teal-600">确认续费</button>{!order.isLocked && <button onClick={() => alert('锁单功能（模拟）')} className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">锁单</button>}{order.isLocked && <button onClick={() => alert('解锁功能（模拟）')} className="px-4 py-2 border border-amber-500 text-amber-600 rounded hover:bg-amber-50">解锁</button>}<button onClick={() => alert('标记部分支付功能（模拟）')} className="px-4 py-2 border border-gray-300 text-gray-600 rounded hover:bg-gray-50">标记部分支付</button></>
+              )}
+              {[OrderStatusEnum.CANCELLED, OrderStatusEnum.REFUNDED, OrderStatusEnum.PRESALE_FAILED, OrderStatusEnum.PARTIAL_PAID].includes(order.status) && (
+                <div className="text-gray-500 text-sm">该订单已结束，无可用操作</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (<>
       <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
         {/* 标题栏 */}
         <div className="px-6 py-4 border-b border-gray-200">
@@ -658,11 +711,11 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
         {/* 第一栏：筛选栏 */}
         <div className="px-6 py-4 border-b border-gray-100 bg-white space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            {/* 产品名称搜索 */}
+            {/* 班级名称搜索 */}
             <div className="relative min-w-[140px] flex-shrink-0">
               <input
                 type="text"
-                placeholder="产品名称"
+                placeholder="班级名称"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 className="border border-gray-300 rounded px-3 py-1.5 text-sm w-full pl-8 focus:outline-none focus:border-primary placeholder-gray-400 h-[34px]"
@@ -692,7 +745,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
 
             {/* 交易状态筛选 - MultiSelect */}
             <MultiSelect
-              options={['交易成功', '待支付', '已取消', '已退款']}
+              options={['待支付', '已支付', '已取消', '已退款', '待付定金', '已付定金', '待付尾款', '预售失败', '待续费', '部分支付']}
               selected={selectedStatuses}
               onChange={setSelectedStatuses}
               placeholder="交易状态"
@@ -733,6 +786,15 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
               onChange={setSelectedProductTypes}
               placeholder="产品类型"
               width="w-[90px]"
+            />
+
+            {/* 订单类型筛选 - MultiSelect */}
+            <MultiSelect
+              options={['正常报名', '续报', '预售']}
+              selected={selectedOrderTypes}
+              onChange={setSelectedOrderTypes}
+              placeholder="订单类型"
+              width="w-[100px]"
             />
 
             {/* 时间筛选 */}
@@ -841,20 +903,16 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
           <div className="flex-1 overflow-auto mx-6 my-4">
             <table className="w-full">
               <thead className="bg-[#F9FBFA] text-sm text-gray-600 font-medium sticky top-0 z-10">
-                <tr>
                   <th className="px-3 py-3 text-left font-medium">订单编号</th>
+                  <th className="px-3 py-3 text-left font-medium">订单类型</th>
                   <th className="px-3 py-3 text-left font-medium">班级名称</th>
                   <th className="px-3 py-3 text-left font-medium">学生信息</th>
                   <th className="px-3 py-3 text-left font-medium">课程费用</th>
-                  <th className="px-3 py-3 text-left font-medium">讲次信息</th>
-                  <th className="px-3 py-3 text-left font-medium">教辅费</th>
-                  <th className="px-3 py-3 text-left font-medium">订单金额</th>
                   <th className="px-3 py-3 text-left font-medium">实收金额</th>
                   <th className="px-3 py-3 text-left font-medium">支付方式</th>
                   <th className="px-3 py-3 text-left font-medium">下单时间</th>
-                  <th className="px-3 py-3 text-left font-medium">支付时间</th>
                   <th className="px-3 py-3 text-left font-medium">交易状态</th>
-                </tr>
+                  <th className="px-3 py-3 text-left font-medium">操作</th>
               </thead>
               <tbody>
                 {filteredOrders.flatMap((order) =>
@@ -866,15 +924,11 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                         key={subOrder.id}
                         subOrder={subOrder}
                         courseItem={courseItem}
-                        materialItem={materialItem}
                         orderTime={order.orderTime}
-                        paymentTime={order.paymentTime}
-                        totalAmount={order.totalAmount}
                         onClassClick={handleClassClick}
                         onStudentClick={handleStudentClick}
-                        onCopyId={(id) => {
-                          navigator.clipboard.writeText(id);
-                        }}
+                        onCopyId={(id) => { navigator.clipboard.writeText(id); }}
+                        onViewDetail={(id) => setSelectedOrderId(id)}
                       />
                     );
                   })
