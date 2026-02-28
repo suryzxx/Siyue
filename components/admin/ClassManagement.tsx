@@ -953,6 +953,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       { header: '收费模式（整期、分期）*', key: 'chargeMode', width: 25 },
       { header: '产品费用*', key: 'price', width: 10 },
       { header: '教辅费', key: 'materialPrice', width: 10 },
+      { header: '售卖模式（普通班、预售班）', key: 'saleMode', width: 20 },
+      { header: '定金（预售班必填）', key: 'deposit', width: 15 },
+      { header: '最低开班人数（预售班必填）', key: 'minStudents', width: 18 },
+      { header: '组班截止时间', key: 'enrollmentDeadline', width: 15 },
     ];
 
     // Style Header
@@ -1008,6 +1012,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const classroomNames = CLASSROOMS;
     const booleanOptions = ['是', '否'];
     const chargeModeOptions = ['整期', '分期'];
+    const saleModeOptions = ['普通班', '预售班'];
 
     // Helper to add data column
     const addDataCol = (data: string[], colIndex: number) => {
@@ -1026,6 +1031,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const classroomRange = addDataCol(classroomNames, 5); 
     const booleanRange = addDataCol(booleanOptions, 6);
     const chargeModeRange = addDataCol(chargeModeOptions, 7);
+    const saleModeRange = addDataCol(saleModeOptions, 8);
 
     // Apply Validation to Template Columns (Rows 2-1000)
     for (let i = 2; i <= 1000; i++) {
@@ -1047,6 +1053,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         worksheet.getCell(`K${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [booleanRange] };
         // P: Charge Mode
         worksheet.getCell(`P${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [chargeModeRange] };
+        // R: Sale Mode
+        worksheet.getCell(`R${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [saleModeRange] };
     }
 
     // Generate and Download
@@ -2208,6 +2216,11 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             return cls.saleStatus === 'on_sale' 
                 ? <span className="text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded text-xs">已上架</span>
                 : <span className="text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded text-xs">未上架</span>;
+        case 'saleMode':
+
+            return cls.saleMode === 'presale' 
+                ? <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">预售班</span>
+                : <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">普通班</span>;
         case 'schedule': return <span className="text-gray-600 text-xs">{cls.scheduleDescription || cls.startDate} {cls.timeSlot}</span>;
         case 'createdTime': return <span className="text-gray-600 text-xs">{cls.createdTime}</span>;
         default: return null;

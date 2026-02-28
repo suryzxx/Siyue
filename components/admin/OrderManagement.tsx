@@ -803,7 +803,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
         <div className="px-6 py-4 border-b border-gray-100 bg-white flex justify-between items-center">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => {}}
+              onClick={() => onNavigateToManualOrder?.()}
               className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
             >
               报名

@@ -105,7 +105,18 @@ export interface ClassInfo {
   refundPolicy?: 'unused' | 'full' | 'partial'; // 退费策略
   materialPrice?: number; // 教辅费
   materialRefundPolicy?: 'no_return' | 'return'; // 教辅退费策略
+  
+  // 预售模式
+  saleMode?: 'normal' | 'presale'; // 售卖模式：普通班、预售班
+  presaleInfo?: {
+    deposit: number; // 定金
+    minStudents: number; // 最低开班人数
+    deadline?: string; // 组班截止时间
+    depositedCount?: number; // 已付定金人数
+    status?: 'preparing' | 'success' | 'failed'; // 预售状态
+  };
 }
+
 
 export interface Task {
   id: string;

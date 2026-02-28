@@ -251,9 +251,28 @@ const ClassDetailPage: React.FC<ClassDetailPageProps> = ({
 
             {activeDetailTab === 'sales' && (
               <div className="grid grid-cols-1 gap-y-6 text-sm text-gray-600 max-w-2xl">
+                <div className="flex"><span className="text-gray-400 w-32 inline-block">售卖模式：</span><span className={selectedClass.saleMode === 'presale' ? 'text-purple-600 font-bold' : 'text-gray-900'}>{selectedClass.saleMode === 'presale' ? '预售班' : '普通班'}</span></div>
                 <div className="flex"><span className="text-gray-400 w-32 inline-block">收费模式：</span><span className="text-gray-900">{selectedClass.chargeMode === 'whole' ? '整期' : '分期'}</span></div>
                 <div className="flex"><span className="text-gray-400 w-32 inline-block">产品费用：</span><span className="text-red-500 font-bold">¥{selectedClass.price}</span></div>
                 <div className="flex"><span className="text-gray-400 w-32 inline-block">教辅费用：</span><span className="text-red-500 font-bold">¥{selectedClass.materialPrice || 0}</span></div>
+                
+                {selectedClass.saleMode === 'presale' && selectedClass.presaleInfo && (
+                  <>
+                    <div className="pt-4 border-t border-gray-100">
+                      <div className="text-gray-800 font-medium mb-4">预售信息</div>
+                    </div>
+                    <div className="flex"><span className="text-gray-400 w-32 inline-block">定金：</span><span className="text-purple-600 font-bold">¥{selectedClass.presaleInfo.deposit}</span></div>
+                    <div className="flex"><span className="text-gray-400 w-32 inline-block">最低开班人数：</span><span className="text-gray-900">{selectedClass.presaleInfo.minStudents}人</span></div>
+                    <div className="flex"><span className="text-gray-400 w-32 inline-block">已付定金人数：</span><span className="text-gray-900">{selectedClass.presaleInfo.depositedCount}人</span></div>
+                    <div className="flex"><span className="text-gray-400 w-32 inline-block">组班截止时间：</span><span className="text-gray-900">{selectedClass.presaleInfo.deadline}</span></div>
+                    <div className="flex">
+                      <span className="text-gray-400 w-32 inline-block">预售状态：</span>
+                      <span className={`font-medium ${selectedClass.presaleInfo.status === 'success' ? 'text-green-600' : selectedClass.presaleInfo.status === 'preparing' ? 'text-orange-600' : 'text-red-600'}`}>
+                        {selectedClass.presaleInfo.status === 'success' ? '预售成功' : selectedClass.presaleInfo.status === 'preparing' ? '预售中' : '预售失败'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

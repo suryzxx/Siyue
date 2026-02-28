@@ -9,7 +9,7 @@ interface ScheduleProps {
   onNavigateToClassDetail?: (classId: string) => void;
 }
 
-type ScheduleTab = 'time' | 'teacher' | 'classroom';
+type ScheduleTab = 'teacher' | 'classroom';
 
 // 周视图课程数据类型
 interface ScheduleItem {
@@ -255,12 +255,9 @@ const generateMockScheduleData = (classes: ClassInfo[], lessons: Lesson[]) => {
 };
 
 const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClassDetail }) => {
-  const [activeTab, setActiveTab] = useState<ScheduleTab>('time');
+  const [activeTab, setActiveTab] = useState<ScheduleTab>('teacher');
   
-  // 时间课表筛选状态
-  const [filterTeacher, setFilterTeacher] = useState('');
-  const [filterCampus, setFilterCampus] = useState('');
-  const [filterDateRange, setFilterDateRange] = useState({ start: '', end: '' });
+
   
   // 老师课表筛选状态
   const [filterTeacherName, setFilterTeacherName] = useState('');
@@ -300,24 +297,9 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
     newDate.setDate(newDate.getDate() + (offset * 7));
     setCurrentWeek(newDate);
   };
-
-  // 模拟课程数据
-  const scheduleData = generateMockScheduleData(classes, lessons);
   
-  // 筛选后的时间课表数据
-  const filteredTimeSchedule = scheduleData.filter(item => {
-    const matchTeacher = !filterTeacher || item.classInfo.teacherId?.includes(filterTeacher);
-    const matchCampus = !filterCampus || item.classInfo.campus === filterCampus;
-    return matchTeacher && matchCampus;
-  });
-
-  // 分页数据
-  const totalItems = filteredTimeSchedule.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const paginatedData = filteredTimeSchedule.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // 生成课程数据
+  const scheduleData = generateMockScheduleData(classes, lessons);
 
   const teachers = [
     { id: '219', name: 'Melody', campus: '龙江校区' },
@@ -412,16 +394,7 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
       {/* Tabs */}
       <div className="px-6 border-b border-gray-200">
         <div className="flex gap-8">
-          <button
-            onClick={() => setActiveTab('time')}
-            className={`py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'time'
-                ? 'text-primary border-primary'
-                : 'text-gray-600 border-transparent hover:text-gray-800'
-            }`}
-          >
-            时间课表
-          </button>
+
           <button
             onClick={() => setActiveTab('teacher')}
             className={`py-3 text-sm font-medium border-b-2 transition-colors ${
@@ -445,128 +418,7 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
         </div>
       </div>
 
-      {/* 时间课表 */}
-      {activeTab === 'time' && (
-        <>
-          {/* Filter Bar */}
-          <div className="p-6 border-b border-gray-100 flex flex-wrap gap-4 items-center bg-white">
-            <div className="flex items-center gap-2">
-              <input 
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36 focus:outline-none focus:border-primary"
-                placeholder="请输入老师姓名"
-                value={filterTeacher}
-                onChange={e => setFilterTeacher(e.target.value)}
-              />
-            </div>
-            <select 
-              className="border border-gray-300 rounded px-3 py-1.5 text-sm w-32 text-gray-600 focus:outline-none focus:border-primary"
-              value={filterCampus}
-              onChange={e => setFilterCampus(e.target.value)}
-            >
-              <option value="">校区</option>
-              {CAMPUSES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <div className="flex items-center gap-2">
-              <input 
-                type="date"
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
-                value={filterDateRange.start}
-                onChange={e => setFilterDateRange({...filterDateRange, start: e.target.value})}
-              />
-              <span className="text-gray-400">至</span>
-              <input 
-                type="date"
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
-                value={filterDateRange.end}
-                onChange={e => setFilterDateRange({...filterDateRange, end: e.target.value})}
-              />
-            </div>
-          </div>
 
-          {/* Table */}
-          <div className="flex-1 overflow-auto p-6">
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">开课日期</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">开课时间</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">班级</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">学科</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">年级</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">授课方式</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">授课老师</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">辅导老师</th>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600 border-b border-gray-200">校区</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedData.map((item, index) => {
-                    const teacher = TEACHERS.find(t => t.id === item.classInfo.teacherId);
-                    return (
-                      <tr key={index} className="hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                        <td className="px-4 py-3 text-gray-700">{item.date}</td>
-                        <td className="px-4 py-3 text-gray-700">{item.startTime}-{item.endTime}</td>
-                        <td className="px-4 py-3">
-                          <span 
-                            className="text-primary cursor-pointer hover:underline"
-                            onClick={() => onNavigateToClassDetail?.(item.classInfo.id)}
-                          >
-                            {item.classInfo.name}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-700">{item.classInfo.subject || '英语'}</td>
-                        <td className="px-4 py-3 text-gray-700">{item.classInfo.grade || '中班'}</td>
-                        <td className="px-4 py-3 text-gray-700">面授</td>
-                        <td className="px-4 py-3 text-gray-700">{teacher?.name || '班级组'}</td>
-                        <td className="px-4 py-3 text-gray-700">无</td>
-                        <td className="px-4 py-3 text-gray-700">{item.classInfo.campus || '默认校区'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <span className="text-sm text-gray-500">共{totalItems}条数据</span>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
-              >
-                上一页
-              </button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = i + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded text-sm ${
-                      currentPage === page 
-                        ? 'bg-primary text-white' 
-                        : 'border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
-              >
-                下一页
-              </button>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* 老师课表 */}
       {activeTab === 'teacher' && (

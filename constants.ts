@@ -464,7 +464,68 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     scheduleDescription: '2026.03.16-2026.03.22',
     contentMode: 'self', semester: '春季', subject: '英语', grade: '剑少考辅', studentGrade: '剑少考辅', classroom: '仙林303', needQualification: false, studentTag: '剑少一级', allowStudentSchedule: false, chargeMode: 'whole', price: 1199, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
   },
+  // 预售班级
+  // 预售班级
+  {
+    id: '701',
+    name: '26春-G2-A+--预售班',
+    timeSlot: '10:00-12:00',
+    description: '26春-G2-A+预售',
+    color: '#722ED1',
+    city: '南京',
+    district: '鼓楼区',
+    campus: '龙江校区',
+    teacherId: '219',
+    assistant: '215',
+    capacity: 15,
+    studentCount: 0,
+    courseId: 'course5',
+    startDate: '2026-03-15',
+    status: 'pending',
+    saleStatus: 'on_sale',
+    createdTime: '2026-02-20 10:00:00',
+    scheduleDescription: '2026.03.15-2026.06.30',
+    contentMode: 'self', semester: '春季', subject: '英语', grade: 'G2', studentGrade: 'G2', classroom: '龙江103', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 4999, refundPolicy: 'unused', materialPrice: 200, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六'],
+    saleMode: 'presale',
+    presaleInfo: {
+      deposit: 1000,
+      minStudents: 5,
+      deadline: '2026-03-01',
+      depositedCount: 3,
+      status: 'preparing'
+    }
+  },
+  {
+    id: '702',
+    name: '26暑-K3-飞跃--预售班',
+    timeSlot: '14:00-16:00',
+    description: '26暑-K3-飞跃预售',
+    color: '#EB2F96',
+    city: '南京',
+    district: '玄武区',
+    campus: '大行宫校区',
+    teacherId: '218',
+    assistant: '216',
+    capacity: 12,
+    studentCount: 0,
+    courseId: 'course2',
+    startDate: '2026-07-10',
+    status: 'pending',
+    saleStatus: 'on_sale',
+    createdTime: '2026-02-25 10:00:00',
+    scheduleDescription: '2026.07.10-2026.08.15',
+    contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '大行宫102', needQualification: true, studentTag: '飞跃', allowStudentSchedule: false, chargeMode: 'whole', price: 3599, refundPolicy: 'unused', materialPrice: 150, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六'],
+    saleMode: 'presale',
+    presaleInfo: {
+      deposit: 800,
+      minStudents: 5,
+      deadline: '2026-06-15',
+      depositedCount: 5,
+      status: 'success'
+    }
+  }
 ];
+
 
 export const STUDENTS: Student[] = [
   { id: 's1', name: '张小明', hasUnread: true },
