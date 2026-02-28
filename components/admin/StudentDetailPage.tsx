@@ -1438,8 +1438,30 @@ const getStatusBadge = (status: string) => {
                 <span className="text-gray-900 ml-2">{student.evaluationLevel || '-'}</span>
               </div>
               <div className="flex items-center">
+                <span className="text-gray-400">注册渠道:</span>
+                <span className="text-gray-900 ml-2">{student.registrationChannel || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">获客渠道:</span>
+                {student.acquisitionChannel ? (
+                  <span className="ml-2 px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 border border-blue-200">
+                    {student.acquisitionChannel}
+                  </span>
+                ) : (
+                  <span className="text-gray-900 ml-2">-</span>
+                )}
+              </div>
+              <div className="flex items-center">
                 <span className="text-gray-400">在读年级:</span>
                 <span className="text-gray-900 ml-2">{student.grade || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">在读学校:</span>
+                <span className="text-gray-900 ml-2">{student.school || '-'}</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-400">就读城市:</span>
+                <span className="text-gray-900 ml-2">{student.studyCity || '-'}</span>
               </div>
               <div className="flex items-center">
                 <span className="text-gray-400">性别:</span>
@@ -1458,34 +1480,12 @@ const getStatusBadge = (status: string) => {
 
               {/* Row 3 */}
               <div className="flex items-center">
-                <span className="text-gray-400">在读学校:</span>
-                <span className="text-gray-900 ml-2">{student.school || '-'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">就读城市:</span>
-                <span className="text-gray-900 ml-2">{student.studyCity || '-'}</span>
-              </div>
-              <div className="flex items-center">
                 <span className="text-gray-400">所属校区:</span>
                 <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
               </div>
               <div className="flex items-center">
                 <span className="text-gray-400">注册时间:</span>
                 <span className="text-gray-900 ml-2">{student.createdTime}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">注册渠道:</span>
-                <span className="text-gray-900 ml-2">{student.registrationChannel || '-'}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">获客渠道:</span>
-                {student.acquisitionChannel ? (
-                  <span className="ml-2 px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 border border-blue-200">
-                    {student.acquisitionChannel}
-                  </span>
-                ) : (
-                  <span className="text-gray-900 ml-2">-</span>
-                )}
               </div>
             </div>
           </div>
@@ -1617,7 +1617,7 @@ const getStatusBadge = (status: string) => {
                       <div className="text-center py-8 text-gray-400">暂无订单记录</div>
                     ) : (
                       filteredOrders.map((order, orderIndex) => {
-                     const orderClasses = mockOrderClasses.filter(cls => cls.orderNumber === order.orderNumber);
+                     const orderClasses = mockOrderClasses.filter(cls => cls.orderNumber === order.orderNumber).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
                      
                      return (
                        <div key={order.id} className="order-card">

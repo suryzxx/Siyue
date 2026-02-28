@@ -880,6 +880,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     refundPolicy: 'unused' as 'unused' | 'full' | 'partial',
     materialPrice: '',
     materialRefundPolicy: 'no_return' as 'no_return' | 'return',
+    saleMode: 'normal' as 'normal' | 'presale', // 售卖模式：普通班、预售班
+    deposit: '', // 定金
+    minStudents: '', // 最低开班人数
+    enrollmentDeadline: '', // 组班截止时间
   });
   
   // Generated Lessons Preview State
@@ -915,6 +919,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       refundPolicy: 'unused',
       materialPrice: '',
       materialRefundPolicy: 'no_return',
+      saleMode: 'normal',
+      deposit: '',
+      minStudents: '',
+      enrollmentDeadline: '',
     });
     setCreateStep(1);
     setPreviewLessons([]);
@@ -2843,6 +2851,74 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">售卖模式</label>
+                                <div className="flex-1">
+                                    <select 
+                                        value={formData.sellingMode || '普通班'} 
+                                        onChange={e => setFormData({...formData, sellingMode: e.target.value})}
+                                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                                    >
+                                        <option value="普通班">普通班</option>
+                                        <option value="预售班">预售班</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            {formData.sellingMode === '预售班' && (
+                                <div className="space-y-4 mt-4 pl-36">
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">定金<span className="text-red-500">*</span></label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.deposit || ''} 
+                                                onChange={e => setFormData({...formData, deposit: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                                placeholder="请输入定金（需小于课程费）" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">元</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">尾款</label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.balance || '系统自动计算'} 
+                                                disabled
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-gray-50 text-gray-500" 
+                                                placeholder="系统自动计算" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">元</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">最低开班人数<span className="text-red-500">*</span></label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.minStudents || ''} 
+                                                onChange={e => setFormData({...formData, minStudents: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                                placeholder="请输入最低开班人数" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">人</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">组班截止时间</label>
+                                        <div className="flex-1">
+                                            <input 
+                                                type="date"
+                                                value={formData.deadline || ''} 
+                                                onChange={e => setFormData({...formData, deadline: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
