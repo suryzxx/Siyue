@@ -210,9 +210,9 @@ const OrderRow: React.FC<OrderRowProps> = ({ subOrder, courseItem, materialItem,
       <td className="px-3 py-3">
         <div>
           <span className="text-gray-900 font-medium">{formatCurrency(subOrder.realPay)}</span>
-          <span className="text-gray-400 text-xs ml-1">{subOrder.paymentMethod}</span>
         </div>
       </td>
+      <td className="px-3 py-3 text-gray-600 text-xs">{subOrder.paymentMethod}</td>
       <td className="px-3 py-3 text-gray-600 text-xs">{orderTime}</td>
       <td className="px-3 py-3 text-gray-600 text-xs">{paymentTime}</td>
       <td className="px-3 py-3">
@@ -699,6 +699,42 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
               width="w-[120px]"
             />
 
+            {/* 支付方式筛选 - MultiSelect */}
+            <MultiSelect
+              options={['微信支付', '现金', '支付宝', '银行卡']}
+              selected={selectedPaymentMethods}
+              onChange={setSelectedPaymentMethods}
+              placeholder="支付方式"
+              width="w-[100px]"
+            />
+
+            {/* 年份筛选 - MultiSelect */}
+            <MultiSelect
+              options={['2026年', '2025年', '2024年', '2023年']}
+              selected={selectedYears}
+              onChange={setSelectedYears}
+              placeholder="年份"
+              width="w-[90px]"
+            />
+
+            {/* 学期筛选 - MultiSelect */}
+            <MultiSelect
+              options={['春季班', '暑假班', '秋季班', '寒假班']}
+              selected={selectedSemesters}
+              onChange={setSelectedSemesters}
+              placeholder="学期"
+              width="w-[90px]"
+            />
+
+            {/* 产品类型筛选 - MultiSelect */}
+            <MultiSelect
+              options={['课程', '教辅']}
+              selected={selectedProductTypes}
+              onChange={setSelectedProductTypes}
+              placeholder="产品类型"
+              width="w-[90px]"
+            />
+
             {/* 时间筛选 */}
             <div className="flex items-center gap-2">
               <input
@@ -814,6 +850,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
                   <th className="px-3 py-3 text-left font-medium">教辅费</th>
                   <th className="px-3 py-3 text-left font-medium">订单金额</th>
                   <th className="px-3 py-3 text-left font-medium">实收金额</th>
+                  <th className="px-3 py-3 text-left font-medium">支付方式</th>
                   <th className="px-3 py-3 text-left font-medium">下单时间</th>
                   <th className="px-3 py-3 text-left font-medium">支付时间</th>
                   <th className="px-3 py-3 text-left font-medium">交易状态</th>
