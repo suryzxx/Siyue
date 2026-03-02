@@ -2850,14 +2850,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
                         <div className="grid grid-cols-1 gap-6 max-w-[800px]">
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>收费模式</label>
-                                <select value={formData.chargeMode} onChange={e => setFormData({...formData, chargeMode: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
-                                    <option value="whole">整期</option>
-                                    <option value="installment">分期</option>
-                                </select>
-                            </div>
-
-                            <div className="flex items-center">
                                 <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>产品费</label>
                                 <div className="flex-1 relative">
                                     <input value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="请输入" />
@@ -2872,21 +2864,26 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>收费模式</label>
+                                <select value={formData.chargeMode} onChange={e => setFormData({...formData, chargeMode: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                                    <option value="whole">整期</option>
+                                    <option value="installment">分期</option>
+                                    <option value="presale">预售</option>
+                                </select>
+                            </div>
+                            
                             <div className="flex items-center">
                                 <label className="w-32 text-sm text-gray-500 text-right mr-4">售卖模式</label>
                                 <div className="flex-1">
-                                    <select 
-                                        value={formData.sellingMode || '普通班'} 
-                                        onChange={e => setFormData({...formData, sellingMode: e.target.value})}
-                                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                                    >
-                                        <option value="普通班">普通班</option>
-                                        <option value="预售班">预售班</option>
-                                    </select>
+                                    <span className={`px-3 py-2 text-sm rounded ${formData.chargeMode === 'presale' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
+                                        {formData.chargeMode === 'presale' ? '预售班' : '普通班'}
+                                    </span>
                                 </div>
                             </div>
                             
-                            {formData.sellingMode === '预售班' && (
+                            {formData.chargeMode === 'presale' && (
                                 <div className="space-y-4 mt-4 pl-36">
                                     <div className="flex items-center">
                                         <label className="w-32 text-sm text-gray-500 text-right mr-4">定金<span className="text-red-500">*</span></label>
