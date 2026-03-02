@@ -14,6 +14,7 @@ interface ClassManagementProps {
   onAddClass: (newClass: ClassInfo, newLessons: Lesson[]) => void;
   onUpdateLessons: (updatedLessons: Lesson[]) => void;
   createTrigger?: number;
+  onNavigateToClassDetail?: (classId: string) => void;
 }
 
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -22,20 +23,28 @@ const YEARS = ['2024', '2025', '2026'];
 const SUBJECTS = ['英语', '数学', '编程', '美术'];
 const SEMESTERS = ['春季', '暑假', '秋季', '寒假'];
 
-// Cascading Data Structures
+// Combined Course Class Hierarchy - For Class Management filtering
+// Includes both System Courses (体系课) and Special Courses (专项课)
 const GRADE_CLASS_TYPES: Record<string, string[]> = {
-  'K1': ['K1启蒙'],
-  'K2': ['K2启蒙', 'K2进阶'],
-  'K3': ['K3启蒙', 'K3进阶', 'K3飞跃'],
-  'G1': ['1A', '1A+', '1S', '1S+', '1R', '1R预备'],
-  'G2': ['2A', '2A+', '2S', '2S+', '2R', '2R预备'],
-  'G3': ['3A', '3A+', '3S', '3S+', '3R'],
-  'G4': ['4A', '4A+', '4S', '4S+', '4R'],
-  'G5': ['5A', '5A+', '5S', '5S+', '5R'],
-  'G6': ['6A', '6A+', '6S', '6S+', '6R'],
-  'G7': ['G7国际托管班', 'G7国际菁英班', 'G7国际英才'],
-  'G8': ['G8国际托管班', 'G8国际菁英班', 'G8国际英才'],
-  'G9': ['G9国际托管班', 'G9国际菁英班', 'G9国际英才'],
+  // System Courses (体系课)
+  'K2': ['启蒙', '启蒙衔接', '进阶'],
+  'K3': ['启蒙', '进阶', '进阶衔接', '飞跃'],
+  'G1': ['A', 'A+', 'S', 'R'],
+  'G2': ['A', 'A+', 'S', 'R'],
+  'G3': ['A', 'A+', 'S', 'S+', 'R'],
+  'G4': ['A', 'A+', 'S', 'S+', 'R'],
+  'G5': ['A', 'A+', 'S', 'S+', 'R'],
+  'G6': ['A', 'A+', 'S', 'S+', 'R'],
+  'G7': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G8': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  'G9': ['英才', '菁英', '菁英Plus', '火箭', '火箭Plus'],
+  
+  // Special Courses (专项课)
+  '剑少考辅': ['剑少一级', '剑少二级', '剑少三级'],
+  'MSE考辅': ['KET综合冲刺', 'KET口语写作专项', 'PET综合冲刺', 'PET口语写作专项', 'FCE综合冲刺', 'FCE口语写作专项'],
+  '自然拼读': ['自拼一级', '自拼二级', '自拼三级'],
+  '语法专项': ['KET核心语法', 'PET核心语法'],
+  '阅读专项': ['神奇树屋', '神奇校', '苍蝇小子', '夏洛的网', '国家探索', '国家地理足迹-KET', '国家地理足迹-PET'],
 };
 
 const LOCATION_DATA: Record<string, Record<string, string[]>> = {
@@ -74,8 +83,8 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
+    { id: 'saleMode', label: '售卖模式' },
     { id: 'schedule', label: '上课时间' },
-    { id: 'createdTime', label: '创建时间' },
   ];
 
   // 导出列定义（班层拆分为年级+班型，上课时间拆分为开课日期+结课日期+讲次时间）
@@ -102,6 +111,7 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
+    { id: 'saleMode', label: '售卖模式' },
     { id: 'startDate', label: '开课日期' },
     { id: 'endDate', label: '结课日期' },
     { id: 'lessonTime', label: '讲次时间' },
@@ -192,9 +202,233 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
         )}
       </div>
     );
-  };
+   };
 
- // --- Classroom Schedule Modal Component ---
+  // Combined Grade-Class Type Select Component with Tags
+  interface GradeClassTypeSelectProps {
+    selected: Array<{grade: string, classType: string}>;
+    onChange: (selected: Array<{grade: string, classType: string}>) => void;
+    placeholder: string;
+    width?: string;
+  }
+
+  const GradeClassTypeSelect: React.FC<GradeClassTypeSelectProps> = ({ selected, onChange, placeholder, width = 'w-[180px]' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedGrade, setSelectedGrade] = useState<string>('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // 点击外部关闭下拉框
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+          setSelectedGrade('');
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+
+    const toggleSelection = (grade: string, classType: string) => {
+      const key = `${grade} ${classType}`;
+      const exists = selected.some(item => item.grade === grade && item.classType === classType);
+      
+      if (exists) {
+        onChange(selected.filter(item => !(item.grade === grade && item.classType === classType)));
+      } else {
+        onChange([...selected, { grade, classType }]);
+      }
+    };
+
+    const removeSelection = (grade: string, classType: string) => {
+      onChange(selected.filter(item => !(item.grade === grade && item.classType === classType)));
+    };
+
+    const clearAll = () => {
+      onChange([]);
+      setSelectedGrade('');
+    };
+
+    const displayText = selected.length > 0 
+      ? `${placeholder} (${selected.length})` 
+      : placeholder;
+
+     const availableClassTypes = selectedGrade ? GRADE_CLASS_TYPES[selectedGrade] || [] : [];
+
+     const getConsolidatedTags = () => {
+       const tags: Array<{grade: string, classType?: string, isFullGrade: boolean}> = [];
+       const gradeGroups: Record<string, Array<{grade: string, classType: string}>> = {};
+       
+       selected.forEach(item => {
+         if (!gradeGroups[item.grade]) {
+           gradeGroups[item.grade] = [];
+         }
+         gradeGroups[item.grade].push(item);
+       });
+       
+       Object.entries(gradeGroups).forEach(([grade, selections]) => {
+         const allClassTypes = GRADE_CLASS_TYPES[grade] || [];
+         const hasAllClassTypes = allClassTypes.every(classType => 
+           selections.some(item => item.classType === classType)
+         );
+         
+         if (hasAllClassTypes && allClassTypes.length > 0) {
+           tags.push({ grade, isFullGrade: true });
+         } else {
+           selections.forEach(item => {
+             tags.push({ grade: item.grade, classType: item.classType, isFullGrade: false });
+           });
+         }
+       });
+       
+       return tags;
+     };
+
+     const consolidatedTags = getConsolidatedTags();
+
+     return (
+      <div className={`relative ${width} flex-shrink-0`} ref={dropdownRef}>
+         {/* Selected Tags Display */}
+         {consolidatedTags.length > 0 && (
+           <div className="absolute -top-7 left-0 right-0 flex flex-wrap gap-1 mb-1">
+             {consolidatedTags.map((tag, index) => (
+               <div 
+                 key={`${tag.grade}-${tag.classType || 'full'}-${index}`}
+                 className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs"
+               >
+                 <span>{tag.isFullGrade ? tag.grade : `${tag.grade} ${tag.classType}`}</span>
+                 <button
+                   type="button"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if (tag.isFullGrade) {
+                       onChange(selected.filter(item => item.grade !== tag.grade));
+                     } else {
+                       removeSelection(tag.grade, tag.classType!);
+                     }
+                   }}
+                   className="text-blue-400 hover:text-blue-700 text-xs"
+                 >
+                   ×
+                 </button>
+               </div>
+             ))}
+           </div>
+         )}
+
+        <button
+          className={`border border-gray-300 rounded px-2 py-1.5 text-sm w-full focus:outline-none focus:border-primary text-gray-700 h-[34px] flex items-center justify-between ${selected.length > 0 ? 'bg-blue-50 border-blue-200' : ''}`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="truncate">{displayText}</span>
+          <span className="ml-1 text-xs">{isOpen ? '▲' : '▼'}</span>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-50 mt-1 w-[360px] bg-white border border-gray-300 rounded shadow-lg">
+            {/* Header with clear button */}
+            <div className="p-2 border-b border-gray-200 flex justify-end items-center">
+              {selected.length > 0 && (
+                <button
+                  onClick={clearAll}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  清空
+                </button>
+              )}
+            </div>
+
+            {/* Left-Right Layout Container */}
+            <div className="flex" style={{ height: '240px' }}>
+              {/* Left Side: Grade/Special Type List */}
+              <div className="w-1/2 border-r border-gray-200 flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  {Object.keys(GRADE_CLASS_TYPES).map(grade => (
+                    <button
+                      key={grade}
+                      type="button"
+                      onClick={() => setSelectedGrade(selectedGrade === grade ? '' : grade)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${selectedGrade === grade ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-500' : 'text-gray-700'}`}
+                    >
+                      {grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+               {/* Right Side: Class Type List */}
+               <div className="w-1/2 flex flex-col">
+                 {selectedGrade && (
+                   <div className="border-b border-gray-200 p-2">
+                     <button
+                       type="button"
+                       onClick={() => {
+                         const allClassTypes = GRADE_CLASS_TYPES[selectedGrade] || [];
+                         const currentGradeSelections = selected.filter(item => item.grade === selectedGrade);
+                         const allClassTypesSelected = allClassTypes.every(classType => 
+                           currentGradeSelections.some(item => item.classType === classType)
+                         );
+                         
+                         if (allClassTypesSelected) {
+                           onChange(selected.filter(item => item.grade !== selectedGrade));
+                         } else {
+                           const newSelections = allClassTypes.map(classType => ({
+                             grade: selectedGrade,
+                             classType: classType
+                           }));
+                           const otherSelections = selected.filter(item => item.grade !== selectedGrade);
+                           onChange([...otherSelections, ...newSelections]);
+                         }
+                       }}
+                       className="w-full text-left px-3 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded border border-blue-200 flex items-center justify-between"
+                     >
+                       <span>全选</span>
+                       <span className="text-xs">
+                         {(() => {
+                           const currentGradeSelections = selected.filter(item => item.grade === selectedGrade);
+                           const allClassTypes = GRADE_CLASS_TYPES[selectedGrade] || [];
+                           const selectedCount = currentGradeSelections.length;
+                           const totalCount = allClassTypes.length;
+                           return `${selectedCount}/${totalCount}`;
+                         })()}
+                       </span>
+                     </button>
+                   </div>
+                 )}
+                 
+                 <div className="flex-1 overflow-y-auto">
+                   {selectedGrade ? (
+                     availableClassTypes.map(classType => {
+                       const isSelected = selected.some(item => item.grade === selectedGrade && item.classType === classType);
+                       return (
+                         <button
+                           key={classType}
+                           type="button"
+                           onClick={() => toggleSelection(selectedGrade, classType)}
+                           className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${isSelected ? 'bg-green-50 text-green-600' : 'text-gray-700'}`}
+                         >
+                           {classType}
+                         </button>
+                       );
+                     })
+                   ) : (
+                     <div className="h-full flex items-center justify-center text-gray-300 text-sm">
+                       —
+                     </div>
+                   )}
+                 </div>
+               </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+ 
+  // --- Classroom Schedule Modal Component ---
 const ClassroomScheduleModal: React.FC<{ 
   campus: string, 
   onClose: () => void 
@@ -506,21 +740,20 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   lessons, 
   onAddClass, 
   onUpdateLessons, 
-  createTrigger = 0
+  createTrigger = 0,
+  onNavigateToClassDetail
 }) => {
-  // Navigation State
-  const [view, setView] = useState<'list' | 'detail'>('list');
-  const [selectedClass, setSelectedClass] = useState<ClassInfo | null>(null);
-  const [activeDetailTab, setActiveDetailTab] = useState<'basic' | 'course' | 'sales' | 'changes' | 'students'>('basic');
-
    // Modal State
    const [showCreateModal, setShowCreateModal] = useState(false);
    const [showBatchImportModal, setShowBatchImportModal] = useState(false); // Batch Import Modal State
    const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
    const [showQueueModal, setShowQueueModal] = useState<string | null>(null); // holds class ID
-   const [editingId, setEditingId] = useState<string | null>(null); // New: Editing ID
+   const [editingId, setEditingId] = useState<string | null>(null);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const [selectedClassForDeletion, setSelectedClassForDeletion] = useState<ClassInfo | null>(null);
+   const [isAttendanceRecorded, setIsAttendanceRecorded] = useState(false);
    
-   // Batch Import State
+    // Batch Import State
    const [batchImportStep, setBatchImportStep] = useState<1 | 2>(1); // 1: 导入文件, 2: 查看导入情况
    const [importResults, setImportResults] = useState<{
      success: Array<{row: number, className: string, message: string}>;
@@ -547,9 +780,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   const [filterSemester, setFilterSemester] = useState<string[]>([]);
   const [filterSubject, setFilterSubject] = useState<string[]>([]);
   
-  // Class Level Filter
-  const [filterGrade, setFilterGrade] = useState<string[]>([]);
-  const [filterClassType, setFilterClassType] = useState<string[]>([]);
+  // Class Level Filter - Combined grade and class type
+  const [filterGradeClassType, setFilterGradeClassType] = useState<Array<{grade: string, classType: string}>>([]);
 
   // Address Filter
   const [filterCity, setFilterCity] = useState<string[]>([]);
@@ -566,14 +798,20 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   // NEW FILTERS (保持单选)
   const [filterRemaining, setFilterRemaining] = useState('');
   const [filterSaleStatus, setFilterSaleStatus] = useState('');
+  const [filterSaleMode, setFilterSaleMode] = useState('');
   const [filterStartDate, setFilterStartDate] = useState('');
   
-  const [showActiveOnly, setShowActiveOnly] = useState(true);
+   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
-  // Dynamic Options
+   // Batch Selection State
+   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+
+   // Dynamic Options
   const allClassTypes = Array.from(new Set(Object.values(GRADE_CLASS_TYPES).flat()));
-  const availableClassTypes = filterGrade.length > 0 
-    ? Array.from(new Set(filterGrade.flatMap(grade => GRADE_CLASS_TYPES[grade] || [])))
+  // Extract unique grades from filterGradeClassType for dynamic class type filtering
+  const selectedGrades = Array.from(new Set(filterGradeClassType.map(item => item.grade)));
+  const availableClassTypes = selectedGrades.length > 0 
+    ? Array.from(new Set(selectedGrades.flatMap(grade => GRADE_CLASS_TYPES[grade as keyof typeof GRADE_CLASS_TYPES] || [])))
     : allClassTypes;
 
   const allDistricts = Array.from(new Set(Object.values(LOCATION_DATA).flatMap(city => Object.keys(city))));
@@ -644,6 +882,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     refundPolicy: 'unused' as 'unused' | 'full' | 'partial',
     materialPrice: '',
     materialRefundPolicy: 'no_return' as 'no_return' | 'return',
+    saleMode: 'normal' as 'normal' | 'presale', // 售卖模式：普通班、预售班
+    deposit: '', // 定金
+    minStudents: '', // 最低开班人数
+    enrollmentDeadline: '', // 组班截止时间
   });
   
   // Generated Lessons Preview State
@@ -679,6 +921,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       refundPolicy: 'unused',
       materialPrice: '',
       materialRefundPolicy: 'no_return',
+      saleMode: 'normal',
+      deposit: '',
+      minStudents: '',
+      enrollmentDeadline: '',
     });
     setCreateStep(1);
     setPreviewLessons([]);
@@ -709,6 +955,10 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       { header: '收费模式（整期、分期）*', key: 'chargeMode', width: 25 },
       { header: '产品费用*', key: 'price', width: 10 },
       { header: '教辅费', key: 'materialPrice', width: 10 },
+      { header: '售卖模式（普通班、预售班）', key: 'saleMode', width: 20 },
+      { header: '定金（预售班必填）', key: 'deposit', width: 15 },
+      { header: '最低开班人数（预售班必填）', key: 'minStudents', width: 18 },
+      { header: '组班截止时间', key: 'enrollmentDeadline', width: 15 },
     ];
 
     // Style Header
@@ -764,6 +1014,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const classroomNames = CLASSROOMS;
     const booleanOptions = ['是', '否'];
     const chargeModeOptions = ['整期', '分期'];
+    const saleModeOptions = ['普通班', '预售班'];
 
     // Helper to add data column
     const addDataCol = (data: string[], colIndex: number) => {
@@ -782,6 +1033,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     const classroomRange = addDataCol(classroomNames, 5); 
     const booleanRange = addDataCol(booleanOptions, 6);
     const chargeModeRange = addDataCol(chargeModeOptions, 7);
+    const saleModeRange = addDataCol(saleModeOptions, 8);
 
     // Apply Validation to Template Columns (Rows 2-1000)
     for (let i = 2; i <= 1000; i++) {
@@ -803,6 +1055,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         worksheet.getCell(`K${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [booleanRange] };
         // P: Charge Mode
         worksheet.getCell(`P${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [chargeModeRange] };
+        // R: Sale Mode
+        worksheet.getCell(`R${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [saleModeRange] };
     }
 
     // Generate and Download
@@ -868,7 +1122,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           name: cls.name,
           mode: '面授',
           courseName: course?.name || '',
-          courseType: course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课',
+          courseType: course?.type === 'long-term' ? '体系课' : course?.type === 'short-term' ? '专项课' : '短期课程',
             progress: progressText,
             capacity: cls.capacity,
             enrolled: cls.studentCount,
@@ -1012,8 +1266,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           }
           
           // 确定课程类型
-          const courseType = course?.type === 'long-term' ? '长期班' : 
-                            course?.type === 'short-term' ? '短期班' : '体验课';
+          const courseType = course?.type === 'long-term' ? '体系课' : 
+                            course?.type === 'short-term' ? '专项课' : '短期课程';
           
           // 确定班型（使用studentTag字段）
           const classType = cls.studentTag || '-';
@@ -1060,8 +1314,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             }
           }
           
-          const courseType = course?.type === 'long-term' ? '长期班' : 
-                            course?.type === 'short-term' ? '短期班' : '体验课';
+          const courseType = course?.type === 'long-term' ? '体系课' : 
+                            course?.type === 'short-term' ? '专项课' : '短期课程';
           const classType = firstClass.studentTag || '-';
           
           studentsToExport = ADMIN_STUDENTS.slice(0, 20).map(student => ({
@@ -1616,7 +1870,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         startTime: start,
         endTime: end,
         skipHolidays: true,
-        frequency: [], 
+        frequency: cls.scheduleFrequency || [], 
         
         chargeMode: (cls.chargeMode as 'whole' | 'installment') || 'whole',
         price: cls.price?.toString() || '',
@@ -1774,6 +2028,44 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       onAddClass(updatedClass, classLessons);
   };
 
+  // Batch toggle sale status
+  const handleBatchToggleSaleStatus = (status: 'on_sale' | 'off_sale') => {
+    if (selectedClasses.length === 0) {
+      alert('请先选择班级');
+      return;
+    }
+
+    selectedClasses.forEach(classId => {
+      const cls = classes.find(c => c.id === classId);
+      if (cls && cls.saleStatus !== status) {
+        const updatedClass = { ...cls, saleStatus: status };
+        const classLessons = lessons.filter(l => l.classId === cls.id);
+        onAddClass(updatedClass, classLessons);
+      }
+    });
+
+    // Clear selection after batch operation
+    setSelectedClasses([]);
+  };
+
+  // Handle select all classes
+  const handleSelectAll = () => {
+    if (selectedClasses.length === filteredClasses.length) {
+      setSelectedClasses([]);
+    } else {
+      setSelectedClasses(filteredClasses.map(cls => cls.id));
+    }
+  };
+
+  // Handle individual class selection
+  const handleSelectClass = (classId: string) => {
+    if (selectedClasses.includes(classId)) {
+      setSelectedClasses(selectedClasses.filter(id => id !== classId));
+    } else {
+      setSelectedClasses([...selectedClasses, classId]);
+    }
+  };
+
   // Push Queue Logic
   const classLessons = showQueueModal ? lessons.filter(l => l.classId === showQueueModal) : [];
   const selectedClassForQueue = classes.find(c => c.id === showQueueModal);
@@ -1805,9 +2097,17 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     // 4. Teacher Filter
     const matchTeacher = filterTeacher.length === 0 || filterTeacher.includes(cls.teacherId);
 
-    // 5. Other multi-select filters
-    const matchGrade = filterGrade.length === 0 || filterGrade.includes(cls.grade) || (course?.grade && filterGrade.includes(course.grade));
-    const matchClassType = filterClassType.length === 0 || filterClassType.includes(cls.studentTag);
+    // 5. Combined Grade & Class Type Filter
+    const matchGradeClassType = filterGradeClassType.length === 0 || 
+      filterGradeClassType.some(({ grade, classType }) => {
+        // Check if class matches either the class grade or course grade
+        const gradeMatch = cls.grade === grade || (course?.grade && course.grade === grade);
+        // Also check course tags for system course grades (e.g., "G1", "G2")
+        const tagMatch = course?.tags?.includes(grade) || false;
+        // Check if class type matches
+        const classTypeMatch = cls.studentTag === classType;
+        return (gradeMatch || tagMatch) && classTypeMatch;
+      });
     const matchCity = filterCity.length === 0 || filterCity.includes(cls.city);
     const matchDistrict = filterDistrict.length === 0 || filterDistrict.includes(cls.district);
     const matchCampus = filterCampus.length === 0 || filterCampus.includes(cls.campus);
@@ -1835,15 +2135,15 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     // 5. New Filters
     const matchRemaining = !filterRemaining || (filterRemaining === 'has_seats' ? ((cls.capacity || 0) - (cls.studentCount || 0) > 0) : ((cls.capacity || 0) - (cls.studentCount || 0) <= 0));
     const matchSaleStatus = !filterSaleStatus || cls.saleStatus === filterSaleStatus;
-
+    const matchSaleMode = !filterSaleMode || cls.saleMode === filterSaleMode;
     let matchCheckbox = true;
     if (showActiveOnly) {
         matchCheckbox = ['pending', 'active', 'full'].includes(cls.status || 'pending');
     }
 
-    return matchName && matchMode && matchYear && matchSubject && matchGrade && matchClassType && 
+    return matchName && matchMode && matchYear && matchSubject && matchGradeClassType && 
            matchSemester && matchTeacher && matchCity && matchDistrict && matchCampus && 
-           matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus;
+           matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus && matchSaleMode;
   });
 
   const getStatusBadge = (status: string) => {
@@ -1859,7 +2159,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         return <span className="bg-orange-50 text-orange-500 border border-orange-200 px-2 py-0.5 rounded text-xs">未开课</span>;
     }
   };
-
   const getCellContent = (colId: string, cls: ClassInfo) => {
     const teacher = TEACHERS.find(t => t.id === cls.teacherId);
     const course = COURSES.find(c => c.id === cls.courseId);
@@ -1878,14 +2177,18 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         case 'name': return (
             <span 
                 className="text-primary cursor-pointer hover:underline font-medium"
-                onClick={() => { setSelectedClass(cls); setView('detail'); setActiveDetailTab('basic'); }}
+                onClick={() => {
+                  if (onNavigateToClassDetail) {
+                    onNavigateToClassDetail(cls.id);
+                  }
+                }}
             >
                 {cls.name}
             </span>
         );
         case 'mode': return <span className="text-gray-600">面授</span>;
         case 'courseName': return <span className="text-gray-800">{course?.name}</span>;
-        case 'courseType': return <span className="text-gray-600">{course?.type === 'long-term' ? '长期班' : course?.type === 'short-term' ? '短期班' : '体验课'}</span>;
+        case 'courseType': return <span className="text-gray-600">{course?.type === 'long-term' ? '体系课' : course?.type === 'short-term' ? '专项课' : '短期课程'}</span>;
         case 'progress': return <span className="text-gray-600">{progressText}</span>;
          case 'enrolled': return (
              <span className="text-gray-600">
@@ -1914,6 +2217,11 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             return cls.saleStatus === 'on_sale' 
                 ? <span className="text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded text-xs">已上架</span>
                 : <span className="text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded text-xs">未上架</span>;
+        case 'saleMode':
+
+            return cls.saleMode === 'presale' 
+                ? <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">预售班</span>
+                : <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">普通班</span>;
         case 'schedule': return <span className="text-gray-600 text-xs">{cls.scheduleDescription || cls.startDate} {cls.timeSlot}</span>;
         case 'createdTime': return <span className="text-gray-600 text-xs">{cls.createdTime}</span>;
         default: return null;
@@ -1931,189 +2239,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       }
       return true;
   });
-
-  // ... Detail View ...
-  if (view === 'detail' && selectedClass) {
-      const course = COURSES.find(c => c.id === selectedClass.courseId);
-      const teacher = TEACHERS.find(t => t.id === selectedClass.teacherId);
-      const classLessons = lessons.filter(l => l.classId === selectedClass.id).sort((a,b) => a.date.localeCompare(b.date));
-      
-      // Mock changes
-      const mockChanges = [
-          { id: 1, info: '修改了上课时间', time: '2025-06-20 10:00:00', operator: '管理员A' },
-          { id: 2, info: '创建班级', time: '2025-06-15 09:30:00', operator: '管理员B' },
-      ];
-
-      // Mock students (using global students list for demo)
-      const enrolledStudents = ADMIN_STUDENTS.slice(0, selectedClass.studentCount || 3);
-
-      return (
-          <div className="flex-1 bg-gray-50 flex flex-col h-full overflow-hidden">
-              <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center text-sm">
-                  <span className="text-gray-500 cursor-pointer hover:text-primary" onClick={() => setView('list')}>班级管理</span>
-                  <span className="mx-2 text-gray-400">|</span>
-                  <span className="text-gray-800">班级详情</span>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {/* Top Card / Header of Details */}
-                  <div className="bg-white p-6 rounded-xl shadow-sm">
-                      <div className="flex justify-between items-start mb-4">
-                          <div>
-                              <h2 className="text-xl font-bold text-gray-800 mb-2">{selectedClass.name}</h2>
-                              <div className="flex items-center gap-3 text-sm text-gray-500">
-                                  <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-xs">{selectedClass.grade}</span>
-                                  <span>ID: {selectedClass.id}</span>
-                                  <span>{course?.name}</span>
-                              </div>
-                          </div>
-                          <div className="flex gap-2">
-                              <button 
-                                onClick={() => handleEditClass(selectedClass)}
-                                className="px-4 py-1.5 border border-primary text-primary rounded text-sm hover:bg-primary-light"
-                              >
-                                编辑
-                              </button>
-                          </div>
-                      </div>
-                      
-                      {/* Tabs */}
-                      <div className="flex border-b border-gray-100">
-                          {['basic', 'course', 'sales', 'changes', 'students'].map(tab => (
-                              <div 
-                                key={tab}
-                                onClick={() => setActiveDetailTab(tab as any)}
-                                className={`px-6 py-3 text-sm font-medium cursor-pointer relative ${
-                                    activeDetailTab === tab ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                              >
-                                  {tab === 'basic' && '基本信息'}
-                                  {tab === 'course' && '产品信息'}
-                                  {tab === 'sales' && '售卖信息'}
-                                  {tab === 'changes' && '变动信息'}
-                                  {tab === 'students' && '班级学员'}
-                                  {activeDetailTab === tab && (
-                                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></div>
-                                  )}
-                              </div>
-                          ))}
-                      </div>
-
-                      {/* Content Area */}
-                      <div className="pt-6">
-                          {activeDetailTab === 'basic' && (
-                              <div className="grid grid-cols-2 gap-y-6 text-sm text-gray-600">
-                                  <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">产品名称：</span><span className="text-gray-900">{course?.name}</span></div>
-                                  <div className="col-span-2"><span className="text-gray-400 w-24 inline-block">班级名称：</span><span className="text-gray-900">{selectedClass.name}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">年份：</span><span className="text-gray-900">{selectedClass.year || course?.year}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">学期：</span><span className="text-gray-900">{selectedClass.semester || '-'}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">面授老师：</span><span className="text-gray-900">{teacher?.name}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">校区：</span><span className="text-gray-900">{selectedClass.campus}</span></div>
-                                   <div><span className="text-gray-400 w-24 inline-block">预招人数：</span><span className="text-gray-900">{selectedClass.capacity}</span></div>
-                                   <div><span className="text-gray-400 w-24 inline-block">调课位：</span><span className="text-gray-900">{selectedClass.virtualSeats || 0}</span></div>
-                                   <div><span className="text-gray-400 w-24 inline-block">教室：</span><span className="text-gray-900">{selectedClass.classroom || '-'}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">助教：</span><span className="text-gray-900">{selectedClass.assistant || '0'}</span></div>
-                                  <div><span className="text-gray-400 w-24 inline-block">年级：</span><span className="text-gray-900">{selectedClass.grade || '-'}</span></div>
-                              </div>
-                          )}
-
-                          {activeDetailTab === 'course' && (
-                              <div>
-                                  <table className="w-full text-sm text-left border border-gray-100 rounded-lg overflow-hidden">
-                                      <thead className="bg-gray-50 text-gray-500 font-medium">
-                                          <tr>
-                                              <th className="p-3">序号</th>
-                                              <th className="p-3">课节名称</th>
-                                              <th className="p-3">上课日期</th>
-                                              <th className="p-3">上课时间</th>
-                                              <th className="p-3">状态</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-gray-100">
-                                          {classLessons.map((l, idx) => (
-                                              <tr key={l.id}>
-                                                  <td className="p-3 text-gray-600">{idx + 1}</td>
-                                                  <td className="p-3 text-gray-800">{l.name}</td>
-                                                  <td className="p-3 text-gray-600">{l.date}</td>
-                                                  <td className="p-3 text-gray-600">{l.startTime} - {l.endTime}</td>
-                                                  <td className="p-3">
-                                                      {l.status === 'completed' && <span className="text-green-500">已完成</span>}
-                                                      {l.status === 'pending' && <span className="text-orange-500">未开始</span>}
-                                                  </td>
-                                              </tr>
-                                          ))}
-                                          {classLessons.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-400">暂无课节信息</td></tr>}
-                                      </tbody>
-                                  </table>
-                              </div>
-                          )}
-
-                          {activeDetailTab === 'sales' && (
-                              <div className="grid grid-cols-1 gap-y-6 text-sm text-gray-600 max-w-2xl">
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">收费模式：</span><span className="text-gray-900">{selectedClass.chargeMode === 'whole' ? '整期' : '分期'}</span></div>
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">产品费用：</span><span className="text-red-500 font-bold">¥{selectedClass.price}</span></div>
-                                  <div className="flex"><span className="text-gray-400 w-32 inline-block">教辅费用：</span><span className="text-red-500 font-bold">¥{selectedClass.materialPrice || 0}</span></div>
-                              </div>
-                          )}
-
-                          {activeDetailTab === 'changes' && (
-                              <div>
-                                  <table className="w-full text-sm text-left border border-gray-100 rounded-lg overflow-hidden">
-                                      <thead className="bg-gray-50 text-gray-500 font-medium">
-                                          <tr>
-                                              <th className="p-3">序号</th>
-                                              <th className="p-3">变动信息</th>
-                                              <th className="p-3">变动时间</th>
-                                              <th className="p-3">操作人</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-gray-100">
-                                          {mockChanges.map((log) => (
-                                              <tr key={log.id}>
-                                                  <td className="p-3 text-gray-600">{log.id}</td>
-                                                  <td className="p-3 text-gray-800">{log.info}</td>
-                                                  <td className="p-3 text-gray-600">{log.time}</td>
-                                                  <td className="p-3 text-gray-600">{log.operator}</td>
-                                              </tr>
-                                          ))}
-                                      </tbody>
-                                  </table>
-                              </div>
-                          )}
-
-                          {activeDetailTab === 'students' && (
-                              <div>
-                                  <table className="w-full text-sm text-left border border-gray-100 rounded-lg overflow-hidden">
-                                      <thead className="bg-gray-50 text-gray-500 font-medium">
-                                          <tr>
-                                              <th className="p-3">学员姓名</th>
-                                              <th className="p-3">性别</th>
-                                              <th className="p-3">登录账号</th>
-                                              <th className="p-3">入班时间</th>
-                                              <th className="p-3">状态</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-gray-100">
-                                          {enrolledStudents.map((s) => (
-                                              <tr key={s.id}>
-                                                  <td className="p-3 text-gray-800 font-medium">{s.name}</td>
-                                                  <td className="p-3 text-gray-600">{s.gender}</td>
-                                                  <td className="p-3 text-gray-600">{s.account}</td>
-                                                  <td className="p-3 text-gray-600">2025-07-01 10:00</td>
-                                                  <td className="p-3"><span className="bg-green-50 text-green-600 px-2 py-0.5 rounded text-xs">在读</span></td>
-                                              </tr>
-                                          ))}
-                                          {enrolledStudents.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-400">暂无学员</td></tr>}
-                                      </tbody>
-                                  </table>
-                              </div>
-                          )}
-                      </div>
-                  </div>
-              </div>
-          </div>
-      );
-  }
 
   const renderStepIndicator = () => (
       <div className="flex justify-center items-center py-8 bg-white border-b border-gray-100 mb-6">
@@ -2185,25 +2310,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                width="w-[90px]"
              />
             
-             {/* Grade & Class Type - Separated */}
-             <MultiSelect
-               options={Object.keys(GRADE_CLASS_TYPES)}
-               selected={filterGrade}
-               onChange={(selected) => { 
-                 setFilterGrade(selected);
-                 // 如果选择的年级发生变化，清空班型筛选
-                 setFilterClassType([]);
-               }}
-               placeholder="年级"
-               width="w-[80px]"
-             />
-             <MultiSelect
-               options={availableClassTypes}
-               selected={filterClassType}
-               onChange={setFilterClassType}
-               placeholder="班型"
-               width="w-[100px]"
-             />
+              {/* Combined Grade & Class Type Filter */}
+              <GradeClassTypeSelect
+                selected={filterGradeClassType}
+                onChange={setFilterGradeClassType}
+                placeholder="班层筛选"
+                width="w-[180px]"
+              />
 
                {/* Teacher Select - 支持搜索和多选 */}
                <SearchableMultiSelect
@@ -2248,19 +2361,19 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
               {/* Course Type */}
               <MultiSelect
-                options={['长期产品', '短期产品']}
+                options={['体系课', '专项课']}
                 selected={filterCourseType.map(type => {
                   const typeMap: Record<string, string> = {
-'long-term': '长期产品',
-  'short-term': '短期产品'
+'long-term': '体系课',
+  'short-term': '专项课'
                   };
                   return typeMap[type] || '';
                 }).filter(label => label !== '')}
                 onChange={(selectedLabels) => {
                   // 将中文标签转换为对应的类型值
                   const typeMap: Record<string, string> = {
-'长期产品': 'long-term',
-  '短期产品': 'short-term'
+'体系课': 'long-term',
+  '专项课': 'short-term'
                   };
                   const selectedTypes = selectedLabels.map(label => typeMap[label] || '');
                   setFilterCourseType(selectedTypes.filter(type => type !== ''));
@@ -2295,7 +2408,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 }}
               >
                 <span className="text-gray-700">
-                  {filterStartDate || '首课日期'}
+                  {filterStartDate || '上课时间'}
                 </span>
                 <span className="text-gray-400 text-sm">📅</span>
               </div>
@@ -2356,6 +2469,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 <option value="off_sale">未上架</option>
             </select>
 
+            {/* Sale Mode */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterSaleMode} onChange={e => setFilterSaleMode(e.target.value)}>
+                <option value="">售卖模式</option>
+                <option value="normal">普通班</option>
+                <option value="presale">预售班</option>
+            </select>
+
              {/* Search Button */}
              <button 
                  className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium" 
@@ -2375,8 +2495,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                    setFilterMode(''); 
                    setFilterYear([]); 
                    setFilterSubject([]); 
-                   setFilterGrade([]); 
-                   setFilterClassType([]); 
+                    setFilterGradeClassType([]);
                    setFilterSemester([]); 
                    setFilterTeacher([]); 
                    setStudentSearch(''); 
@@ -2386,8 +2505,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                    setFilterClassroom([]); 
                    setFilterStatus([]); 
                    setFilterCourseType([]); 
-                   setFilterRemaining(''); 
                    setFilterSaleStatus(''); 
+                   setFilterSaleMode('');
                  }}
              >
                  重置
@@ -2422,12 +2541,45 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
           </div>
       </div>
 
+      {/* Batch Operations Bar */}
+      {selectedClasses.length > 0 && (
+        <div className="mx-4 mt-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">已选择</span>
+            <span className="text-sm font-bold text-primary">{selectedClasses.length}</span>
+            <span className="text-sm text-gray-600">个班级</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBatchToggleSaleStatus('on_sale')}
+              className="px-3 py-1.5 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
+            >
+              批量上架
+            </button>
+            <button
+              onClick={() => handleBatchToggleSaleStatus('off_sale')}
+              className="px-3 py-1.5 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors"
+            >
+              批量下架
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table - 优化边距和操作栏固定 */}
       <div className="flex-1 overflow-hidden bg-white flex flex-col">
         <div className="flex-1 overflow-auto mx-4 my-4 border border-gray-200 rounded-lg">
           <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
             <thead className="bg-[#F9FBFA] text-gray-600 font-medium border-b border-gray-200 sticky top-0 z-10">
               <tr>
+                <th className="p-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedClasses.length > 0 && selectedClasses.length === filteredClasses.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                </th>
                 {DISPLAY_COLUMNS.map(col => (<th key={col.id} className="p-4">{col.label}</th>))}
                 <th className="p-4 text-center sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
               </tr>
@@ -2435,19 +2587,37 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
             <tbody className="divide-y divide-gray-100">
               {filteredClasses.map(cls => (
                   <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedClasses.includes(cls.id)}
+                        onChange={() => handleSelectClass(cls.id)}
+                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                    </td>
                     {DISPLAY_COLUMNS.map(col => (<td key={col.id} className="p-4">{getCellContent(col.id, cls)}</td>))}
                     <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
                       <div className="flex gap-2 justify-center text-primary text-sm whitespace-nowrap">
-                        <button 
-                            className="hover:opacity-80" 
+                        <button
+                            className="hover:opacity-80"
                             onClick={() => handleToggleSaleStatus(cls)}
                         >
                             {cls.saleStatus === 'on_sale' ? '下架' : '上架'}
                         </button>
                         <button className="hover:opacity-80" onClick={() => handleEditClass(cls)}>编辑</button>
-                        <button className="hover:opacity-80" onClick={() => handleOpenStudentManage(cls)}>班级学员</button>
+                        {/* <button className="hover:opacity-80" onClick={() => handleOpenStudentManage(cls)}>班级学员</button> */}
                         <button className="hover:opacity-80" onClick={() => setShowQueueModal(cls.id)}>推送</button>
-                        <button className="text-red-500 hover:opacity-80">删除</button>
+                        <button 
+                          className="text-red-500 hover:opacity-80"
+                          onClick={() => {
+                            setSelectedClassForDeletion(cls);
+                            // 随机决定是否有考勤数据
+                            setIsAttendanceRecorded(Math.random() > 0.5);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          删除
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -2592,7 +2762,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 {createStep === 2 && (
                     <div className="space-y-6">
                         <div className="border-l-4 border-primary pl-3 mb-2">
-                            <h3 className="font-bold text-gray-800">产品信息</h3>
+                            <h3 className="font-bold text-gray-800">讲次信息</h3>
                         </div>
                         
                         <div className="pl-4">
@@ -2680,14 +2850,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
                         <div className="grid grid-cols-1 gap-6 max-w-[800px]">
                             <div className="flex items-center">
-                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>收费模式</label>
-                                <select value={formData.chargeMode} onChange={e => setFormData({...formData, chargeMode: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
-                                    <option value="whole">整期</option>
-                                    <option value="installment">分期</option>
-                                </select>
-                            </div>
-
-                            <div className="flex items-center">
                                 <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>产品费</label>
                                 <div className="flex-1 relative">
                                     <input value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="请输入" />
@@ -2702,6 +2864,79 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                                     <span className="absolute right-3 top-2 text-sm text-gray-400">元/人</span>
                                 </div>
                             </div>
+
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4"><span className="text-red-500 mr-1">*</span>收费模式</label>
+                                <select value={formData.chargeMode} onChange={e => setFormData({...formData, chargeMode: e.target.value as any})} className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                                    <option value="whole">整期</option>
+                                    <option value="installment">分期</option>
+                                    <option value="presale">预售</option>
+                                </select>
+                            </div>
+                            
+                            <div className="flex items-center">
+                                <label className="w-32 text-sm text-gray-500 text-right mr-4">售卖模式</label>
+                                <div className="flex-1">
+                                    <span className={`px-3 py-2 text-sm rounded ${formData.chargeMode === 'presale' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'}`}>
+                                        {formData.chargeMode === 'presale' ? '预售班' : '普通班'}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            {formData.chargeMode === 'presale' && (
+                                <div className="space-y-4 mt-4 pl-36">
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">定金<span className="text-red-500">*</span></label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.deposit || ''} 
+                                                onChange={e => setFormData({...formData, deposit: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                                placeholder="请输入定金（需小于课程费）" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">元</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">尾款</label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.balance || '系统自动计算'} 
+                                                disabled
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-gray-50 text-gray-500" 
+                                                placeholder="系统自动计算" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">元</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">最低开班人数<span className="text-red-500">*</span></label>
+                                        <div className="flex-1 relative">
+                                            <input 
+                                                value={formData.minStudents || ''} 
+                                                onChange={e => setFormData({...formData, minStudents: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                                placeholder="请输入最低开班人数" 
+                                            />
+                                            <span className="absolute right-3 top-2 text-sm text-gray-400">人</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <label className="w-32 text-sm text-gray-500 text-right mr-4">组班截止时间</label>
+                                        <div className="flex-1">
+                                            <input 
+                                                type="date"
+                                                value={formData.deadline || ''} 
+                                                onChange={e => setFormData({...formData, deadline: e.target.value})} 
+                                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -2899,7 +3134,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                               <h4 className="font-bold text-gray-700 text-sm mb-2">可选学员</h4>
                               <input 
                                 className="w-full border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
-                                placeholder="搜索学员姓名/账号"
+                                placeholder="搜索学生姓名/联系电话"
                                 value={studentSearch}
                                 onChange={e => setStudentSearch(e.target.value)}
                               />
@@ -2971,6 +3206,81 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
       {/* TEACHER SCHEDULE MODAL */}
       {showTeacherScheduleModal && (
         <TeacherScheduleModal teacherId={formData.teacherId} onClose={() => setShowTeacherScheduleModal(false)} />
+      )}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      {isDeleteDialogOpen && selectedClassForDeletion && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-[400px] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-800">
+                {isAttendanceRecorded ? '无法删除' : '确认删除'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setSelectedClassForDeletion(null);
+                }} 
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-6">
+              {isAttendanceRecorded ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-orange-500 text-2xl">!</span>
+                  </div>
+                  <p className="text-gray-700 mb-2">该班级已产生考勤数据</p>
+                  <p className="text-gray-500 text-sm">无法删除此班级，请先处理相关考勤记录</p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-red-500 text-2xl">?</span>
+                  </div>
+                  <p className="text-gray-700 mb-2">确定要删除班级「{selectedClassForDeletion.name}」吗？</p>
+                  <p className="text-gray-500 text-sm">删除后将无法恢复</p>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-center gap-3">
+              {isAttendanceRecorded ? (
+                <button 
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setSelectedClassForDeletion(null);
+                  }}
+                  className="px-8 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
+                >
+                  我知道了
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setSelectedClassForDeletion(null);
+                    }}
+                    className="px-6 py-2 border border-gray-300 rounded text-gray-600 bg-white hover:bg-gray-50 text-sm"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setSelectedClassForDeletion(null);
+                    }}
+                    className="px-6 py-2 bg-red-500 text-white rounded shadow-sm hover:bg-red-600 text-sm"
+                  >
+                    确认删除
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* QUEUE MODAL (Mock) */}

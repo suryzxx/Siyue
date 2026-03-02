@@ -16,22 +16,27 @@ export interface Student {
  export type OrderStatus = '待支付' | '已支付' | '已取消' | '已退款';
  export type PaymentMethod = '微信支付' | '现金';
 
- export interface StudentProfile {
-   id: string;
-   name: string;
-   account: string;
-   gender: '男' | '女';
-   className?: string;
-   createdTime: string;
-   updatedTime: string;
-   // 新增字段
-   birthDate?: string; // 出生年月
-   studentNumber?: string; // 学号
-   evaluationLevel?: string; // 评测等级
-   campus?: string; // 所属校区
-   studentStatus?: StudentStatus; // 学生状态
-   followUpStatus?: FollowUpStatus; // 跟进状态
- }
+   export interface StudentProfile {
+     id: string;
+     name: string;
+     account: string;
+     gender: '男' | '女';
+     className?: string;
+     createdTime: string;
+     updatedTime: string;
+     // 新增字段
+      birthDate?: string; // 出生年月
+      evaluationLevel?: string; // 评测等级
+     campus?: string; // 所属校区
+     studentStatus?: StudentStatus; // 学生状态
+     followUpStatus?: FollowUpStatus; // 跟进状态
+     englishName?: string; // 英文名
+     grade?: string; // 在读年级
+     school?: string; // 在读学校
+     studyCity?: string; // 就读城市
+     registrationChannel?: '前台注册' | 'APP注册'; // 注册渠道
+     acquisitionChannel?: '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号'; // 获客渠道
+   }
 
  export interface Order {
    id: string;
@@ -43,10 +48,9 @@ export interface Student {
    createdTime: string;
    paymentTime: string;
    // 新增字段
-   orderNumber?: string; // 订单编号
-   phone?: string; // 手机号
-    studentNumber?: string; // 学号（系统生成）
-    studentName?: string; // 学生姓名
+    orderNumber?: string; // 订单编号
+    phone?: string; // 手机号
+     studentName?: string; // 学生姓名
     classId?: string; // 班级ID
     orderStatus?: OrderStatus; // 订单状态
    paymentMethod?: PaymentMethod; // 支付方式
@@ -92,13 +96,27 @@ export interface ClassInfo {
   allowConflict?: boolean; // 是否允许冲突
   virtualSeats?: number; // 调课虚位
   
+  // Schedule frequency
+  scheduleFrequency?: string[]; // 上课频率，如 ['周六'] 或 ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  
   // Pricing
   chargeMode?: 'whole' | 'installment'; // 收费模式
   price?: number; // 课程费
   refundPolicy?: 'unused' | 'full' | 'partial'; // 退费策略
   materialPrice?: number; // 教辅费
   materialRefundPolicy?: 'no_return' | 'return'; // 教辅退费策略
+  
+  // 预售模式
+  saleMode?: 'normal' | 'presale'; // 售卖模式：普通班、预售班
+  presaleInfo?: {
+    deposit: number; // 定金
+    minStudents: number; // 最低开班人数
+    deadline?: string; // 组班截止时间
+    depositedCount?: number; // 已付定金人数
+    status?: 'preparing' | 'success' | 'failed'; // 预售状态
+  };
 }
+
 
 export interface Task {
   id: string;
@@ -130,6 +148,7 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused' | 'none
 export interface AttendanceRecord {
   studentId: string;
   status: AttendanceStatus;
+  remark?: string;
 }
 
 export type CourseType = 'long-term' | 'short-term' | 'experience';
