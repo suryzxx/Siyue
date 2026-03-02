@@ -42,19 +42,19 @@ export const COURSES: Course[] = [
 ];
 
 export const TEACHERS: Teacher[] = [
-  { id: '219', name: 'Melody', account: 'melody_01', phone: '13812345678', city: '南京', campus: '龙江校区', position: '全职教师', gender: '女', avatar: '头像A.jpg', poster: '海报A.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '218', name: 'Sonya孙苏云', account: 'Sonya孙苏云', phone: '13987654321', city: '南京', campus: '龙江校区', position: '全职教师', gender: '女', avatar: '头像B.jpg', poster: '海报B.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '217', name: 'Ruby张露', account: 'Ruby张露', phone: '13700001111', city: '南京', campus: '奥南校区', position: '教学主管', gender: '女', avatar: '头像C.jpg', poster: '海报C.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
-  { id: '216', name: 'Angel严义洁', account: 'Angel严义洁', phone: '13611112222', city: '南京', campus: '大行宫校区', position: '全职教师', gender: '女', avatar: '头像D.jpg', poster: '海报D.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
-  { id: '215', name: 'Cora王晶', account: 'Cora王晶', phone: '13533334444', city: '南京', campus: '辰龙校区', position: '助教', gender: '女', avatar: '头像E.jpg', poster: '海报E.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
-  { id: '214', name: 'Ace黄礼妍', account: 'Ace黄礼妍', phone: '13355556666', city: '南京', campus: '仙林校区', position: '全职教师', gender: '女', avatar: '头像F.jpg', poster: '海报F.png', status: 'active', createdTime: '2025-06-23 11:58:05', updatedTime: '2025-06-24 17:27:24' },
-  { id: '213', name: 'Felicia杨星', account: 'Felicia杨星', phone: '13177778888', city: '南京', campus: '五台山校区', position: '全职教师', gender: '女', avatar: '头像G.jpg', poster: '海报G.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
-  { id: '212', name: 'Helen', account: 'helen_01', phone: '18099990000', city: '南京', campus: '奥体网球中心校区', position: '校区主管', gender: '女', avatar: '头像H.jpg', poster: '海报H.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
-  { id: '211', name: 'Luna贾璐瑶', account: 'Luna贾璐瑶', phone: '15912341234', city: '南京', campus: '爱邦中心校区', position: '全职教师', gender: '女', avatar: '头像I.jpg', poster: '海报I.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
-  { id: '210', name: 'Iris游景', account: 'Iris游景', phone: '15856785678', city: '深圳', campus: '深圳湾校区', position: '全职教师', gender: '女', avatar: '头像J.jpg', poster: '海报J.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
-  { id: 't1', name: 'Linda', account: 'linda_01', phone: '15600001111', city: '南京', campus: '大行宫校区', position: '全职教师', gender: '女', avatar: '头像K.jpg', poster: '海报K.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
-  { id: 't2', name: 'Justin', account: 'justin_01', phone: '15522223333', city: '南京', campus: '仙林校区', position: '全职教师', gender: '男', avatar: '头像L.jpg', poster: '海报L.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
-  { id: 't3', name: 'Crystal张骁', account: 'crystal_01', phone: '15344445555', city: '南京', campus: '龙江校区', position: '教务', gender: '女', avatar: '头像M.jpg', poster: '海报M.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: '219', name: 'Melody', account: 'melody_01', phone: '13812345678', city: '南京', campus: '龙江校区', position: '主讲', gender: '女', avatar: '头像A.jpg', poster: '海报A.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '218', name: 'Sonya孙苏云', account: 'Sonya孙苏云', phone: '13987654321', city: '南京', campus: '龙江校区', position: '主讲', gender: '女', avatar: '头像B.jpg', poster: '海报B.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '217', name: 'Ruby张露', account: 'Ruby张露', phone: '13700001111', city: '南京', campus: '奥南校区', position: '教学管理', gender: '女', avatar: '头像C.jpg', poster: '海报C.png', status: 'active', createdTime: '2025-06-23 11:58:07', updatedTime: '2025-06-24 17:27:24' },
+  { id: '216', name: 'Angel严义洁', account: 'Angel严义洁', phone: '13611112222', city: '南京', campus: '大行宫校区', position: '主讲', gender: '女', avatar: '头像D.jpg', poster: '海报D.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
+  { id: '215', name: 'Cora王晶', account: 'Cora王晶', phone: '13533334444', city: '南京', campus: '辰龙校区', position: '班级组', gender: '女', avatar: '头像E.jpg', poster: '海报E.png', status: 'active', createdTime: '2025-06-23 11:58:06', updatedTime: '2025-06-24 17:27:24' },
+  { id: '214', name: 'Ace黄礼妍', account: 'Ace黄礼妍', phone: '13355556666', city: '南京', campus: '仙林校区', position: '主讲', gender: '女', avatar: '头像F.jpg', poster: '海报F.png', status: 'active', createdTime: '2025-06-23 11:58:05', updatedTime: '2025-06-24 17:27:24' },
+  { id: '213', name: 'Felicia杨星', account: 'Felicia杨星', phone: '13177778888', city: '南京', campus: '五台山校区', position: '主讲', gender: '女', avatar: '头像G.jpg', poster: '海报G.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
+  { id: '212', name: 'Helen', account: 'helen_01', phone: '18099990000', city: '南京', campus: '奥体网球中心校区', position: '区管', gender: '女', avatar: '头像H.jpg', poster: '海报H.png', status: 'active', createdTime: '2025-06-23 11:58:04', updatedTime: '2025-06-24 17:27:24' },
+  { id: '211', name: 'Luna贾璐瑶', account: 'Luna贾璐瑶', phone: '15912341234', city: '南京', campus: '爱邦中心校区', position: '主讲', gender: '女', avatar: '头像I.jpg', poster: '海报I.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
+  { id: '210', name: 'Iris游景', account: 'Iris游景', phone: '15856785678', city: '深圳', campus: '深圳湾校区', position: '主讲', gender: '女', avatar: '头像J.jpg', poster: '海报J.png', status: 'active', createdTime: '2025-06-23 11:58:03', updatedTime: '2025-06-24 17:27:24' },
+  { id: 't1', name: 'Linda', account: 'linda_01', phone: '15600001111', city: '南京', campus: '大行宫校区', position: '课程顾问', gender: '女', avatar: '头像K.jpg', poster: '海报K.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: 't2', name: 'Justin', account: 'justin_01', phone: '15522223333', city: '南京', campus: '仙林校区', position: '超级管理员', gender: '男', avatar: '头像L.jpg', poster: '海报L.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
+  { id: 't3', name: 'Crystal张骁', account: 'crystal_01', phone: '15344445555', city: '南京', campus: '龙江校区', position: '后端教务', gender: '女', avatar: '头像M.jpg', poster: '海报M.png', status: 'active', createdTime: '2025-01-01 10:00:00', updatedTime: '2025-01-01 10:00:00' },
 ];
 
 export const ADMIN_STUDENTS: StudentProfile[] = [
@@ -152,6 +152,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-07-10',
     status: 'active',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-05-15 14:20:00',
     scheduleDescription: '2025.07.10-2025.08.30',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '奥南202', needQualification: true, studentTag: '进阶', allowStudentSchedule: false, chargeMode: 'whole', price: 2999, refundPolicy: 'unused', materialPrice: 100, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -173,6 +174,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-07-16',
     status: 'active',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-07-01 10:00:00',
     scheduleDescription: '2025.07.16-2025.07.30',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '龙江105', needQualification: true, studentTag: '进阶', allowStudentSchedule: false, chargeMode: 'whole', price: 2999, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -194,6 +196,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-01-16',
     status: 'active',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-01-01 10:00:00',
     scheduleDescription: '2025.01.16-2025.01.30',
     contentMode: 'self',
@@ -229,6 +232,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-08-01',
     status: 'active',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-06-15 10:00:00',
     scheduleDescription: '2025.08.01-2025.08.15',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'G1', studentGrade: 'G1', classroom: '大行宫201', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 3299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -250,6 +254,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-07-20',
     status: 'active',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-06-20 10:00:00',
     scheduleDescription: '2025.07.20-2025.08.05',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'G2', studentGrade: 'G2', classroom: '仙林303', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 3299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -271,6 +276,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2025-07-25',
     status: 'full',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-07-10 10:00:00',
     scheduleDescription: '2025.07.25-2025.08.08',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '五台山101', needQualification: true, studentTag: '飞跃', allowStudentSchedule: false, chargeMode: 'whole', price: 1899, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -292,6 +298,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2024-09-07',
     status: 'closed',
     saleStatus: 'off_sale',
+    saleMode: 'normal',
     createdTime: '2024-08-01 10:00:00',
     scheduleDescription: '2024.09.07-2025.01.11',
     contentMode: 'self', semester: '秋季', subject: '英语', grade: '3年级', studentGrade: '3年级', classroom: '101', needQualification: true, studentTag: 'A+', allowStudentSchedule: false, chargeMode: 'whole', price: 4299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -313,6 +320,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2024-09-06',
     status: 'closed',
     saleStatus: 'off_sale',
+    saleMode: 'normal',
     createdTime: '2024-08-01 10:00:00',
     scheduleDescription: '2024.09.06-2025.01.10',
     contentMode: 'self', semester: '秋季', subject: '英语', grade: '4年级', studentGrade: '4年级', classroom: '202', needQualification: true, studentTag: 'S', allowStudentSchedule: false, chargeMode: 'whole', price: 4299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -334,6 +342,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2024-07-05',
     status: 'closed',
     saleStatus: 'off_sale',
+    saleMode: 'normal',
     createdTime: '2024-05-01 10:00:00',
     scheduleDescription: '2024.07.05-2024.07.15',
     contentMode: 'self', semester: '暑假', subject: '英语', grade: 'K2', studentGrade: 'K2', classroom: '305', needQualification: false, studentTag: '启蒙', allowStudentSchedule: false, chargeMode: 'whole', price: 1599, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -355,6 +364,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-03-07',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-11-01 10:00:00',
     scheduleDescription: '2026.03.07-2026.06.20',
     contentMode: 'self', semester: '春季', subject: '英语', grade: '1年级', studentGrade: '1年级', classroom: '105', needQualification: true, studentTag: 'S', allowStudentSchedule: false, chargeMode: 'whole', price: 4599, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -376,6 +386,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-03-08',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-11-01 10:00:00',
     scheduleDescription: '2026.03.08-2026.06.21',
     contentMode: 'self', semester: '春季', subject: '英语', grade: 'K3', studentGrade: 'K3', classroom: '102', needQualification: true, studentTag: '飞跃', allowStudentSchedule: false, chargeMode: 'whole', price: 4599, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -397,6 +408,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-01-20',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-10-01 10:00:00',
     scheduleDescription: '2026.01.20-2026.02.05',
     contentMode: 'self', semester: '寒假', subject: '英语', grade: '5年级', studentGrade: '5年级', classroom: '201', needQualification: true, studentTag: 'S+', allowStudentSchedule: false, chargeMode: 'whole', price: 2999, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周六']
@@ -418,6 +430,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-03-02',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-12-01 10:00:00',
     scheduleDescription: '2026.03.02-2026.03.08',
     contentMode: 'self', semester: '春季', subject: '英语', grade: 'MSE考辅', studentGrade: 'MSE考辅', classroom: '龙江105', needQualification: false, studentTag: 'KET综合冲刺', allowStudentSchedule: false, chargeMode: 'whole', price: 1299, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
@@ -439,6 +452,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-03-09',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-12-01 10:00:00',
     scheduleDescription: '2026.03.09-2026.03.16',
     contentMode: 'self', semester: '春季', subject: '英语', grade: '自然拼读', studentGrade: '自然拼读', classroom: '大行宫201', needQualification: false, studentTag: '自拼一级', allowStudentSchedule: false, chargeMode: 'whole', price: 1599, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
@@ -460,6 +474,7 @@ export const ADMIN_STUDENTS: StudentProfile[] = [
     startDate: '2026-03-16',
     status: 'pending',
     saleStatus: 'on_sale',
+    saleMode: 'normal',
     createdTime: '2025-12-01 10:00:00',
     scheduleDescription: '2026.03.16-2026.03.22',
     contentMode: 'self', semester: '春季', subject: '英语', grade: '剑少考辅', studentGrade: '剑少考辅', classroom: '仙林303', needQualification: false, studentTag: '剑少一级', allowStudentSchedule: false, chargeMode: 'whole', price: 1199, refundPolicy: 'unused', materialPrice: 0, materialRefundPolicy: 'no_return', scheduleFrequency: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']

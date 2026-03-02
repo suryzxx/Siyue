@@ -2198,6 +2198,7 @@ const getStatusBadge = (status: string) => {
                           </optgroup>
                           <optgroup label="跳级测（老生）">
                             <option value="跳级测">跳级测</option>
+                            <option value="绿色通道">绿色通道</option>
                             <option value="三个月内免测入班">三个月内免测入班</option>
                           </optgroup>
                         </select>

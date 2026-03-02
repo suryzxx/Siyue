@@ -25,7 +25,7 @@ const TeacherManagement: React.FC = () => {
     phone: '',
     city: '', // New Form Field
     campus: '',
-    position: '全职教师',
+    position: '主讲',
     avatar: '',
     poster: ''
   });
@@ -61,7 +61,7 @@ const TeacherManagement: React.FC = () => {
         phone: teacher.phone || '',
         city: teacher.city || '',
         campus: teacher.campus || '',
-        position: teacher.position || '全职教师',
+        position: teacher.position || '主讲',
         avatar: teacher.avatar || '',
         poster: teacher.poster || ''
       });
@@ -73,7 +73,7 @@ const TeacherManagement: React.FC = () => {
         phone: '',
         city: '',
         campus: '',
-        position: '全职教师',
+        position: '主讲',
         avatar: '',
         poster: ''
       });
@@ -175,13 +175,16 @@ const TeacherManagement: React.FC = () => {
              value={filterPosition}
              onChange={e => setFilterPosition(e.target.value)}
            >
-             <option value="">全部职位</option>
-             <option value="全职教师">全职教师</option>
-             <option value="兼职教师">兼职教师</option>
-             <option value="助教">助教</option>
-             <option value="教务">教务</option>
-             <option value="校区主管">校区主管</option>
-             <option value="教学主管">教学主管</option>
+            <option value="">全部职位</option>
+            <option value="超级管理员">超级管理员</option>
+            <option value="班级组">班级组</option>
+            <option value="区管">区管</option>
+            <option value="财务">财务</option>
+            <option value="主讲">主讲</option>
+            <option value="后端教务">后端教务</option>
+            <option value="课程顾问">课程顾问</option>
+            <option value="教学管理">教学管理</option>
+            <option value="产品管理">产品管理</option>
            </select>
         </div>
         <div className="flex items-center gap-2">
@@ -376,12 +379,15 @@ const TeacherManagement: React.FC = () => {
                   value={formData.position}
                   onChange={e => setFormData({...formData, position: e.target.value})}
                 >
-                  <option value="全职教师">全职教师</option>
-                  <option value="兼职教师">兼职教师</option>
-                  <option value="助教">助教</option>
-                  <option value="教务">教务</option>
-                  <option value="校区主管">校区主管</option>
-                  <option value="教学主管">教学主管</option>
+                  <option value="超级管理员">超级管理员</option>
+                  <option value="班级组">班级组</option>
+                  <option value="区管">区管</option>
+                  <option value="财务">财务</option>
+                  <option value="主讲">主讲</option>
+                  <option value="后端教务">后端教务</option>
+                  <option value="课程顾问">课程顾问</option>
+                  <option value="教学管理">教学管理</option>
+                  <option value="产品管理">产品管理</option>
                 </select>
               </div>
 

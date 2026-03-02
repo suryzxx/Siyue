@@ -50,6 +50,11 @@ const ManualOrderPage: React.FC<ManualOrderPageProps> = ({ onBack, onNavigateToC
   const [showNewStudentModal, setShowNewStudentModal] = useState(false);
   const [showClassSelectModal, setShowClassSelectModal] = useState(false);
 
+  // 支付记录 - 二级关联列表
+  const [paymentRecords, setPaymentRecords] = useState<{
+    method: '现金' | 'POS机';
+    amount: number;
+  }[]>([{ method: '现金', amount: 0 }]);
   const [filterClassName, setFilterClassName] = useState('');
   const [filterSubject, setFilterSubject] = useState('');
   const [filterGrade, setFilterGrade] = useState('');
@@ -204,19 +209,7 @@ const ManualOrderPage: React.FC<ManualOrderPageProps> = ({ onBack, onNavigateToC
                     {selectedClasses.map((cls, index) => (
                       <tr key={cls.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
-                          <select 
-                            value={cls.businessType}
-                            onChange={(e) => {
-                              const updated = [...selectedClasses];
-                              updated[index].businessType = e.target.value as '新签' | '续报' | '预售';
-                              setSelectedClasses(updated);
-                            }}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-                          >
-                            <option value="新签">新签</option>
-                            <option value="续报">续报</option>
-                            <option value="预售">预售</option>
-                          </select>
+                          <span className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded">{cls.businessType}</span>
                         </td>
                         <td className="px-4 py-3">
                           <button 
@@ -267,6 +260,68 @@ const ManualOrderPage: React.FC<ManualOrderPageProps> = ({ onBack, onNavigateToC
               </div>
             )}
           </div>
+
+          {/* 费用汇总 & 支付方式 - 合并卡片 */}
+          {selectedClasses.length > 0 && (
+            <div className="border border-gray-200 rounded-xl p-5 mt-6 bg-white">
+              {/* 费用汇总 */}
+              <div className="grid grid-cols-3 gap-6 text-sm mb-5 pb-5 border-b border-gray-100">
+                <div>
+                  <div className="text-gray-500 text-xs mb-1">原价金额</div>
+                  <div className="text-xl font-bold text-gray-700">{formatCurrency(selectedClasses.reduce((sum, cls) => sum + cls.fee * 1.1, 0))}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs mb-1">应收金额</div>
+                  <div className="text-xl font-bold text-gray-800">{formatCurrency(selectedClasses.reduce((sum, cls) => sum + cls.fee, 0))}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500 text-xs mb-1">实收金额</div>
+                  <div className="text-xl font-bold text-primary">{formatCurrency(paymentRecords.reduce((sum, r) => sum + r.amount, 0))}</div>
+                </div>
+              </div>
+              
+              {/* 支付方式列表 */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">支付方式</h4>
+                
+                {paymentRecords.map((record, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    {/* 第一级：选择收费方式 */}
+                    <select
+                      value={record.method}
+                      onChange={(e) => {
+                        const updated = [...paymentRecords];
+                        updated[index].method = e.target.value as '现金' | 'POS机';
+                        setPaymentRecords(updated);
+                      }}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-28 focus:outline-none focus:border-primary bg-white"
+                    >
+                      <option value="现金">现金</option>
+                      <option value="POS机">POS机</option>
+                    </select>
+                    
+                    {/* 第二级：输入金额 */}
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-gray-400">¥</span>
+                      <input
+                        type="number"
+                        placeholder="输入金额"
+                        value={record.amount || ''}
+                        onChange={(e) => {
+                          const updated = [...paymentRecords];
+                          updated[index].amount = Number(e.target.value) || 0;
+                          setPaymentRecords(updated);
+                        }}
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    
+                  </div>
+                ))}
+                
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -283,9 +338,20 @@ const ManualOrderPage: React.FC<ManualOrderPageProps> = ({ onBack, onNavigateToC
         </button>
         <button 
           onClick={() => {
+            if (paymentRecords.length === 0) {
+              alert('请添加至少一种支付方式');
+              return;
+            }
+            const totalPaid = paymentRecords.reduce((sum, r) => sum + r.amount, 0);
+            const totalAmount = selectedClasses.reduce((sum, cls) => sum + cls.amount, 0);
+            if (totalPaid < totalAmount) {
+              alert(`实收金额不足，还需支付 ${formatCurrency(totalAmount - totalPaid)}`);
+              return;
+            }
             alert('订单提交成功！');
             setSelectedStudent(null);
             setSelectedClasses([]);
+            setPaymentRecords([]);
             onBack();
           }}
           className="px-6 py-2 bg-primary text-white rounded shadow-sm hover:bg-teal-600 text-sm"
@@ -294,6 +360,7 @@ const ManualOrderPage: React.FC<ManualOrderPageProps> = ({ onBack, onNavigateToC
           立即报名
         </button>
       </div>
+
 
       {showStudentSelectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

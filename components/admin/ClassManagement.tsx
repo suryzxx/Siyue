@@ -83,8 +83,8 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
+    { id: 'saleMode', label: '售卖模式' },
     { id: 'schedule', label: '上课时间' },
-    { id: 'createdTime', label: '创建时间' },
   ];
 
   // 导出列定义（班层拆分为年级+班型，上课时间拆分为开课日期+结课日期+讲次时间）
@@ -111,6 +111,7 @@ const LOCATION_DATA: Record<string, Record<string, string[]>> = {
     { id: 'price', label: '产品费用' },
     { id: 'status', label: '班级状态' },
     { id: 'saleStatus', label: '售卖状态' },
+    { id: 'saleMode', label: '售卖模式' },
     { id: 'startDate', label: '开课日期' },
     { id: 'endDate', label: '结课日期' },
     { id: 'lessonTime', label: '讲次时间' },
@@ -797,6 +798,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
   // NEW FILTERS (保持单选)
   const [filterRemaining, setFilterRemaining] = useState('');
   const [filterSaleStatus, setFilterSaleStatus] = useState('');
+  const [filterSaleMode, setFilterSaleMode] = useState('');
   const [filterStartDate, setFilterStartDate] = useState('');
   
    const [showActiveOnly, setShowActiveOnly] = useState(true);
@@ -2133,7 +2135,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
     // 5. New Filters
     const matchRemaining = !filterRemaining || (filterRemaining === 'has_seats' ? ((cls.capacity || 0) - (cls.studentCount || 0) > 0) : ((cls.capacity || 0) - (cls.studentCount || 0) <= 0));
     const matchSaleStatus = !filterSaleStatus || cls.saleStatus === filterSaleStatus;
-
+    const matchSaleMode = !filterSaleMode || cls.saleMode === filterSaleMode;
     let matchCheckbox = true;
     if (showActiveOnly) {
         matchCheckbox = ['pending', 'active', 'full'].includes(cls.status || 'pending');
@@ -2141,7 +2143,7 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
 
     return matchName && matchMode && matchYear && matchSubject && matchGradeClassType && 
            matchSemester && matchTeacher && matchCity && matchDistrict && matchCampus && 
-           matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus;
+           matchClassroom && matchStatus && matchCourseType && matchCheckbox && matchRemaining && matchSaleStatus && matchSaleMode;
   });
 
   const getStatusBadge = (status: string) => {
@@ -2157,7 +2159,6 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
         return <span className="bg-orange-50 text-orange-500 border border-orange-200 px-2 py-0.5 rounded text-xs">未开课</span>;
     }
   };
-
   const getCellContent = (colId: string, cls: ClassInfo) => {
     const teacher = TEACHERS.find(t => t.id === cls.teacherId);
     const course = COURSES.find(c => c.id === cls.courseId);
@@ -2468,6 +2469,13 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                 <option value="off_sale">未上架</option>
             </select>
 
+            {/* Sale Mode */}
+            <select className="border border-gray-300 rounded px-2 py-1.5 text-sm w-[100px] flex-shrink-0 focus:outline-none focus:border-primary text-gray-700 h-[34px]" value={filterSaleMode} onChange={e => setFilterSaleMode(e.target.value)}>
+                <option value="">售卖模式</option>
+                <option value="normal">普通班</option>
+                <option value="presale">预售班</option>
+            </select>
+
              {/* Search Button */}
              <button 
                  className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors flex-shrink-0 h-[34px] shadow-sm font-medium" 
@@ -2497,8 +2505,8 @@ const ClassManagement: React.FC<ClassManagementProps> = ({
                    setFilterClassroom([]); 
                    setFilterStatus([]); 
                    setFilterCourseType([]); 
-                   setFilterRemaining(''); 
                    setFilterSaleStatus(''); 
+                   setFilterSaleMode('');
                  }}
              >
                  重置
