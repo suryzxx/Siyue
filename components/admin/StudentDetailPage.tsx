@@ -312,6 +312,7 @@ interface EvaluationRecord {
   city: string;
   grade: string; // 年级 from provided list
   classType: string; // 班型 from provided list
+  score?: string; // 评测分数
   createdAt: string;
   updatedAt: string;
   attachments: Attachment[];
@@ -381,7 +382,8 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
      subject: '英语',
      city: '',
      grade: '',
-     classType: ''
+     classType: '',
+     score: '' // 评测分数
    });
 
    // State for follow-up records modal
@@ -913,6 +915,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '南京',
       grade: 'G5',
       classType: 'A+',
+      score: '95', // 评测分数
       createdAt: '2025-01-15 10:30:22',
       updatedAt: '2025-01-15 10:30:22',
       attachments: [
@@ -934,6 +937,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '上海',
       grade: 'G3',
       classType: 'S',
+      score: '88',
       createdAt: '2024-09-10 14:20:15',
       updatedAt: '2024-09-10 14:20:15',
       attachments: []
@@ -947,6 +951,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '南京',
       grade: 'G1',
       classType: 'A',
+      score: '92',
       createdAt: '2024-03-20 09:15:30',
       updatedAt: '2024-03-20 09:15:30',
       attachments: []
@@ -960,6 +965,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '南京',
       grade: 'G1',
       classType: 'S',
+      score: '85',
       createdAt: '2023-07-15 11:00:00',
       updatedAt: '2023-07-15 11:00:00',
       attachments: []
@@ -973,6 +979,7 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '深圳',
       grade: 'G3',
       classType: 'A+',
+      score: '90',
       createdAt: '2023-09-25 14:30:00',
       updatedAt: '2023-09-25 14:30:00',
       attachments: []
@@ -1463,6 +1470,7 @@ const getStatusBadge = (status: string) => {
                 <span className="text-gray-400">就读城市:</span>
                 <span className="text-gray-900 ml-2">{student.studyCity || '-'}</span>
               </div>
+              {/* Row 3 */}
               <div className="flex items-center">
                 <span className="text-gray-400">性别:</span>
                 <span className="text-gray-900 ml-2">{student.gender}</span>
@@ -1471,14 +1479,21 @@ const getStatusBadge = (status: string) => {
                 <span className="text-gray-400">英文名:</span>
                 <span className="text-gray-900 ml-2">{student.englishName || '-'}</span>
               </div>
-              <div className="flex items-center col-span-2">
+              <div className="flex items-center">
                 <span className="text-gray-400">学生状态:</span>
                 <span className="ml-2">
                   {getStatusBadge(student.studentStatus || '潜在学生')}
                 </span>
               </div>
-
-              {/* Row 3 */}
+              <div className="flex items-center">
+                <span className="text-gray-400">在读时长:</span>
+                <span className="ml-2 text-gray-900 font-medium">
+                  {student.studentStatus === '在读学生' ? '1年3个月' : 
+                   student.studentStatus === '潜在学生' ? '-' : 
+                   student.studentStatus === '历史学生' ? '2年6个月' : 
+                   '1年2个月'}
+                </span>
+              </div>
               <div className="flex items-center">
                 <span className="text-gray-400">所属校区:</span>
                 <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
@@ -2001,6 +2016,7 @@ const getStatusBadge = (status: string) => {
                             <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                               <tr>
                                 <th className="p-4">标题</th>
+                                <th className="p-4">评测分数</th>
                                 <th className="p-4">评测等级</th>
                                 <th className="p-4">城市</th>
                                 <th className="p-4">年份</th>
@@ -2025,6 +2041,11 @@ const getStatusBadge = (status: string) => {
                                       <div className="text-xs text-gray-400 mt-1">
                                         创建时间: {record.createdAt}
                                       </div>
+                                    </td>
+                                    <td className="p-4">
+                                      <span className="font-medium text-gray-800">
+                                        {record.score ? `${record.score}分` : '-'}
+                                      </span>
                                     </td>
                                     <td className="p-4">
                                       <span className="bg-blue-50 text-blue-500 border border-blue-200 px-2 py-0.5 rounded text-xs">
@@ -2147,18 +2168,20 @@ const getStatusBadge = (status: string) => {
                         >
                           <option value="">选择学期</option>
                           <option value="寒假">寒假</option>
+                          <option value="寒春">寒春</option>
                           <option value="春季">春季</option>
                           <option value="暑假">暑假</option>
+                          <option value="暑秋">暑秋</option>
                           <option value="秋季">秋季</option>
                         </select>
                       </div>
                     </div>
                   </div>
 
-                  {/* Section 2: 成绩 - Subject, Paper Type, Grade, Class Type in one row */}
+                  {/* Section 2: 成绩 - Subject, Paper Type, Score, Grade, Class Type */}
                   <div>
                     <h3 className="text-lg font-medium text-gray-800 mb-4">成绩</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       {/* Subject - Fixed to English only */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2202,6 +2225,20 @@ const getStatusBadge = (status: string) => {
                             <option value="三个月内免测入班">三个月内免测入班</option>
                           </optgroup>
                         </select>
+                      </div>
+                      
+                      {/* Score */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          评测分数
+                        </label>
+                        <input
+                          type="text"
+                          value={evaluationForm.score}
+                          onChange={(e) => setEvaluationForm({...evaluationForm, score: e.target.value})}
+                          placeholder="请输入分数"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
                       </div>
                       
                        {/* Grade */}

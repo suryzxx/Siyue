@@ -13,6 +13,7 @@ import SystemSettings from './SystemSettings';
 import StudentManagement from './StudentManagement';
 import StudentDetailPage from './StudentDetailPage';
 import OrderManagement from './OrderManagement';
+import { LockOrderManagement } from './OrderManagement';
 import TransferRefundRecords from './TransferRefundRecords';
 import ManualOrderPage from './ManualOrderPage';
 
@@ -232,6 +233,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                }
              }}
              onNavigateToManualOrder={() => setActivePanel('manual-order')}
+             onNavigateToLockOrder={() => setActivePanel('lock-order')}
            />
          )}
          {activePanel === 'manual-order' && (
@@ -269,7 +271,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
           />
         )}
-        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order', 'manual-order', 'class-detail', 'schedule', 'attendance', 'transfer-refund' ].includes(activePanel) && (
+        {activePanel === 'lock-order' && (
+          <LockOrderManagement 
+            onBack={() => setActivePanel('order')}
+            onNavigateToClass={(classId) => {
+              setSelectedClassId(classId);
+              setActivePanel('class-detail');
+            }}
+            onNavigateToStudent={(studentId) => {
+              const student = ADMIN_STUDENTS.find(s => s.id === studentId);
+              if (student) {
+                setSelectedStudent(student);
+                setActivePanel('student-detail');
+              }
+            }}
+          />
+        )}
+        {![ 'class', 'course', 'employee', 'address', 'system', 'student', 'student-detail', 'order', 'manual-order', 'class-detail', 'schedule', 'attendance', 'transfer-refund', 'lock-order' ].includes(activePanel) && (
           <div className="flex items-center justify-center h-full text-gray-400">
             {activePanel} 功能模块开发中...
           </div>
