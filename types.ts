@@ -36,6 +36,7 @@ export interface Student {
      studyCity?: string; // 就读城市
      registrationChannel?: '前台注册' | 'APP注册'; // 注册渠道
      acquisitionChannel?: '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号'; // 获客渠道
+     enrollmentDuration?: string; // 在读时长
    }
 
  export interface Order {

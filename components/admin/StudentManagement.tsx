@@ -108,6 +108,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
           { key: 'followUpStatus', label: '跟进状态', width: 12, format: ExcelFormatters.status },
           { key: 'createdTime', label: '注册时间', width: 18, format: ExcelFormatters.datetime },
           { key: 'updatedTime', label: '更新时间', width: 18, format: ExcelFormatters.datetime },
+          { key: 'enrollmentDuration', label: '在读时长', width: 12 },
           { key: 'grade', label: '在读年级', width: 12 },
           { key: 'school', label: '在读学校', width: 20 },
         ];
@@ -540,6 +541,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   <th className="p-4 whitespace-nowrap">跟进状态</th>
                   <th className="p-4 whitespace-nowrap">注册时间</th>
                   <th className="p-4 whitespace-nowrap">更新时间</th>
+                  <th className="p-4 whitespace-nowrap">在读时长</th>
                   <th className="p-4 whitespace-nowrap">在读年级</th>
                   <th className="p-4 whitespace-nowrap">在读学校</th>
                   <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
@@ -592,6 +594,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                    </td>
                    <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.createdTime}</td>
                    <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.updatedTime}</td>
+                   <td className="p-4 text-gray-600 text-xs whitespace-nowrap">{student.enrollmentDuration || '-'}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.grade || '-'}</td>
                     <td className="p-4 text-gray-600 whitespace-nowrap">{student.school || '-'}</td>
                   <td className="p-4 sticky right-0 bg-white shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">
