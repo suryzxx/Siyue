@@ -191,16 +191,16 @@ const OrderRow: React.FC<OrderRowProps> = ({ subOrder, courseItem, orderTime, on
         </div>
       </td>
       {/* 收费主体 */}
-      <td className="px-3 py-3 text-gray-800 text-xs" title={venueInfo.billingEntity}>{truncateText(venueInfo.billingEntity)}</td>
+      <td className="px-3 py-3 text-gray-800 text-xs whitespace-nowrap">{venueInfo.billingEntity}</td>
       {/* 场馆 */}
-      <td className="px-3 py-3 text-gray-800 text-xs" title={subOrder.venue || venueInfo.venue}>{truncateText(subOrder.venue || venueInfo.venue)}</td>
+      <td className="px-3 py-3 text-gray-800 text-xs whitespace-nowrap">{subOrder.venue || venueInfo.venue}</td>
       {/* 订单类型 */}
       <td className="px-3 py-3"><span className={`px-1.5 py-0.5 text-xs rounded ${getOrderTypeStyle(subOrder.orderType)}`}>{subOrder.orderType}</span></td>
       {/* 学生信息 */}
       <td className="px-3 py-3"><button onClick={() => onStudentClick(subOrder.studentId)} className="text-primary hover:underline">{subOrder.studentName}</button></td>
       {/* 班级名称 */}
       <td className="px-3 py-3">
-        {courseItem?.classId ? (<button onClick={() => onClassClick(courseItem.classId)} className="text-primary hover:underline text-left" title={courseItem.name}>{truncateText(courseItem.name)}</button>) : (<span className="text-gray-800" title={courseItem?.name || '-'}>{truncateText(courseItem?.name || '-')}</span>)}
+        {courseItem?.classId ? (<button onClick={() => onClassClick(courseItem.classId)} className="text-primary hover:underline text-left whitespace-nowrap">{courseItem.name}</button>) : (<span className="text-gray-800 whitespace-nowrap">{courseItem?.name || '-'}</span>)}
       </td>
       {/* 已购讲次 */}
       <td className="px-3 py-3 text-gray-800 text-xs">{subOrder.lessonCount || '-'}</td>
@@ -962,8 +962,8 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ onNavigateToClass, on
 
         {/* 第三栏：表格区域 */}
         <div className="flex-1 overflow-hidden bg-white flex flex-col">
-          <div className="flex-1 overflow-auto mx-6 my-4">
-            <table className="w-full">
+          <div className="flex-1 overflow-x-auto overflow-y-auto mx-6 my-4">
+            <table className="w-full min-w-max">
               <thead className="bg-[#F9FBFA] text-sm text-gray-600 font-medium sticky top-0 z-10">
                   <th className="px-3 py-3 text-left font-medium">订单编号</th>
                   <th className="px-3 py-3 text-left font-medium">收费主体</th>
@@ -1422,8 +1422,8 @@ export const LockOrderManagement: React.FC<LockOrderManagementProps> = ({ onBack
 
       {/* 表格区域 */}
       <div className="flex-1 overflow-hidden bg-white flex flex-col">
-        <div className="flex-1 overflow-auto mx-6 my-4">
-          <table className="w-full">
+        <div className="flex-1 overflow-x-auto overflow-y-auto mx-6 my-4">
+          <table className="w-full min-w-max">
             <thead className="bg-[#F9FBFA] text-sm text-gray-600 font-medium sticky top-0 z-10">
               <tr>
                 <th className="px-3 py-3 text-left font-medium w-10">
@@ -1472,8 +1472,8 @@ export const LockOrderManagement: React.FC<LockOrderManagementProps> = ({ onBack
                         <td className="px-3 py-3">
                           <button className="font-mono text-primary hover:underline cursor-pointer">{subOrder.id}</button>
                         </td>
-                        <td className="px-3 py-3 text-gray-800 text-xs" title={venueInfo.billingEntity}>{truncateText(venueInfo.billingEntity)}</td>
-                        <td className="px-3 py-3 text-gray-800 text-xs" title={subOrder.venue || venueInfo.venue}>{truncateText(subOrder.venue || venueInfo.venue)}</td>
+                        <td className="px-3 py-3 text-gray-800 text-xs whitespace-nowrap">{venueInfo.billingEntity}</td>
+                        <td className="px-3 py-3 text-gray-800 text-xs whitespace-nowrap">{subOrder.venue || venueInfo.venue}</td>
                         <td className="px-3 py-3">
                           <span className={`px-1.5 py-0.5 text-xs rounded ${getOrderTypeStyle(subOrder.orderType)}`}>{subOrder.orderType}</span>
                         </td>
@@ -1482,9 +1482,9 @@ export const LockOrderManagement: React.FC<LockOrderManagementProps> = ({ onBack
                         </td>
                         <td className="px-3 py-3">
                           {courseItem?.classId ? (
-                            <button onClick={() => handleClassClick(courseItem.classId)} className="text-primary hover:underline text-left" title={courseItem.name}>{truncateText(courseItem.name)}</button>
+                            <button onClick={() => handleClassClick(courseItem.classId)} className="text-primary hover:underline text-left whitespace-nowrap">{courseItem.name}</button>
                           ) : (
-                            <span className="text-gray-800" title={courseItem?.name || '-'}>{truncateText(courseItem?.name || '-')}</span>
+                            <span className="text-gray-800 whitespace-nowrap">{courseItem?.name || '-'}</span>
                           )}
                         </td>
                         <td className="px-3 py-3 text-gray-800 text-xs">{subOrder.lessonCount || '-'}</td>

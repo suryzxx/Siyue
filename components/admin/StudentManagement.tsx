@@ -558,7 +558,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      {student.name}
                    </td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.englishName || '-'}</td>
-                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.account}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.account ? student.account.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-'}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.gender}</td>
                     <td className="p-4 text-gray-600 whitespace-nowrap">{student.birthDate || '-'}</td>
                     <td className="p-4 text-gray-600 whitespace-nowrap">
