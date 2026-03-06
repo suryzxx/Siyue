@@ -506,12 +506,6 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                批量导入学生
              </button>
              <button 
-               onClick={() => setShowBatchEnrollmentModal(true)}
-               className="bg-primary hover:bg-teal-600 text-white px-5 py-1.5 rounded text-sm transition-colors"
-             >
-               批量报名
-             </button>
-             <button 
                onClick={exportStudentList}
                className="border border-primary text-primary hover:bg-primary-light px-4 py-1.5 rounded text-sm transition-colors"
              >
