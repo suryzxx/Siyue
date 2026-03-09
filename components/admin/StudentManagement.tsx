@@ -52,7 +52,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
       englishName: '',
       grade: '',
       school: '',
-      studyCity: '',
+      province: '',
+      city: '',
+      district: '',
+      campus: '',
       acquisitionChannel: '' as '' | '朋友/熟人推荐' | '小红书' | '思悦社群' | '思悦公众号/视频号',
     });
 
@@ -167,7 +170,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
         englishName: '',
         grade: '',
         school: '',
-        studyCity: '',
+        province: '',
+        city: '',
+        district: '',
+        campus: '',
         acquisitionChannel: '',
       });
       setShowNewStudentModal(true);
@@ -187,11 +193,13 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
 
     // 保存新生录入
   const handleSaveNewStudent = () => {
-    if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.grade) {
-      alert('请填写必填信息（学生姓名、联系电话、在读年级）');
+    if (!newStudentFormData.name || !newStudentFormData.account || !newStudentFormData.grade ||
+        !newStudentFormData.province || !newStudentFormData.city || !newStudentFormData.district ||
+        !newStudentFormData.campus) {
+      alert('请填写必填信息（学生姓名、联系电话、在读年级、省市区、校区）');
       return;
     }
-    
+
     // 实际应用中这里会调用API创建新学生
     alert(`新生 ${newStudentFormData.name} 已成功录入`);
     setShowNewStudentModal(false);
@@ -528,6 +536,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                   <th className="p-4 whitespace-nowrap">出生年月</th>
                   <th className="p-4 whitespace-nowrap">评测等级</th>
                   <th className="p-4 whitespace-nowrap">所属校区</th>
+                  <th className="p-4 whitespace-nowrap">课程顾问</th>
                   <th className="p-4 whitespace-nowrap">注册渠道</th>
                   <th className="p-4 whitespace-nowrap">获客渠道</th>
                   <th className="p-4 whitespace-nowrap">就读城市</th>
@@ -559,6 +568,8 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      {student.evaluationLevel || '-'}
                    </td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.campus || '-'}</td>
+                   <td className="p-4 text-gray-600 whitespace-nowrap">{student.courseConsultant || '-'}</td>
+                   
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.registrationChannel || '-'}</td>
                    <td className="p-4 text-gray-600 whitespace-nowrap">{student.acquisitionChannel || '-'}</td>
                     <td className="p-4 text-gray-600 whitespace-nowrap">{student.studyCity || '-'}</td>
@@ -799,13 +810,13 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      </label>
                      <input
                        type="text"
-                       value={newStudentFormData.studentName}
-                       onChange={(e) => setNewStudentFormData({...newStudentFormData, studentName: e.target.value})}
+                       value={newStudentFormData.name}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, name: e.target.value})}
                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                        placeholder="请输入学生姓名"
                      />
                    </div>
-                   
+
                    {/* 联系电话 */}
                    <div>
                      <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -813,14 +824,14 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      </label>
                      <input
                        type="text"
-                       value={newStudentFormData.phone}
-                       onChange={(e) => setNewStudentFormData({...newStudentFormData, phone: e.target.value})}
+                       value={newStudentFormData.account}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, account: e.target.value})}
                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                        placeholder="请输入联系电话"
                      />
                    </div>
                  </div>
-                 
+
                  {/* 在读年级 */}
                  <div>
                    <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -837,7 +848,71 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      ))}
                    </select>
                  </div>
-                 
+
+                 {/* 省市区 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     省市区 <span className="text-red-500">*</span>
+                   </label>
+                   <div className="grid grid-cols-3 gap-2">
+                     <select
+                       value={newStudentFormData.province}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, province: e.target.value})}
+                       className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                     >
+                       <option value="">请选择省</option>
+                       <option value="江苏省">江苏省</option>
+                       <option value="广东省">广东省</option>
+                       <option value="北京市">北京市</option>
+                       <option value="上海市">上海市</option>
+                       <option value="浙江省">浙江省</option>
+                     </select>
+                     <select
+                       value={newStudentFormData.city}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, city: e.target.value})}
+                       className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                     >
+                       <option value="">请选择市</option>
+                       <option value="南京市">南京市</option>
+                       <option value="深圳市">深圳市</option>
+                       <option value="广州市">广州市</option>
+                       <option value="北京市">北京市</option>
+                       <option value="上海市">上海市</option>
+                       <option value="杭州市">杭州市</option>
+                     </select>
+                     <select
+                       value={newStudentFormData.district}
+                       onChange={(e) => setNewStudentFormData({...newStudentFormData, district: e.target.value})}
+                       className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                     >
+                       <option value="">请选择区</option>
+                       <option value="鼓楼区">鼓楼区</option>
+                       <option value="玄武区">玄武区</option>
+                       <option value="建邺区">建邺区</option>
+                       <option value="栖霞区">栖霞区</option>
+                       <option value="南山区">南山区</option>
+                       <option value="宝安区">宝安区</option>
+                     </select>
+                   </div>
+                 </div>
+
+                 {/* 校区 */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     校区 <span className="text-red-500">*</span>
+                   </label>
+                   <select
+                     value={newStudentFormData.campus}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, campus: e.target.value})}
+                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   >
+                     <option value="">请选择校区</option>
+                     {CAMPUSES.map(campus => (
+                       <option key={campus} value={campus}>{campus}</option>
+                     ))}
+                   </select>
+                 </div>
+
                  {/* 性别 */}
                  <div>
                    <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -853,7 +928,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      <option value="女">女</option>
                    </select>
                  </div>
-                 
+
                  {/* 英文名 */}
                  <div>
                    <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -867,7 +942,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      placeholder="请输入英文名"
                    />
                  </div>
-                 
+
                  {/* 在读学校 */}
                  <div>
                    <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -881,31 +956,15 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ onStudentSelect }
                      placeholder="请输入在读学校"
                    />
                  </div>
-                 
-                 {/* 就读城市 */}
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                     就读城市
-                   </label>
-                   <select
-                     value={newStudentFormData.city}
-                     onChange={(e) => setNewStudentFormData({...newStudentFormData, city: e.target.value})}
-                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                   >
-                     <option value="">请选择就读城市</option>
-                     <option value="南京">南京</option>
-                     <option value="深圳">深圳</option>
-                   </select>
-                 </div>
-                 
+
                  {/* 获客渠道 */}
                  <div>
                    <label className="block text-sm font-medium text-gray-700 mb-1">
                      获客渠道
                    </label>
                    <select
-                     value={newStudentFormData.channel}
-                     onChange={(e) => setNewStudentFormData({...newStudentFormData, channel: e.target.value})}
+                     value={newStudentFormData.acquisitionChannel}
+                     onChange={(e) => setNewStudentFormData({...newStudentFormData, acquisitionChannel: e.target.value})}
                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                    >
                      <option value="">请选择获客渠道</option>

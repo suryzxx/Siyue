@@ -302,20 +302,27 @@ interface AttendanceRecord {
   hasClassChange?: boolean;
 }
 
+// 评测状态类型
+type EvaluationStatus = '待到访' | '已到访' | '已评测' | '已取消';
+
 interface EvaluationRecord {
   id: string;
-  // Title will be auto-generated as "年份+学期+试卷类型"
   year: string;
   semester: string;
   paperType: string;
   subject: string;
   city: string;
-  grade: string; // 年级 from provided list
-  classType: string; // 班型 from provided list
-  score?: string; // 评测分数
+  grade: string;
+  classType: string;
+  score?: string;
+  province: string;
+  campus: string;
+  date: string;
+  timeSlot: string;
   createdAt: string;
   updatedAt: string;
   attachments: Attachment[];
+  status?: EvaluationStatus; // 评测状态
 }
 
 interface LearningSituation {
@@ -916,18 +923,15 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       city: '南京',
       grade: 'G5',
       classType: 'A+',
-      score: '95', // 评测分数
+      score: '95',
+      province: '江苏省 南京市 鼓楼区',
+      campus: '龙江校区',
+      date: '2025-01-15',
+      timeSlot: '14:30-16:00',
       createdAt: '2025-01-15 10:30:22',
       updatedAt: '2025-01-15 10:30:22',
-      attachments: [
-        {
-          id: '1',
-          fileName: '数学试卷.jpg',
-          fileUrl: '#',
-          fileType: 'image',
-          uploadedAt: '2025-01-15 10:30:22'
-        }
-      ]
+      attachments: [],
+      status: '已评测'
     },
     {
       id: '2',
@@ -935,13 +939,18 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       semester: '秋季',
       paperType: '跳级测',
       subject: '英语',
-      city: '上海',
+      city: '南京',
       grade: 'G3',
       classType: 'S',
       score: '88',
+      province: '江苏省 南京市 玄武区',
+      campus: '大行宫校区',
+      date: '2024-09-10',
+      timeSlot: '10:00-11:30',
       createdAt: '2024-09-10 14:20:15',
       updatedAt: '2024-09-10 14:20:15',
-      attachments: []
+      attachments: [],
+      status: '已评测'
     },
     {
       id: '3',
@@ -953,9 +962,14 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       grade: 'G1',
       classType: 'A',
       score: '92',
+      province: '江苏省 南京市 栖霞区',
+      campus: '仙林校区',
+      date: '2024-03-20',
+      timeSlot: '09:00-10:30',
       createdAt: '2024-03-20 09:15:30',
       updatedAt: '2024-03-20 09:15:30',
-      attachments: []
+      attachments: [],
+      status: '已到访'
     },
     {
       id: '4',
@@ -967,9 +981,14 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       grade: 'G1',
       classType: 'S',
       score: '85',
+      province: '江苏省 南京市 建邺区',
+      campus: '奥体网球中心校区',
+      date: '2023-07-15',
+      timeSlot: '16:00-17:30',
       createdAt: '2023-07-15 11:00:00',
       updatedAt: '2023-07-15 11:00:00',
-      attachments: []
+      attachments: [],
+      status: '已取消'
     },
     {
       id: '5',
@@ -981,13 +1000,17 @@ const StudentDetailPage: React.FC<StudentDetailPageProps> = ({ student, onBack }
       grade: 'G3',
       classType: 'A+',
       score: '90',
+      province: '广东省 深圳市 南山区',
+      campus: '深圳湾校区',
+      date: '2023-09-25',
+      timeSlot: '14:00-15:30',
       createdAt: '2023-09-25 14:30:00',
       updatedAt: '2023-09-25 14:30:00',
-      attachments: []
+      attachments: [],
+      status: '待到访'
     }
   ];
 
-  // System Course (体系课) Class Hierarchy - For student evaluation
   const SYSTEM_COURSE_HIERARCHY: Record<string, string[]> = {
     'K2': ['启蒙', '启蒙衔接', '进阶'],
     'K3': ['启蒙', '进阶', '进阶衔接', '飞跃'],
@@ -1460,7 +1483,14 @@ const getStatusBadge = (status: string) => {
                    </button>
                  )}
                </div>
-               <div className="col-span-3"></div>
+               <div className="flex items-center">
+                 <span className="text-gray-400">所属校区:</span>
+                 <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
+               </div>
+               <div className="flex items-center">
+                 <span className="text-gray-400">课程顾问:</span>
+                 <span className="text-gray-900 ml-2">Linda王静</span>
+               </div>
 
               {/* Row 2 */}
               <div className="flex items-center">
@@ -1511,15 +1541,11 @@ const getStatusBadge = (status: string) => {
               <div className="flex items-center">
                 <span className="text-gray-400">在读时长:</span>
                 <span className="ml-2 text-gray-900 font-medium">
-                  {student.studentStatus === '在读学生' ? '1年3个月' : 
-                   student.studentStatus === '潜在学生' ? '-' : 
-                   student.studentStatus === '历史学生' ? '2年6个月' : 
+                  {student.studentStatus === '在读学生' ? '1年3个月' :
+                   student.studentStatus === '潜在学生' ? '-' :
+                   student.studentStatus === '历史学生' ? '2年6个月' :
                    '1年2个月'}
                 </span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400">所属校区:</span>
-                <span className="text-gray-900 ml-2">{student.campus || '-'}</span>
               </div>
               <div className="flex items-center">
                 <span className="text-gray-400">注册时间:</span>
@@ -2019,12 +2045,6 @@ const getStatusBadge = (status: string) => {
                    <div>
                      <div className="flex justify-between items-center mb-6">
                        <h3 className="text-lg font-medium text-gray-800">评测记录</h3>
-                       <button 
-                         onClick={() => setShowEvaluationModal(true)}
-                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
-                       >
-                         添加评测记录
-                       </button>
                      </div>
                      
                      {mockEvaluationRecords.length === 0 ? (
@@ -2038,80 +2058,58 @@ const getStatusBadge = (status: string) => {
                           <table className="w-full text-sm text-left">
                             <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                               <tr>
-                                <th className="p-4">标题</th>
-                                <th className="p-4">评测分数</th>
-                                <th className="p-4">评测等级</th>
-                                <th className="p-4">城市</th>
+                                <th className="p-4">省市区</th>
+                                <th className="p-4">校区</th>
+                                <th className="p-4">日期</th>
+                                <th className="p-4">时间段</th>
                                 <th className="p-4">年份</th>
                                 <th className="p-4">学期</th>
-                                <th className="p-4">学科</th>
-                                <th className="p-4">试卷类型</th>
-                                <th className="p-4">附件</th>
+                                <th className="p-4">班层</th>
+                                <th className="p-4">学情报告</th>
+                                <th className="p-4">评测状态</th>
                                 <th className="p-4">操作</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                              {mockEvaluationRecords.map(record => {
-                                // Auto-generate title: "年份+学期+试卷类型"
-                                const autoTitle = `${record.year}年${record.semester}${record.paperType}`;
-                                // Combine grade and classType for evaluation level
-                                const evaluationLevel = `${record.grade}${record.classType}`;
-                                
-                                return (
-                                  <tr key={record.id} className="hover:bg-gray-50">
-                                    <td className="p-4">
-                                      <div className="font-medium text-gray-800">{autoTitle}</div>
-                                      <div className="text-xs text-gray-400 mt-1">
-                                        创建时间: {record.createdAt}
-                                      </div>
-                                    </td>
-                                    <td className="p-4">
-                                      <span className="font-medium text-gray-800">
-                                        {record.score ? `${record.score}分` : '-'}
-                                      </span>
-                                    </td>
-                                    <td className="p-4">
-                                      <span className="bg-blue-50 text-blue-500 border border-blue-200 px-2 py-0.5 rounded text-xs">
-                                        {evaluationLevel}
-                                      </span>
-                                    </td>
-                                    <td className="p-4 text-gray-600">{record.city}</td>
-                                    <td className="p-4 text-gray-600">{record.year}</td>
-                                    <td className="p-4 text-gray-600">{record.semester}</td>
-                                    <td className="p-4 text-gray-600">{record.subject}</td>
-                                    <td className="p-4 text-gray-600">{record.paperType}</td>
-                                    <td className="p-4">
-                                      {record.attachments.length > 0 ? (
-                                        <div className="flex flex-wrap gap-1">
-                                          {record.attachments.map(attachment => (
-                                            <a 
-                                              key={attachment.id}
-                                              href={attachment.fileUrl}
-                                              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded border border-gray-200 text-xs text-gray-600"
-                                              title={attachment.fileName}
-                                            >
-                                              {attachment.fileType === 'image' ? '🖼️' : '📄'}
-                                              <span className="truncate max-w-[80px]">{attachment.fileName}</span>
-                                            </a>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <span className="text-gray-400 text-xs">无附件</span>
-                                      )}
-                                    </td>
-                                    <td className="p-4">
-                                      <div className="flex gap-2">
-                                        <button className="px-2 py-1 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded">
-                                          编辑
-                                        </button>
-                                        <button className="px-2 py-1 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 rounded">
-                                          删除
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
+                              {mockEvaluationRecords.map(record => (
+                                <tr key={record.id} className="hover:bg-gray-50">
+                                <td className="p-4 text-gray-600">{record.province}</td>
+                                <td className="p-4 text-gray-600">{record.campus}</td>
+                                <td className="p-4 text-gray-600">{record.date}</td>
+                                <td className="p-4 text-gray-600">{record.timeSlot}</td>
+                                <td className="p-4 text-gray-600">{record.year}</td>
+                                <td className="p-4 text-gray-600">{record.semester}</td>
+                                <td className="p-4 text-gray-600">{record.grade}{record.classType}</td>
+                                <td className="p-4">
+                                  <a href="#" className="text-blue-500 hover:text-blue-600 hover:underline text-sm">
+                                    查看报告
+                                  </a>
+                                </td>
+                                <td className="p-4">
+                                  <span className={`px-2 py-1 rounded text-xs ${
+                                    record.status === '待到访' ? 'bg-orange-50 text-orange-600 border border-orange-200' :
+                                    record.status === '已到访' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
+                                    record.status === '已评测' ? 'bg-green-50 text-green-600 border border-green-200' :
+                                    'bg-gray-50 text-gray-600 border border-gray-200'
+                                  }`}>
+                                    {record.status || '待到访'}
+                                  </span>
+                                </td>
+                                <td className="p-4">
+                                  <div className="flex gap-2">
+                                    <button
+                                      className="px-2 py-1 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                      onClick={() => setShowEvaluationModal(true)}
+                                    >
+                                      编辑
+                                    </button>
+                                    <button className="px-2 py-1 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 rounded">
+                                      删除
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                              ))}
                             </tbody>
                           </table>
                         </div>
@@ -2127,10 +2125,10 @@ const getStatusBadge = (status: string) => {
       {/* Add Evaluation Record Modal */}
       {showEvaluationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-medium text-gray-800">添加评测记录</h2>
+                <h2 className="text-xl font-medium text-gray-800">编辑评测记录</h2>
                 <button 
                   onClick={() => setShowEvaluationModal(false)}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -2141,205 +2139,91 @@ const getStatusBadge = (status: string) => {
 
                <div className="space-y-6">
 
-                  {/* Section 1: 成绩标签 - City, Year, Semester in one row */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-800 mb-4">成绩标签</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       {/* City */}
-                       <div>
-                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                           城市 <span className="text-red-500">*</span>
-                         </label>
-                         <select 
-                           value={evaluationForm.city}
-                           onChange={(e) => setEvaluationForm({...evaluationForm, city: e.target.value})}
-                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                         >
-                           <option value="">选择城市</option>
-                           <option value="南京">南京</option>
-                           <option value="深圳">深圳</option>
-                         </select>
-                       </div>
-                      
-                      {/* Year */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          年份 <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.year}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, year: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">选择年份</option>
-                          <option value="2026">2026</option>
-                          <option value="2025">2025</option>
-                          <option value="2024">2024</option>
-                          <option value="2023">2023</option>
-                        </select>
-                      </div>
-                      
-                      {/* Semester */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          学期 <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.semester}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, semester: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">选择学期</option>
-                          <option value="寒假">寒假</option>
-                          <option value="寒春">寒春</option>
-                          <option value="春季">春季</option>
-                          <option value="暑假">暑假</option>
-                          <option value="暑秋">暑秋</option>
-                          <option value="秋季">秋季</option>
-                        </select>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Year */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        年份 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={evaluationForm.year}
+                        onChange={(e) => setEvaluationForm({...evaluationForm, year: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">选择年份</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                      </select>
                     </div>
-                  </div>
 
-                  {/* Section 2: 成绩 - Subject, Paper Type, Score, Grade, Class Type */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-800 mb-4">成绩</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                      {/* Subject - Fixed to English only */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          学科 <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.subject}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, subject: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="英语">英语</option>
-                        </select>
-                      </div>
-                      
-                      {/* Paper Type */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          试卷类型 <span className="text-red-500">*</span>
-                        </label>
-                        <select 
-                          value={evaluationForm.paperType}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, paperType: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="">选择试卷类型</option>
-                          <optgroup label="入学测（新生）">
-                            <option value="入学测">入学测</option>
-                            <option value="领航A卷">领航A卷</option>
-                            <option value="领航B卷">领航B卷</option>
-                            <option value="高端A卷">高端A卷</option>
-                            <option value="高端B卷">高端B卷</option>
-                            <option value="1V1面诊">1V1面诊</option>
-                            <option value="试听面诊">试听面诊</option>
-                            <option value="绿色通道">绿色通道</option>
-                            <option value="剑桥官方卷">剑桥官方卷</option>
-                            <option value="0基础直入">0基础直入</option>
-                          </optgroup>
-                          <optgroup label="跳级测（老生）">
-                            <option value="跳级测">跳级测</option>
-                            <option value="绿色通道">绿色通道</option>
-                            <option value="三个月内免测入班">三个月内免测入班</option>
-                          </optgroup>
-                        </select>
-                      </div>
-                      
-                      {/* Score */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          评测分数
-                        </label>
-                        <input
-                          type="text"
-                          value={evaluationForm.score}
-                          onChange={(e) => setEvaluationForm({...evaluationForm, score: e.target.value})}
-                          placeholder="请输入分数"
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      
-                       {/* Grade */}
-                       <div>
-                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                           评测等级（年级） <span className="text-red-500">*</span>
-                         </label>
-                         <select 
-                           value={evaluationForm.grade}
-                           onChange={(e) => handleGradeChange(e.target.value)}
-                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                         >
-                           <option value="">选择年级</option>
-                           {gradeOptions.map((grade, index) => (
-                             <option key={index} value={grade}>{grade}</option>
-                           ))}
-                         </select>
-                       </div>
-                       
-                       {/* Class Type */}
-                       <div>
-                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                           评测等级（班型） <span className="text-red-500">*</span>
-                         </label>
-                         <select 
-                           value={evaluationForm.classType}
-                           onChange={(e) => setEvaluationForm({...evaluationForm, classType: e.target.value})}
-                           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           disabled={!evaluationForm.grade}
-                         >
-                           <option value="">选择班型</option>
-                           {evaluationForm.grade && SYSTEM_COURSE_HIERARCHY[evaluationForm.grade]?.map((classType, index) => (
-                             <option key={index} value={classType}>{classType}</option>
-                           ))}
-                         </select>
-                         {evaluationForm.grade && (
-                           <p className="text-xs text-gray-500 mt-1">
-                             可选项: {SYSTEM_COURSE_HIERARCHY[evaluationForm.grade]?.join(', ')}
-                           </p>
-                         )}
-                       </div>
+                    {/* Semester */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        学期 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={evaluationForm.semester}
+                        onChange={(e) => setEvaluationForm({...evaluationForm, semester: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">选择学期</option>
+                        <option value="寒假">寒假</option>
+                        <option value="寒春">寒春</option>
+                        <option value="春季">春季</option>
+                        <option value="暑假">暑假</option>
+                        <option value="暑秋">暑秋</option>
+                        <option value="秋季">秋季</option>
+                      </select>
                     </div>
-                  </div>
 
-                {/* 附件上传 */}
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">附件上传</h3>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <div className="mb-4">
-                      <div className="text-4xl mb-2">📎</div>
-                      <p className="text-gray-600">支持上传图片、文件格式</p>
-                      <p className="text-sm text-gray-400 mt-1">点击或拖拽文件到此处上传</p>
+                    {/* Grade */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        年级 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={evaluationForm.grade}
+                        onChange={(e) => handleGradeChange(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">选择年级</option>
+                        {gradeOptions.map((grade, index) => (
+                          <option key={index} value={grade}>{grade}</option>
+                        ))}
+                      </select>
                     </div>
-                    <input 
-                      type="file"
-                      multiple
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <label 
-                      htmlFor="file-upload"
-                      className="inline-block px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors cursor-pointer"
-                    >
-                      选择文件
-                    </label>
+
+                    {/* Class Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        班型 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={evaluationForm.classType}
+                        onChange={(e) => setEvaluationForm({...evaluationForm, classType: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!evaluationForm.grade}
+                      >
+                        <option value="">选择班型</option>
+                        {evaluationForm.grade && SYSTEM_COURSE_HIERARCHY[evaluationForm.grade]?.map((classType, index) => (
+                          <option key={index} value={classType}>{classType}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
 
                 {/* 操作按钮 */}
                 <div className="flex justify-end gap-4 pt-6 border-t">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowEvaluationModal(false)}
                     className="px-6 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
                   >
                     取消
                   </button>
-                  <button 
+                  <button
                     type="button"
                     className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                   >

@@ -25,7 +25,7 @@ const TeacherManagement: React.FC = () => {
     phone: '',
     city: '', // New Form Field
     campus: '',
-    position: '主讲',
+    positions: ['主讲'] as string[],
     avatar: '',
     poster: ''
   });
@@ -61,7 +61,7 @@ const TeacherManagement: React.FC = () => {
         phone: teacher.phone || '',
         city: teacher.city || '',
         campus: teacher.campus || '',
-        position: teacher.position || '主讲',
+        positions: teacher.position ? [teacher.position] : ['主讲'],
         avatar: teacher.avatar || '',
         poster: teacher.poster || ''
       });
@@ -73,7 +73,7 @@ const TeacherManagement: React.FC = () => {
         phone: '',
         city: '',
         campus: '',
-        position: '主讲',
+        positions: ['主讲'],
         avatar: '',
         poster: ''
       });
@@ -185,6 +185,7 @@ const TeacherManagement: React.FC = () => {
             <option value="课程顾问">课程顾问</option>
             <option value="教学管理">教学管理</option>
             <option value="产品管理">产品管理</option>
+            <option value="宣讲师">宣讲师</option>
            </select>
         </div>
         <div className="flex items-center gap-2">
@@ -236,7 +237,7 @@ const TeacherManagement: React.FC = () => {
                 <th className="p-4 whitespace-nowrap">所属校区</th>
                 <th className="p-4 whitespace-nowrap">用户职位</th>
                 <th className="p-4 whitespace-nowrap">头像</th>
-                <th className="p-4 whitespace-nowrap">宣传海报</th>
+                <th className="p-4 whitespace-nowrap">名片</th>
                 <th className="p-4 whitespace-nowrap">状态</th>
                 <th className="p-4 whitespace-nowrap">注册时间</th>
                  <th className="p-4 whitespace-nowrap sticky right-0 bg-[#F9FBFA] shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]">操作</th>
@@ -372,23 +373,29 @@ const TeacherManagement: React.FC = () => {
                 </select>
               </div>
 
-              <div className="flex items-center">
-                <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4"><span className="text-red-500 mr-1">*</span>用户职位</label>
-                <select 
-                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary bg-white"
-                  value={formData.position}
-                  onChange={e => setFormData({...formData, position: e.target.value})}
-                >
-                  <option value="超级管理员">超级管理员</option>
-                  <option value="班级组">班级组</option>
-                  <option value="区管">区管</option>
-                  <option value="财务">财务</option>
-                  <option value="主讲">主讲</option>
-                  <option value="后端教务">后端教务</option>
-                  <option value="课程顾问">课程顾问</option>
-                  <option value="教学管理">教学管理</option>
-                  <option value="产品管理">产品管理</option>
-                </select>
+              <div className="flex items-start">
+                <label className="w-24 text-sm font-medium text-gray-600 text-right mr-4 mt-2"><span className="text-red-500 mr-1">*</span>用户职位</label>
+                <div className="flex-1 border border-gray-300 rounded px-3 py-2 bg-white">
+                  <div className="flex flex-wrap gap-3">
+                    {['超级管理员', '班级组', '区管', '财务', '主讲', '后端教务', '课程顾问', '教学管理', '产品管理', '宣讲师'].map(pos => (
+                      <label key={pos} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={formData.positions.includes(pos)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setFormData({...formData, positions: [...formData.positions, pos]});
+                            } else {
+                              setFormData({...formData, positions: formData.positions.filter(p => p !== pos)});
+                            }
+                          }}
+                          className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        />
+                        <span className="text-gray-700">{pos}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center">
