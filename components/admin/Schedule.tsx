@@ -345,6 +345,7 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
     studentName: string;
     studentPhone: string;
     status: EvalStatus;
+    assignedPaper?: string;
   }
 
   // 模拟学生预约数据
@@ -423,6 +424,11 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
   const [showSessionDetailModal, setShowSessionDetailModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<typeof placementSessions[0] | null>(null);
 
+  const [showPaperList, setShowPaperList] = useState(false);
+  const [assigningStudentId, setAssigningStudentId] = useState<string | null>(null);
+
+  const paperList = ['试卷A', '试卷B', '试卷C', '试卷D', '试卷E'];
+
   // 点击场次打开详情弹窗
   const handleSessionClick = (session: typeof placementSessions[0], e: React.MouseEvent) => {
     e.stopPropagation();
@@ -435,6 +441,16 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
     setEvalReservations(prev => prev.map(r => 
       r.id === reservationId ? { ...r, status: '已到访' as EvalStatus } : r
     ));
+  };
+
+  const handleAssignPaper = (paperName: string) => {
+    if (assigningStudentId) {
+      setEvalReservations(prev => prev.map(r => 
+        r.id === assigningStudentId ? { ...r, assignedPaper: paperName } : r
+      ));
+      setShowPaperList(false);
+      setAssigningStudentId(null);
+    }
   };
   
   // 省市区数据 (模拟南京)
@@ -1227,81 +1243,128 @@ const Schedule: React.FC<ScheduleProps> = ({ classes, lessons, onNavigateToClass
 
             {/* 上部场次信息 */}
 
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-              <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 text-xs">
-                {/* 时间 */}
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-400">时间：</span>
-                  <span className="text-gray-700">{selectedSession.date} {selectedSession.startTime}-{selectedSession.endTime}</span>
-                </div>
-                {/* 地点 */}
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-400">地点：</span>
-                  <span className="text-gray-700">{selectedSession.campus} · {selectedSession.classroom}</span>
-                  <span className="text-gray-400 ml-2">{selectedSession.province}-{selectedSession.city}-{selectedSession.district}</span>
-                </div>
-                {/* 人数 */}
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-400">预约情况：</span>
-                  <span className="text-gray-700">{evalReservations.filter(r => r.sessionId === selectedSession.id).length}/{selectedSession.maxCapacity}人</span>
-                </div>
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-400">宣讲师：</span>
-                  <span className="text-gray-700">{selectedSession.presenterName}</span>
+            {!showPaperList && (
+              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 text-xs">
+                  <div className="whitespace-nowrap">
+                    <span className="text-gray-400">时间：</span>
+                    <span className="text-gray-700">{selectedSession.date} {selectedSession.startTime}-{selectedSession.endTime}</span>
+                  </div>
+                  <div className="whitespace-nowrap">
+                    <span className="text-gray-400">地点：</span>
+                    <span className="text-gray-700">{selectedSession.campus} · {selectedSession.classroom}</span>
+                    <span className="text-gray-400 ml-2">{selectedSession.province}-{selectedSession.city}-{selectedSession.district}</span>
+                  </div>
+                  <div className="whitespace-nowrap">
+                    <span className="text-gray-400">预约情况：</span>
+                    <span className="text-gray-700">{evalReservations.filter(r => r.sessionId === selectedSession.id).length}/{selectedSession.maxCapacity}人</span>
+                  </div>
+                  <div className="whitespace-nowrap">
+                    <span className="text-gray-400">宣讲师：</span>
+                    <span className="text-gray-700">{selectedSession.presenterName}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* 下部学生列表 - 增加高度以每列8人 */}
 
             <div className="flex-1 p-4 overflow-hidden flex flex-col">
-              <h4 className="text-xs text-gray-600 mb-2">预约学生列表</h4>
-              {(() => {
-                const sessionReservations = evalReservations.filter(r => r.sessionId === selectedSession.id);
-                return sessionReservations.length > 0 ? (
+              {showPaperList ? (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <button
+                      onClick={() => {
+                        setShowPaperList(false);
+                        setAssigningStudentId(null);
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-sm"
+                    >
+                      ← 返回
+                    </button>
+                    <h4 className="text-xs text-gray-600">试卷列表</h4>
+                  </div>
                   <div className="flex-1 grid grid-cols-2 gap-2 overflow-y-auto pr-1">
-                    {sessionReservations.map(reservation => (
-                      <div key={reservation.id} className="bg-gray-50 rounded px-3 py-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span 
-                              className="text-primary cursor-pointer hover:underline"
-                              onClick={() => {
-                                alert(`跳转到学生详情页: ${reservation.studentName}`);
-                              }}
-                            >
-                              {reservation.studentName}
-                            </span>
-                            <span className="text-gray-400">{reservation.studentPhone}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1.5 py-0.5 rounded text-xs ${
-                              reservation.status === '待到访' ? 'bg-orange-50 text-orange-600' :
-                              reservation.status === '已到访' ? 'bg-blue-50 text-blue-600' :
-                              reservation.status === '已评测' ? 'bg-green-50 text-green-600' :
-                              'bg-gray-50 text-gray-500'
-                            }`}>
-                              {reservation.status}
-                            </span>
-                            {reservation.status === '待到访' && (
-                              <button
-                                onClick={() => handleCheckIn(reservation.id)}
-                                className="px-2 py-1 text-xs bg-primary text-white rounded hover:bg-teal-600"
-                              >
-                                签到
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                    {paperList.map((paper, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded px-3 py-2 text-xs flex items-center justify-between">
+                        <span className="text-gray-700">{paper}</span>
+                        <button
+                          onClick={() => handleAssignPaper(paper)}
+                          className="px-2 py-1 text-xs bg-primary text-white rounded hover:bg-teal-600"
+                        >
+                          分配
+                        </button>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-400 text-xs">
-                    <p>暂无预约学生</p>
-                  </div>
-                );
-              })()}
+                </>
+              ) : (
+                <>
+                  <h4 className="text-xs text-gray-600 mb-2">预约学生列表</h4>
+                  {(() => {
+                    const sessionReservations = evalReservations.filter(r => r.sessionId === selectedSession.id);
+                    return sessionReservations.length > 0 ? (
+                      <div className="flex-1 grid grid-cols-2 gap-2 overflow-y-auto pr-1">
+                        {sessionReservations.map(reservation => (
+                          <div key={reservation.id} className="bg-gray-50 rounded px-3 py-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span 
+                                  className="text-primary cursor-pointer hover:underline"
+                                  onClick={() => {
+                                    alert(`跳转到学生详情页: ${reservation.studentName}`);
+                                  }}
+                                >
+                                  {reservation.studentName}
+                                </span>
+                                <span className="text-gray-400">{reservation.studentPhone}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-1.5 py-0.5 rounded text-xs ${
+                                  reservation.status === '待到访' ? 'bg-orange-50 text-orange-600' :
+                                  reservation.status === '已到访' ? 'bg-blue-50 text-blue-600' :
+                                  reservation.status === '已评测' ? 'bg-green-50 text-green-600' :
+                                  'bg-gray-50 text-gray-500'
+                                }`}>
+                                  {reservation.status}
+                                </span>
+                                {reservation.status === '待到访' && (
+                                  <button
+                                    onClick={() => handleCheckIn(reservation.id)}
+                                    className="px-2 py-1 text-xs bg-primary text-white rounded hover:bg-teal-600"
+                                  >
+                                    签到
+                                  </button>
+                                )}
+                                {reservation.status === '已到访' && !reservation.assignedPaper && (
+                                  <button
+                                    onClick={() => {
+                                      setAssigningStudentId(reservation.id);
+                                      setShowPaperList(true);
+                                    }}
+                                    className="px-2 py-1 text-xs bg-primary text-white rounded hover:bg-teal-600"
+                                  >
+                                    分配试卷
+                                  </button>
+                                )}
+                                {reservation.status === '已到访' && reservation.assignedPaper && (
+                                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                    {reservation.assignedPaper}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center text-gray-400 text-xs">
+                        <p>暂无预约学生</p>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
             </div>
 
             <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
